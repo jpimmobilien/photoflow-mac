@@ -11,7 +11,7 @@ defaults:
 jobs:
   build:
     runs-on: macos-15
-    timeout-minutes: 60
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
 
@@ -45,25 +45,39 @@ jobs:
           arch -x86_64 build/PhotoFlow.app/Contents/MacOS/PhotoFlow --qa info 2>&1 | tee selftest-x86_64.log
           arch -x86_64 build/PhotoFlow.app/Contents/MacOS/PhotoFlow --qa selftest 2>&1 | tee -a selftest-x86_64.log
 
+      - name: Download real test photos
+        continue-on-error: true
+        run: |
+          set +e
+          mkdir -p /tmp/seeds
+          # Kodak Lossless True Color Image Suite (24 classic reference photographs)
+          for i in $(seq -w 1 24); do
+            curl -sfL --max-time 30 -o /tmp/seeds/kodim$i.png "https://r0k.us/graphics/kodak/kodak/kodim$i.png"
+          done
+          # Unsplash photos via picsum.photos (fixed ids → reproducible), 2400 px
+          for id in 10 11 13 15 16 17 18 19 20 22 24 28 29 33 37 39 42 48 49 54 57 58 64 65 76 82 91 96 101 103; do
+            curl -sfL --max-time 30 -o /tmp/seeds/picsum$id.jpg "https://picsum.photos/id/$id/2400/1600"
+          done
+          find /tmp/seeds -size -10k -delete
+          echo "seed photos: $(ls /tmp/seeds | wc -l)"
+
       - name: QA on generated dataset
         continue-on-error: true
         run: |
+          set +e
           APP=build/PhotoFlow.app/Contents/MacOS/PhotoFlow
           $APP --qa info | tee qa.log
-          mkdir -p /tmp/seeds
-          # Seed photos: the macOS desktop pictures / sample images available on the runner
-          find /System/Library/Desktop\ Pictures /Library/Desktop\ Pictures /System/Library/CoreServices/CoreTypes.bundle \
-               -type f \( -iname '*.heic' -o -iname '*.jpg' -o -iname '*.png' \) -size +200k 2>/dev/null | head -40 | \
-               while read -r f; do cp "$f" /tmp/seeds/ 2>/dev/null; done
-          ls /tmp/seeds | wc -l | tee -a qa.log
-          $APP --qa gen /tmp/seeds /tmp/pf 40 | tee -a qa.log
+          echo "seed photos: $(ls /tmp/seeds | wc -l)" | tee -a qa.log
+          $APP --qa gen /tmp/seeds /tmp/pf 60 | tee -a qa.log
+          for k in dup tilt wb persp; do echo "$k files: $(ls /tmp/pf/$k | wc -l)" | tee -a qa.log; done
           $APP --qa eval-dup /tmp/pf/dup 2>&1 | tee -a qa.log
-          $APP --qa eval-straighten /tmp/pf/tilt 2>&1 | tail -3 | tee -a qa.log
-          $APP --qa eval-wb /tmp/pf/wb 2>&1 | tail -2 | tee -a qa.log
-          $APP --qa eval-perspective /tmp/pf/persp 2>&1 | tail -2 | tee -a qa.log
-          $APP --qa batch /tmp/pf/dup 100 2>&1 | tee -a qa.log
-          $APP --qa batch /tmp/pf/dup 500 2>&1 | tee -a qa.log
-          $APP --qa batch /tmp/pf/dup 1000 2>&1 | tee -a qa.log
+          $APP --qa eval-straighten /tmp/pf/tilt 2>&1 | tee -a qa.log
+          $APP --qa eval-wb /tmp/pf/wb 2>&1 | tee -a qa.log
+          $APP --qa eval-perspective /tmp/pf/persp 2>&1 | tee -a qa.log
+          $APP --qa batch /tmp/seeds 100 2>&1 | tee -a qa.log
+          $APP --qa batch /tmp/seeds 500 2>&1 | tee -a qa.log
+          $APP --qa batch /tmp/seeds 1000 2>&1 | tee -a qa.log
+          arch -x86_64 $APP --qa batch /tmp/seeds 100 2>&1 | sed 's/^/[x86_64] /' | tee -a qa.log
 
       - name: Upload DMG
         if: always()
