@@ -1,0 +1,81 @@
+name: Build PhotoFlow
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest Xcode
+        run: |
+          ls -d /Applications/Xcode*.app || true
+          XC=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          [ -z "$XC" ] && XC=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1)
+          echo "Using $XC"
+          sudo xcode-select -s "$XC/Contents/Developer"
+          swift --version
+          xcrun --show-sdk-version
+
+      - name: Build universal app + DMG
+        run: |
+          chmod +x Scripts/*.sh
+          ./Scripts/build_app.sh 2>&1 | tee build.log
+
+      - name: Verify architectures
+        run: |
+          lipo -archs build/PhotoFlow.app/Contents/MacOS/PhotoFlow
+          file build/PhotoFlow.app/Contents/MacOS/PhotoFlow
+          codesign -dv build/PhotoFlow.app 2>&1 | head -5
+
+      - name: Self-test (native arm64)
+        run: build/PhotoFlow.app/Contents/MacOS/PhotoFlow --qa selftest 2>&1 | tee selftest-arm64.log
+
+      - name: Self-test (x86_64 slice via Rosetta)
+        run: |
+          /usr/sbin/softwareupdate --install-rosetta --agree-to-license >/dev/null 2>&1 || true
+          arch -x86_64 build/PhotoFlow.app/Contents/MacOS/PhotoFlow --qa info 2>&1 | tee selftest-x86_64.log
+          arch -x86_64 build/PhotoFlow.app/Contents/MacOS/PhotoFlow --qa selftest 2>&1 | tee -a selftest-x86_64.log
+
+      - name: QA on generated dataset
+        continue-on-error: true
+        run: |
+          APP=build/PhotoFlow.app/Contents/MacOS/PhotoFlow
+          $APP --qa info | tee qa.log
+          mkdir -p /tmp/seeds
+          # Seed photos: the macOS desktop pictures / sample images available on the runner
+          find /System/Library/Desktop\ Pictures /Library/Desktop\ Pictures /System/Library/CoreServices/CoreTypes.bundle \
+               -type f \( -iname '*.heic' -o -iname '*.jpg' -o -iname '*.png' \) -size +200k 2>/dev/null | head -40 | \
+               while read -r f; do cp "$f" /tmp/seeds/ 2>/dev/null; done
+          ls /tmp/seeds | wc -l | tee -a qa.log
+          $APP --qa gen /tmp/seeds /tmp/pf 40 | tee -a qa.log
+          $APP --qa eval-dup /tmp/pf/dup 2>&1 | tee -a qa.log
+          $APP --qa eval-straighten /tmp/pf/tilt 2>&1 | tail -3 | tee -a qa.log
+          $APP --qa eval-wb /tmp/pf/wb 2>&1 | tail -2 | tee -a qa.log
+          $APP --qa eval-perspective /tmp/pf/persp 2>&1 | tail -2 | tee -a qa.log
+          $APP --qa batch /tmp/pf/dup 100 2>&1 | tee -a qa.log
+          $APP --qa batch /tmp/pf/dup 500 2>&1 | tee -a qa.log
+          $APP --qa batch /tmp/pf/dup 1000 2>&1 | tee -a qa.log
+
+      - name: Upload DMG
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoFlow-dmg
+          path: build/PhotoFlow.dmg
+          if-no-files-found: warn
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: |
+            build.log
+            selftest-*.log
+            qa.log
+          if-no-files-found: warn

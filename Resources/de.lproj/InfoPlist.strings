@@ -1,0 +1,8 @@
+/* PhotoFlow – Info.plist (Deutsch) */
+"CFBundleDisplayName" = "PhotoFlow";
+"NSHumanReadableCopyright" = "PhotoFlow – Intelligentes Fotostudio. Die gesamte Verarbeitung erfolgt lokal auf diesem Mac.";
+"NSDesktopFolderUsageDescription" = "PhotoFlow öffnet, bearbeitet und organisiert Fotos, die du von deinem Schreibtisch importierst. Originale werden nie verändert.";
+"NSDocumentsFolderUsageDescription" = "PhotoFlow öffnet, bearbeitet und organisiert Fotos, die du aus deinem Dokumente-Ordner importierst. Originale werden nie verändert.";
+"NSDownloadsFolderUsageDescription" = "PhotoFlow öffnet, bearbeitet und organisiert Fotos, die du aus deinem Downloads-Ordner importierst. Originale werden nie verändert.";
+"NSRemovableVolumesUsageDescription" = "PhotoFlow liest Fotos von externen Laufwerken und Speicherkarten, von denen du importierst.";
+"NSNetworkVolumesUsageDescription" = "PhotoFlow liest Fotos von Netzlaufwerken, von denen du importierst.";
