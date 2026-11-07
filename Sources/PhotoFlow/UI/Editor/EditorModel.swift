@@ -48,7 +48,7 @@ final class EditorModel: ObservableObject {
     private var dragStart: EditRecipe?
     private var fullBase: CIImage?
 
-    static let previewSize = 2200
+    nonisolated static let previewSize = 2200
 
     init(photo: PhotoRecord, recipe: EditRecipe?, startInCompare: Bool = false) {
         self.photo = photo

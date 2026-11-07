@@ -604,7 +604,7 @@ final class AppModel: ObservableObject {
                     rec.importedAt = Date()
                     if let inserted = try store.insert([rec]).first {
                         if let data = try? store.trashSnapshot(id: e.id), let snap = try? JSONDecoder().decode(TrashSnapshot.self, from: data) {
-                            if let r = snap.recipe { try? store.saveRecipe(r, for: inserted.id) }
+                            if let r = snap.recipe { _ = try? store.saveRecipe(r, for: inserted.id) }
                             if snap.favorite { try? store.setFavorite([inserted.id], favorite: true) }
                             for a in snap.albumIDs where albums.contains(where: { $0.id == a }) { try? store.add([inserted.id], toAlbum: a) }
                         }

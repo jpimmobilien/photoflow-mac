@@ -32,24 +32,33 @@ struct ImageStatistics: Sendable {
         var lr = 0.0, lg = 0.0, lb = 0.0
         var lumaSum = 0.0, luma2 = 0.0
         let lut = ColorMath.toLinearLUT
-        px.data.withUnsafeBufferPointer { p in
-            for i in 0 ..< n {
-                let r = Int(p[i * 4]), g = Int(p[i * 4 + 1]), b = Int(p[i * 4 + 2])
-                let y = (0.2126 * Double(r) + 0.7152 * Double(g) + 0.0722 * Double(b)) / 255
-                hist[min(255, Int(y * 255 + 0.5))] += 1
-                lumaSum += y; luma2 += y * y
-                let mx = max(r, g, b), mn = min(r, g, b)
-                if mx >= 254 { clipHi += 1 }
-                if mx <= 2 { clipLo += 1 }
-                if y > 0.85 { bright += 1 }
-                if y < 0.12 { dark += 1 }
-                let s = mx > 0 ? Double(mx - mn) / Double(mx) : 0
-                satSum += s
-                satHist[Int(s * 100)] += 1
-                let rg = Double(r - g), yb = 0.5 * Double(r + g) - Double(b)
-                rgSum += rg; ybSum += yb; rg2 += rg * rg; yb2 += yb * yb
-                lr += Double(lut[r]); lg += Double(lut[g]); lb += Double(lut[b])
-            }
+        let data: [UInt8] = px.data
+        for i in 0 ..< n {
+            let r: Int = Int(data[i * 4]), g: Int = Int(data[i * 4 + 1]), b: Int = Int(data[i * 4 + 2])
+            let dr: Double = Double(r), dg: Double = Double(g), db: Double = Double(b)
+            let y: Double = (0.2126 * dr + 0.7152 * dg + 0.0722 * db) / 255
+            let bin: Int = min(255, Int(y * 255 + 0.5))
+            hist[bin] += 1
+            lumaSum += y
+            luma2 += y * y
+            let mx: Int = max(r, max(g, b))
+            let mn: Int = min(r, min(g, b))
+            if mx >= 254 { clipHi += 1 }
+            if mx <= 2 { clipLo += 1 }
+            if y > 0.85 { bright += 1 }
+            if y < 0.12 { dark += 1 }
+            let sat: Double = mx > 0 ? Double(mx - mn) / Double(mx) : 0
+            satSum += sat
+            satHist[Int(sat * 100)] += 1
+            let rg: Double = dr - dg
+            let yb: Double = 0.5 * (dr + dg) - db
+            rgSum += rg
+            ybSum += yb
+            rg2 += rg * rg
+            yb2 += yb * yb
+            lr += Double(lut[r])
+            lg += Double(lut[g])
+            lb += Double(lut[b])
         }
         let N = Double(max(n, 1))
         for i in 0 ..< 256 { hist[i] /= N }
