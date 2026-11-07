@@ -18,13 +18,25 @@ enum StraightenEngine {
         var tilt: Double
         var confidence: Double
         var source: String
+        /// True when independent evidence agrees – safe for automatic (batch) correction.
         var shouldApply: Bool
+        /// A plausible estimate exists (used when the user explicitly clicks "Auto Straighten").
+        var hasSuggestion: Bool
+        // Diagnostics
+        var horizontal: (angle: Double, confidence: Double) = (0, 0)
+        var vertical: (angle: Double, confidence: Double) = (0, 0)
+        var combined: (angle: Double, confidence: Double) = (0, 0)
+        var vision: Double?
         var correction: Double { -tilt }
     }
 
     static let maxAutoAngle = 10.0
     static let minAutoAngle = 0.15
 
+    /// Decision rule (tuned on real photographs, see TEST_REPORT.md): a photo is only straightened
+    /// automatically when two independent measurements agree – the horizontal and vertical line families,
+    /// or the edge analysis and Apple Vision's horizon detector. A single dominant line (a hillside, a roof,
+    /// a diagonal) is never enough on its own, because it is often not meant to be level.
     static func detect(edges: EdgeField, vision: VisionAnalyzer.SceneResult?) -> Result {
         let maxDeg: Float = 12
         let horizontal = edges.points.filter { abs($0.angle) < 45 && abs($0.angle) <= maxDeg + 2 }
@@ -34,35 +46,59 @@ enum StraightenEngine {
         let h = bestAngle(horizontal, family: .horizontal, bins: nb, maxDeg: Double(maxDeg))
         let v = bestAngle(vertical, family: .vertical, bins: nb, maxDeg: Double(maxDeg))
         let both = bestAngle(horizontal + vertical, family: .mixed(horizontalCount: horizontal.count), bins: nb, maxDeg: Double(maxDeg))
+        var visionAngle: Double?
+        if let va = vision?.horizonAngle, abs(va) <= Double(maxDeg) { visionAngle = va }
 
         var tilt = both.angle
         var confidence = both.confidence
         var source = "edges"
-        if h.confidence > 0.3 && v.confidence > 0.3 {
-            if abs(h.angle - v.angle) <= 1.0 {
-                confidence = min(1, confidence + 0.15)              // independent families agree
-            } else {
-                // Converging verticals (perspective) or diagonal structures – trust the horizontal family,
-                // which is what people perceive as "crooked".
-                tilt = h.angle
-                confidence = h.confidence * 0.7
+        var agreed = false
+
+        // 1. Horizontal and vertical structures agree
+        if h.confidence >= 0.25 && v.confidence >= 0.25 && abs(h.angle - v.angle) <= 0.75 {
+            tilt = both.angle
+            confidence = min(1, max(h.confidence, v.confidence) + 0.15)
+            source = "lines(h+v)"
+            agreed = true
+        }
+        // 2. Edge analysis agrees with Vision's horizon
+        if let va = visionAngle {
+            let candidates: [(Double, Double)] = [(both.angle, both.confidence), (h.angle, h.confidence), (v.angle, v.confidence)]
+            if let match = candidates.filter({ $0.1 >= 0.2 && abs($0.0 - va) <= 1.0 }).max(by: { $0.1 < $1.1 }) {
+                if !agreed || abs(tilt - va) <= 1.0 {
+                    tilt = (match.0 * 2 + va) / 3
+                    confidence = min(1, max(confidence, match.1) + 0.2)
+                    source = agreed ? "lines(h+v)+vision" : "edges+vision"
+                    agreed = true
+                }
+            }
+        }
+        // 3. A single, very clean line family (e.g. a sea horizon) – only for small angles
+        if !agreed {
+            let single = h.confidence >= v.confidence ? h : v
+            if single.confidence >= 0.75 && abs(single.angle) <= 3 {
+                tilt = single.angle
+                confidence = single.confidence
+                source = h.confidence >= v.confidence ? "horizon-line" : "vertical-lines"
+                agreed = true
             }
         }
 
-        if let va = vision?.horizonAngle, let vc = vision?.horizonConfidence, vc > 0.4, abs(va) <= Double(maxDeg) {
-            if abs(va - tilt) <= 1.0 {
-                tilt = (tilt * confidence + va * Double(vc) * 0.5) / (confidence + Double(vc) * 0.5)
-                confidence = min(1, confidence + 0.2)
-                source = "edges+vision"
-            } else if confidence < 0.3 {
-                tilt = va
-                confidence = Double(vc) * 0.6
-                source = "vision"
-            }
+        let inRange = abs(tilt) >= minAutoAngle && abs(tilt) <= maxAutoAngle
+        let apply = agreed && confidence >= 0.3 && inRange
+        // Suggestion for an explicit user click: the best available single estimate
+        var suggestion = agreed
+        if !agreed {
+            if both.confidence >= 0.3 { tilt = both.angle; confidence = both.confidence; source = "edges(single)"; suggestion = true }
+            else if let va = visionAngle { tilt = va; confidence = 0.3; source = "vision(single)"; suggestion = true }
         }
-
-        let apply = confidence >= 0.3 && abs(tilt) >= minAutoAngle && abs(tilt) <= maxAutoAngle
-        return Result(tilt: tilt, confidence: confidence, source: source, shouldApply: apply)
+        var r = Result(tilt: tilt, confidence: confidence, source: source, shouldApply: apply,
+                       hasSuggestion: suggestion && abs(tilt) <= maxAutoAngle)
+        r.horizontal = (h.angle, h.confidence)
+        r.vertical = (v.angle, v.confidence)
+        r.combined = (both.angle, both.confidence)
+        r.vision = visionAngle
+        return r
     }
 
     enum Family { case horizontal, vertical, mixed(horizontalCount: Int) }

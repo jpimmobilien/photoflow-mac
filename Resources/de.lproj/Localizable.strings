@@ -550,3 +550,4 @@
 "“%@” is no longer in the Trash (the Trash may have been emptied)." = "„%@“ ist nicht mehr im Papierkorb (er wurde möglicherweise entleert).";
 "…and %lld more" = "… und %lld weitere";
 "≥ %lld %%" = "≥ %lld %%";
+"Best estimate: rotated by %@°. The evidence was not conclusive – please check the result (Undo with ⌘Z)." = "Beste Schätzung: um %@° gedreht. Die Hinweise waren nicht eindeutig – bitte prüfe das Ergebnis (Widerrufen mit ⌘Z).";

@@ -80,11 +80,11 @@ enum PerspectiveEngine {
 
     private static func search(_ pts: [EdgeField.EdgePoint], along axis: Axis, W: Float, H: Float) -> (value: Double, confidence: Double) {
         guard pts.count >= 60 else { return (0, 0) }
-        let nb = Int(4 * max(W, H)) + 8
+        let nb = Int(3 * max(W, H)) + 8
         var hist = [Float](repeating: 0, count: nb)
         var base: Float = 0
         for p in pts { base += p.weight * p.weight }
-        let scale: Float = 2   // half-pixel bins
+        let scale: Float = 1   // 1-px bins (points carry sub-pixel jitter, see EdgeField)
 
         func score(_ k: Double) -> Float {
             let kf = Float(k)

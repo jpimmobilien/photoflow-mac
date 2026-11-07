@@ -72,11 +72,21 @@ struct EdgeField: Sendable {
                 let theta = 0.5 * atan2(2 * jxy[k], jxx[k] - jyy[k])
                 var vis = -(theta + .pi / 2)
                 vis = fmodf(vis + .pi / 2, .pi); if vis < 0 { vis += .pi }; vis -= .pi / 2
-                pts.append(EdgePoint(x: Float(x) - cx, y: cy - Float(y), angle: vis * 180 / .pi,
+                // Deterministic sub-pixel jitter (±0.5 px) breaks the pixel-lattice alignment: without it,
+                // integer pixel positions make "no rotation / no keystone" look artificially perfect.
+                let jx = EdgeField.jitter(UInt32(truncatingIfNeeded: k) &* 2), jy = EdgeField.jitter(UInt32(truncatingIfNeeded: k) &* 2 &+ 1)
+                pts.append(EdgePoint(x: Float(x) - cx + jx, y: cy - Float(y) + jy, angle: vis * 180 / .pi,
                                      weight: energy[k] * coherence[k]))
             }
         }
         points = pts
+    }
+
+    /// Hash-based uniform value in [−0.5, 0.5) (reproducible across runs).
+    @inline(__always) static func jitter(_ n: UInt32) -> Float {
+        var h = n &* 0x9E3779B1
+        h ^= h >> 15; h = h &* 0x85EBCA77; h ^= h >> 13; h = h &* 0xC2B2AE3D; h ^= h >> 16
+        return Float(h & 0xFFFF) / 65536 - 0.5
     }
 
     /// Separable Gaussian blur with edge clamping.

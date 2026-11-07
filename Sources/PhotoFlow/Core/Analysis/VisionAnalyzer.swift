@@ -37,8 +37,9 @@ enum VisionAnalyzer {
         var hAngle: Double?
         var hConf: Float = 0
         if let h = horizon.results?.first {
-            // Vision reports the angle of the horizon; positive values are counter-clockwise.
-            hAngle = Double(h.angle) * 180 / .pi
+            // Vision reports the *correction* angle (measured on real photos: a scene tilted −6° yields +6°),
+            // so the visual tilt in PhotoFlow's convention is the negative value.
+            hAngle = -Double(h.angle) * 180 / .pi
             hConf = h.confidence
         }
         let salient = (saliency.results?.first?.salientObjects ?? [])

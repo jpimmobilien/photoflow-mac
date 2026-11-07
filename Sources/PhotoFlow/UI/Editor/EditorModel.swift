@@ -278,9 +278,12 @@ final class EditorModel: ObservableObject {
         guard let a = await ensureAnalysis() else { return }
         let st = a.straighten
         if st.shouldApply {
-            change(String(localized: "Auto Straighten")) { $0.rotation = (st.correction * 100).rounded() / 100 }
+            change(String(localized: "Auto Straighten"), { $0.rotation = (st.correction * 100).rounded() / 100 })
             message = String(localized: "Rotated by \(String(format: "%.1f", st.correction))°.")
-        } else if abs(st.tilt) < StraightenEngine.minAutoAngle && st.confidence >= 0.3 {
+        } else if st.hasSuggestion && abs(st.tilt) >= StraightenEngine.minAutoAngle {
+            change(String(localized: "Auto Straighten"), { $0.rotation = (st.correction * 100).rounded() / 100 })
+            message = String(localized: "Best estimate: rotated by \(String(format: "%.1f", st.correction))°. The evidence was not conclusive – please check the result (Undo with ⌘Z).")
+        } else if st.hasSuggestion {
             message = String(localized: "The horizon is already straight.")
         } else {
             message = String(localized: "No clear horizon or straight lines found. Use the slider to straighten manually.")

@@ -283,7 +283,8 @@ enum QARunner {
     // MARK: - Straighten / WB / perspective evaluation
 
     static func evalStraighten(folder: String) throws {
-        var errs: [Double] = [], falseCorrections = 0, refs = 0, missed = 0, total = 0
+        struct Row { var seed: String; var truth: Double; var isRef: Bool; var r: StraightenEngine.Result }
+        var rows: [Row] = []
         for url in ImportService.collectImageURLs(from: [URL(fileURLWithPath: folder)]) {
             let base = url.deletingPathExtension().lastPathComponent
             guard let r = base.range(of: "__tilt") else { continue }
@@ -292,22 +293,36 @@ enum QARunner {
             let truth = Double(tag.replacingOccurrences(of: "ref", with: "")) ?? 0
             guard let a = PhotoAnalyzer.analyze(url: url) else { continue }
             let st = a.straighten
-            let applied = st.shouldApply ? st.tilt : 0
-            total += 1
-            if isRef || abs(truth) < 0.05 {
-                refs += 1
-                if st.shouldApply && abs(st.tilt) > 0.5 { falseCorrections += 1 }
-            } else {
-                errs.append(abs(applied - truth))
-                if !st.shouldApply { missed += 1 }
-            }
-            print(String(format: "%@ truth=%+.1f detected=%+.2f conf=%.2f apply=%@ vision=%@ src=%@", url.lastPathComponent, truth, st.tilt, st.confidence,
-                         st.shouldApply ? "yes" : "no", a.scene.horizonAngle.map { String(format: "%+.2f", $0) } ?? "-", st.source))
+            rows.append(Row(seed: String(base[..<r.lowerBound]), truth: truth, isRef: isRef, r: st))
+            print(String(format: "%@ truth=%+.1f tilt=%+.2f conf=%.2f apply=%@ src=%@ | h=%+.2f(%.2f) v=%+.2f(%.2f) all=%+.2f(%.2f) vision=%@",
+                         base, truth, st.tilt, st.confidence, st.shouldApply ? "yes" : "no", st.source,
+                         st.horizontal.angle, st.horizontal.confidence, st.vertical.angle, st.vertical.confidence,
+                         st.combined.angle, st.combined.confidence, st.vision.map { String(format: "%+.2f", $0) } ?? "-"))
         }
-        let sorted = errs.sorted()
-        print(String(format: "STRAIGHTEN: n=%d tilted=%d MAE=%.2f° median=%.2f° p90=%.2f° missed=%d | references=%d falseCorrections(>0.5°)=%d",
-                     total, errs.count, errs.reduce(0, +) / Double(max(1, errs.count)), sorted.isEmpty ? 0 : sorted[sorted.count / 2],
-                     sorted.isEmpty ? 0 : sorted[Int(Double(sorted.count - 1) * 0.9)], missed, refs, falseCorrections))
+        // Decision quality: refs (originals) should not be rotated; tilted variants should be corrected
+        // relative to their own original (the original may itself be slightly tilted).
+        let refs = Dictionary(grouping: rows.filter(\.isRef), by: \.seed).compactMapValues(\.first)
+        var falseCorr = 0, refCount = 0, applied = 0, appliedGood = 0, variants = 0, precision: [Double] = []
+        for row in rows {
+            if row.isRef {
+                refCount += 1
+                if row.r.shouldApply { falseCorr += 1 }
+                continue
+            }
+            guard abs(row.truth) > 0.05, let ref = refs[row.seed] else { continue }
+            variants += 1
+            let refTilt = ref.r.shouldApply ? ref.r.tilt : 0
+            let expected = row.truth + refTilt
+            if row.r.shouldApply {
+                applied += 1
+                if abs(row.r.tilt - expected) <= 0.5 { appliedGood += 1 }
+            }
+            precision.append(abs((row.r.combined.angle - ref.r.combined.angle) - row.truth))
+        }
+        let p = precision.sorted()
+        print(String(format: "STRAIGHTEN: originals=%d rotated-without-need=%d (%.0f%%) | tilted variants=%d auto-corrected=%d correct(±0.5°)=%d | edge precision vs. own original: median %.2f° p75 %.2f°",
+                     refCount, falseCorr, Double(falseCorr) * 100 / Double(max(1, refCount)), variants, applied, appliedGood,
+                     p.isEmpty ? 0 : p[p.count / 2], p.isEmpty ? 0 : p[Int(Double(p.count - 1) * 0.75)]))
     }
 
     static func evalWB(folder: String) throws {

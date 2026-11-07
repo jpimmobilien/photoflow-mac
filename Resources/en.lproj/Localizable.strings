@@ -78,6 +78,7 @@
 "Batch finished: %lld done, %lld failed" = "Batch finished: %lld done, %lld failed";
 "Before/after comparison" = "Before/after comparison";
 "Best Version to Keep" = "Best Version to Keep";
+"Best estimate: rotated by %@°. The evidence was not conclusive – please check the result (Undo with ⌘Z)." = "Best estimate: rotated by %@°. The evidence was not conclusive – please check the result (Undo with ⌘Z).";
 "Best exposure" = "Best exposure";
 "Best overall combination of quality factors" = "Best overall combination of quality factors";
 "Best overall quality (on-device aesthetics model)" = "Best overall quality (on-device aesthetics model)";
