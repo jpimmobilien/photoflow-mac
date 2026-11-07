@@ -118,6 +118,9 @@ enum AutoEnhanceEngine {
                     fWarm = a.isUnderwater ? 0.9 : 0.8
                 }
                 fGreen = wb.greenness > 0 ? 0.85 : 0.7       // green/magenta casts are rarely wanted
+                // Foliage and other strongly coloured scenes look like a "green cast" to colour-constancy
+                // estimators (measured on real landscapes: tint over-corrected toward magenta). Be careful there.
+                if wb.greenness > 0 && (a.isLandscape || s.colorfulness > 0.45 || s.meanSaturation > 0.35) { fGreen *= 0.3 }
                 let trust = min(1, wb.confidence / 0.35)
                 fWarm = min(1, fWarm * trust * f)
                 fGreen = min(1, fGreen * trust * f)
@@ -135,7 +138,9 @@ enum AutoEnhanceEngine {
                 }
                 let sliders = WhiteBalanceModel.sliders(forGains: gains.r, gains.g, gains.b)
                 r.temperature = round(sliders.temperature)
-                r.tint = round(sliders.tint)
+                // Without clearly neutral surfaces, large tint shifts are more often wrong than right.
+                let tintLimit = (wb.neutralFraction >= 0.08 && wb.confidence >= 0.6) ? 25.0 : 12.0
+                r.tint = round(max(-tintLimit, min(tintLimit, sliders.tint)))
                 if abs(r.temperature) >= 3 || abs(r.tint) >= 3 {
                     if wb.warmth > 0.02 {
                         notes.append(a.isSunset || a.isNight

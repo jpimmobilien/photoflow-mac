@@ -52,8 +52,12 @@ enum PerspectiveEngine {
         let documentScene = scene?.has(VisionAnalyzer.documentLabels, minConfidence: 0.3) ?? false
         let naturalScene = scene?.has(VisionAnalyzer.landscapeLabels, minConfidence: 0.4) ?? false
 
-        var applyV = v.confidence >= 0.35 && abs(v.value) >= 0.02 && abs(v.value) <= 0.6 && structure >= 0.12
-        if naturalScene && !builtScene { applyV = applyV && v.confidence >= 0.6 && structure >= 0.25 }
+        // Gate tuned on real photos: estimates at the edge of the search range or with little straight vertical
+        // structure are unreliable. Outside recognised architecture/interiors, require very strong evidence.
+        let atBound = abs(v.value) >= 0.7
+        var applyV = !atBound && v.confidence >= 0.5 && abs(v.value) >= 0.02 && abs(v.value) <= 0.35 && structure >= 0.2
+        if !builtScene { applyV = applyV && v.confidence >= 0.7 && structure >= 0.3 }
+        if naturalScene && !builtScene { applyV = false }
         // Horizontal keystone is usually intentional (two-point perspective) – only for frontal facades/documents.
         let applyH = (builtScene || documentScene) && h.confidence >= 0.5 && abs(h.value) >= 0.02 && abs(h.value) <= 0.25
 
