@@ -4,6 +4,9 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 defaults:
   run:
     shell: bash
@@ -97,3 +100,26 @@ jobs:
             selftest-*.log
             qa.log
           if-no-files-found: warn
+
+      - name: Publish DMG (GitHub release + dist branch)
+        if: success() && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="build-${{ github.run_number }}"
+          cat > notes.md <<NOTES
+          PhotoFlow – automatischer Build ${{ github.run_number }} (Commit ${GITHUB_SHA::7})
+
+          - Universal Binary: $(lipo -archs build/PhotoFlow.app/Contents/MacOS/PhotoFlow)
+          - Ad-hoc signiert, nicht notarisiert → erster Start: Rechtsklick ▸ Öffnen ▸ Öffnen
+          - macOS 13 Ventura oder neuer
+          NOTES
+          gh release create "$TAG" build/PhotoFlow.dmg --title "PhotoFlow Build ${{ github.run_number }}" --notes-file notes.md --latest
+          mkdir -p /tmp/dist && cp build/PhotoFlow.dmg /tmp/dist/ && cp build.log selftest-*.log qa.log /tmp/dist/ 2>/dev/null || true
+          cd /tmp/dist
+          git init -q -b dist
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A && git commit -q -m "PhotoFlow build ${{ github.run_number }}"
+          git push -f -q "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" dist
+
