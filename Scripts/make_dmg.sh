@@ -64,7 +64,14 @@ else
 fi
 SetFile -a C "/Volumes/$VOL" 2>/dev/null || true
 sync
-hdiutil detach "$DEVICE" -quiet || hdiutil detach "$DEVICE" -force -quiet
+# Finder may still hold the volume for a moment – retry, then force.
+osascript -e "tell application \"Finder\" to close every window" >/dev/null 2>&1 || true
+DETACHED=0
+for attempt in 1 2 3 4 5 6 7 8 9 10; do
+    if hdiutil detach "$DEVICE" -quiet 2>/dev/null; then DETACHED=1; break; fi
+    sleep 2
+done
+[[ $DETACHED == 1 ]] || hdiutil detach "$DEVICE" -force -quiet
 
 echo "▸ Compressing"
 rm -f "$DMG"

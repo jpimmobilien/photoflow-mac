@@ -22,7 +22,7 @@ actor AsyncLimiter {
 
     func run<T>(_ work: @Sendable () async throws -> T) async rethrows -> T {
         await acquire()
-        defer { Task { await self.release() } }
+        defer { Task { self.release() } }
         return try await work()
     }
 }
