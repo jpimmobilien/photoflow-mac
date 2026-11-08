@@ -76,4 +76,7 @@ if [[ "${NO_DMG:-0}" != "1" ]]; then
 fi
 
 echo "✓ Done: $APP"
-[[ -f "$OUT/PhotoFlow.dmg" ]] && echo "✓ Done: $OUT/PhotoFlow.dmg ($(du -h "$OUT/PhotoFlow.dmg" | cut -f1))"
+if [[ -f "$OUT/PhotoFlow.dmg" && "${NO_DMG:-0}" != "1" ]]; then
+    echo "✓ Done: $OUT/PhotoFlow.dmg ($(du -h "$OUT/PhotoFlow.dmg" | cut -f1))"
+fi
+exit 0

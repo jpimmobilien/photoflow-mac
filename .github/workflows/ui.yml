@@ -68,7 +68,7 @@ jobs:
           run_tour() {
             rm -rf /tmp/tourlib
             PHOTOFLOW_LIBRARY_DIR=/tmp/tourlib PHOTOFLOW_TOUR_PHOTOS=/tmp/tour-photos "$APP" --ui-tour /tmp/shots "$@" > /tmp/tour.log 2>&1
-            grep UITOUR /tmp/tour.log
+            grep UITOUR /tmp/tour.log; cat /tmp/tour.log >> /tmp/tour-all.log
           }
           run_tour -appearance light -AppleLanguages '(en)'
           run_tour -appearance dark -AppleLanguages '(en)'
@@ -80,7 +80,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          mkdir -p /tmp/pub && cp /tmp/shots/*.png /tmp/pub/ 2>/dev/null; cp build.log /tmp/pub/ 2>/dev/null
+          set +e
+          mkdir -p /tmp/pub; cp /tmp/shots/*.png /tmp/pub/ 2>/dev/null; cp build.log /tmp/tour.log /tmp/pub/ 2>/dev/null
           cd /tmp/pub
           # downscale to keep the branch small (1440 pt windows at 2x → 1440 px wide)
           for f in *.png; do sips -Z 1600 "$f" >/dev/null 2>&1; done
