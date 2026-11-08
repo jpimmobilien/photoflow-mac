@@ -12,7 +12,13 @@ struct ContentView: View {
             SidebarView()
                 .navigationSplitViewColumnWidth(min: 200, ideal: 230, max: 300)
         } detail: {
-            detail
+            ZStack {
+                detail
+                    .id(app.editorPhotoID.map { "editor-\($0)" } ?? String(describing: app.sidebar))
+                    .transition(.asymmetric(insertion: .opacity.combined(with: .scale(scale: 0.985)), removal: .opacity))
+            }
+            .animation(DS.Motion.smooth, value: app.sidebar)
+            .animation(DS.Motion.smooth, value: app.editorPhotoID)
                 .toolbar { MainToolbar(showInspector: $showInspector) }
                 .navigationTitle(app.sidebarTitle)
         }
@@ -88,10 +94,10 @@ struct ContentView: View {
             default:
                 HStack(spacing: 0) {
                     LibraryView()
-                    if showInspector {
+                    if showInspector && !app.photos.isEmpty {
                         Divider()
                         InspectorView()
-                            .frame(width: 290)
+                            .frame(width: 280)
                             .transition(.move(edge: .trailing))
                     }
                 }

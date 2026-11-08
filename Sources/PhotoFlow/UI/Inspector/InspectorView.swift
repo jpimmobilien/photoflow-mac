@@ -20,31 +20,45 @@ struct InspectorView: View {
             }
             .padding(16)
         }
-        .background(.ultraThinMaterial.opacity(0.5))
+        .background(
+            AmbientBackground(photo: app.selectedPhotos.count == 1 ? app.selectedPhotos.first : nil,
+                              recipe: app.selectedPhotos.first.flatMap { app.recipe(for: $0.id) }, intensity: 0.9)
+        )
+        .animation(DS.Motion.smooth, value: app.selection)
     }
 
     // MARK: - Single photo
 
     @ViewBuilder
     private func single(_ photo: PhotoRecord) -> some View {
-        ThumbnailImage(photo: photo, recipe: app.recipe(for: photo.id), pixelSize: 640, contentMode: .fit)
+        let recipe = app.recipe(for: photo.id)
+        ThumbnailImage(photo: photo, recipe: recipe, pixelSize: 640, contentMode: .fit)
             .frame(maxWidth: .infinity)
-            .frame(height: 200)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .frame(height: 190)
+            .shadow(color: .black.opacity(0.28), radius: 14, y: 8)
             .onTapGesture(count: 2) { app.openEditor(photo.id) }
+            .id(photo.id)
+            .transition(.opacity.combined(with: .scale(scale: 0.97)))
 
-        VStack(alignment: .leading, spacing: 2) {
-            Text(photo.filename).font(.headline).lineLimit(2).textSelection(.enabled)
-            Text((photo.path as NSString).deletingLastPathComponent).font(.caption).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
+        VStack(alignment: .leading, spacing: 4) {
+            Text(photo.filename).font(DS.Font.headline).lineLimit(2).textSelection(.enabled)
+            Text(photo.displayDate.formatted(date: .long, time: .shortened)).font(DS.Font.caption).foregroundStyle(.secondary)
         }
+
+        // Key facts as chips
+        FlowChips(items: chips(for: photo))
+
+        HistogramView(photo: photo, recipe: recipe)
+            .frame(height: 64)
+            .help(String(localized: "Histogram – distribution of dark (left) to bright (right) tones"))
 
         enhanceCard(ids: [photo.id])
 
-        if let info = app.recipe(for: photo.id)?.auto, !info.notes.isEmpty {
+        if let info = recipe?.auto, !info.notes.isEmpty {
             VStack(alignment: .leading, spacing: 6) {
-                Label(String(localized: "What Auto Enhance did"), systemImage: "sparkles").font(.subheadline.weight(.semibold))
+                Label(String(localized: "What Auto Enhance did"), systemImage: "sparkles").font(DS.Font.headline)
                 ForEach(info.notes, id: \.self) { n in
-                    Label(n, systemImage: "checkmark").font(.caption).foregroundStyle(.secondary)
+                    Label(n, systemImage: "checkmark").font(DS.Font.caption).foregroundStyle(.secondary)
                 }
             }
             .padding(12)
@@ -52,12 +66,12 @@ struct InspectorView: View {
             .glassCard(cornerRadius: 12)
         }
 
-        VStack(alignment: .leading, spacing: 10) {
-            Text(String(localized: "Information")).font(.subheadline.weight(.semibold))
-            PhotoMetadataGrid(photo: photo)
+        DisclosureGroup {
+            PhotoMetadataGrid(photo: photo).padding(.top, 6)
+        } label: {
+            Text(String(localized: "Information")).font(DS.Font.headline)
         }
         .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard(cornerRadius: 12)
 
         HStack {
@@ -70,6 +84,18 @@ struct InspectorView: View {
             Button { app.locate(photo) } label: { Label(String(localized: "Locate Original…"), systemImage: "magnifyingglass") }
                 .softButton()
         }
+    }
+
+    private func chips(for p: PhotoRecord) -> [(String, String)] {
+        var c: [(String, String)] = [
+            ("aspectratio", "\(p.width) × \(p.height)"),
+            ("doc", p.fileSize.formattedBytes),
+            ("photo", p.formatName)
+        ]
+        if let cam = p.cameraDescription { c.append(("camera", cam)) }
+        if p.isEdited { c.append(("slider.horizontal.3", String(localized: "Edited"))) }
+        if p.isFavorite { c.append(("heart.fill", String(localized: "Favorite"))) }
+        return c
     }
 
     // MARK: - Multiple
@@ -134,7 +160,7 @@ struct InspectorView: View {
                 Label(String(localized: "Auto Enhance"), systemImage: "wand.and.stars")
                     .frame(maxWidth: .infinity)
             }
-            .prominentButton()
+            .magicButton()
             .controlSize(.large)
             .disabled(app.activity != nil)
             Text(String(localized: "Each photo is analyzed individually on this Mac."))
@@ -142,5 +168,48 @@ struct InspectorView: View {
         }
         .padding(12)
         .glassCard(cornerRadius: 12)
+    }
+}
+
+/// Wrapping row of small capsule chips (icon + text).
+struct FlowChips: View {
+    var items: [(String, String)]
+    var body: some View {
+        FlowLayoutCompat(spacing: 6) {
+            ForEach(Array(items.enumerated()), id: \.offset) { _, item in
+                Label(item.1, systemImage: item.0)
+                    .font(DS.Font.caption)
+                    .lineLimit(1)
+                    .padding(.horizontal, 8).padding(.vertical, 4)
+                    .background(Color.primary.opacity(0.07), in: Capsule())
+            }
+        }
+    }
+}
+
+/// Simple flow layout (macOS 13 Layout protocol).
+struct FlowLayoutCompat: Layout {
+    var spacing: CGFloat = 6
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let maxW = proposal.width ?? 300
+        var x: CGFloat = 0, y: CGFloat = 0, rowH: CGFloat = 0, width: CGFloat = 0
+        for v in subviews {
+            let s = v.sizeThatFits(.unspecified)
+            if x > 0 && x + s.width > maxW { x = 0; y += rowH + spacing; rowH = 0 }
+            x += s.width + spacing
+            rowH = max(rowH, s.height)
+            width = max(width, x - spacing)
+        }
+        return CGSize(width: min(maxW, width), height: y + rowH)
+    }
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var x = bounds.minX, y = bounds.minY, rowH: CGFloat = 0
+        for v in subviews {
+            let s = v.sizeThatFits(.unspecified)
+            if x > bounds.minX && x + s.width > bounds.maxX { x = bounds.minX; y += rowH + spacing; rowH = 0 }
+            v.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(s))
+            x += s.width + spacing
+            rowH = max(rowH, s.height)
+        }
     }
 }

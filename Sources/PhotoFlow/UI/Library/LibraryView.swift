@@ -24,24 +24,24 @@ struct LibraryView: View {
         if app.photos.isEmpty {
             EmptyStateView(symbol: "photo.stack", title: String(localized: "Welcome to PhotoFlow"),
                            message: String(localized: "Import photos or whole folders – or simply drag them into this window. Your originals stay exactly where they are and are never changed."),
-                           actionTitle: String(localized: "Import Photos"), action: { app.showImportPanel() })
+                           actionTitle: String(localized: "Import Photos"), action: { app.showImportPanel() }, illustration: .welcome)
         } else if !app.searchText.isEmpty {
             EmptyStateView(symbol: "magnifyingglass", title: String(localized: "No Results"),
-                           message: String(localized: "No photo matches “\(app.searchText)”."))
+                           message: String(localized: "No photo matches “\(app.searchText)”."), illustration: .search)
         } else {
             switch app.sidebar {
             case .favorites:
                 EmptyStateView(symbol: "heart", title: String(localized: "No Favorites Yet"),
-                               message: String(localized: "Mark photos with the heart button or press ⇧⌘F."))
+                               message: String(localized: "Mark photos with the heart button or press ⇧⌘F."), illustration: .favorites)
             case .album:
                 EmptyStateView(symbol: "rectangle.stack", title: String(localized: "This Album Is Empty"),
-                               message: String(localized: "Drag photos onto the album in the sidebar, or use “Move to Album” in the context menu."))
+                               message: String(localized: "Drag photos onto the album in the sidebar, or use “Move to Album” in the context menu."), illustration: .album)
             case .recentlyEdited:
                 EmptyStateView(symbol: "slider.horizontal.3", title: String(localized: "Nothing Edited Recently"),
-                               message: String(localized: "Photos you enhance or edit appear here."))
+                               message: String(localized: "Photos you enhance or edit appear here."), illustration: .edited)
             default:
                 EmptyStateView(symbol: "line.3.horizontal.decrease.circle", title: String(localized: "No Matching Photos"),
-                               message: String(localized: "Try removing a filter."))
+                               message: String(localized: "Try removing a filter."), illustration: .search)
             }
         }
     }
@@ -51,13 +51,25 @@ struct LibraryHeader: View {
     @EnvironmentObject private var app: AppModel
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: DS.Space.s) {
             VStack(alignment: .leading, spacing: 1) {
-                Text(app.sidebarTitle).font(.system(.title3, design: .rounded).weight(.semibold))
-                Text(subtitle).font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                Text(app.sidebarTitle).font(DS.Font.title2).lineLimit(1)
+                Text(subtitle).font(DS.Font.caption).foregroundStyle(.secondary).monospacedDigit().lineLimit(1)
             }
-            Spacer()
+            .fixedSize(horizontal: true, vertical: false)
+            .layoutPriority(2)
+            Spacer(minLength: DS.Space.xs)
+            ViewThatFits(in: .horizontal) {
+                controls(compact: false)
+                controls(compact: true)
+            }
+        }
+        .padding(.horizontal, DS.Space.l)
+        .padding(.vertical, DS.Space.s)
+    }
 
+    private func controls(compact: Bool) -> some View {
+        HStack(spacing: 2) {
             Menu {
                 Picker(String(localized: "Sort By"), selection: $app.sort) {
                     ForEach(LibrarySort.allCases) { Text($0.displayName).tag($0) }
@@ -66,10 +78,10 @@ struct LibraryHeader: View {
                 Divider()
                 Toggle(String(localized: "Ascending"), isOn: $app.sortAscending)
             } label: {
-                Label(app.sort.displayName, systemImage: "arrow.up.arrow.down")
+                if compact { Image(systemName: "arrow.up.arrow.down") } else { Label(app.sort.displayName, systemImage: "arrow.up.arrow.down") }
             }
-            .menuStyle(.borderlessButton)
-            .fixedSize()
+            .menuStyle(.borderlessButton).fixedSize()
+            .padding(.horizontal, 8)
             .help(String(localized: "Sort"))
 
             Menu {
@@ -84,32 +96,38 @@ struct LibraryHeader: View {
                 }
                 .pickerStyle(.inline)
             } label: {
-                Label(filterLabel, systemImage: isFiltered ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                let symbol = isFiltered ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle"
+                if compact { Image(systemName: symbol) } else { Label(filterLabel, systemImage: symbol) }
             }
-            .menuStyle(.borderlessButton)
-            .fixedSize()
+            .menuStyle(.borderlessButton).fixedSize()
+            .padding(.horizontal, 8)
             .help(String(localized: "Filter"))
 
-            Picker("", selection: Binding(get: { app.viewMode }, set: { app.viewMode = $0 })) {
+            Divider().frame(height: 16)
+
+            Picker("", selection: Binding(get: { app.viewMode }, set: { m in withAnimation(DS.Motion.smooth) { app.viewMode = m } })) {
                 Image(systemName: "square.grid.2x2").tag(LibraryViewMode.grid)
                 Image(systemName: "list.bullet").tag(LibraryViewMode.list)
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-            .frame(width: 80)
+            .fixedSize()
+            .padding(.horizontal, 6)
             .help(String(localized: "Grid or list"))
 
-            if app.viewMode == .grid {
+            if app.viewMode == .grid && !compact {
                 HStack(spacing: 4) {
                     Image(systemName: "photo").font(.caption2).foregroundStyle(.secondary)
-                    Slider(value: $app.thumbnailSize, in: 90 ... 340).frame(width: 100).controlSize(.small)
+                    Slider(value: $app.thumbnailSize, in: 90 ... 340).frame(width: 90).controlSize(.mini)
                     Image(systemName: "photo").font(.callout).foregroundStyle(.secondary)
                 }
+                .padding(.horizontal, 6)
                 .help(String(localized: "Thumbnail size"))
             }
         }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 10)
+        .padding(.vertical, 4)
+        .padding(.horizontal, 4)
+        .glassCapsule()
     }
 
     private var isFiltered: Bool { app.editFilter != .all || app.formatFilter != nil }
@@ -135,7 +153,7 @@ struct PhotoGridView: View {
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: app.thumbnailSize, maximum: app.thumbnailSize * 1.6), spacing: 10)], spacing: 10) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: app.thumbnailSize, maximum: app.thumbnailSize * 1.6), spacing: 12)], spacing: 12) {
                     ForEach(app.visiblePhotos) { photo in
                         PhotoCell(photo: photo, recipe: app.recipe(for: photo.id), selected: app.selection.contains(photo.id))
                             .frame(height: app.thumbnailSize)
@@ -200,8 +218,7 @@ struct PhotoCell: View {
         ZStack(alignment: .bottomLeading) {
             ThumbnailImage(photo: photo, recipe: recipe)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .clipped()
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
 
             HStack(spacing: 4) {
                 if photo.isEdited {
@@ -237,12 +254,24 @@ struct PhotoCell: View {
             }
         }
         .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(selected ? Color.accentColor : Color.primary.opacity(0.06), lineWidth: selected ? 3 : 0.5)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(selected ? AnyShapeStyle(DS.Palette.brand) : AnyShapeStyle(Color.primary.opacity(0.07)), lineWidth: selected ? 3 : 0.5)
         )
-        .scaleEffect(hovering && !selected ? 1.015 : 1)
-        .shadow(color: .black.opacity(hovering ? 0.18 : 0.06), radius: hovering ? 8 : 3, y: hovering ? 4 : 1)
-        .animation(.easeOut(duration: 0.15), value: hovering)
+        .overlay(alignment: .topTrailing) {
+            if selected {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(.white, DS.Palette.indigo)
+                    .shadow(color: .black.opacity(0.3), radius: 3)
+                    .padding(7)
+                    .transition(.scale(scale: 0.5).combined(with: .opacity))
+            }
+        }
+        .scaleEffect(selected ? 0.965 : (hovering ? 1.02 : 1))
+        .shadow(color: selected ? DS.Palette.indigo.opacity(0.35) : .black.opacity(hovering ? 0.2 : 0.06),
+                radius: selected ? 10 : (hovering ? 10 : 3), y: hovering ? 5 : 1)
+        .animation(DS.Motion.snappy, value: hovering)
+        .animation(DS.Motion.snappy, value: selected)
         .onHover { hovering = $0 }
         .help(photo.filename)
         .accessibilityElement(children: .ignore)

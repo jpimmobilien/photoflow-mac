@@ -40,21 +40,21 @@ struct DuplicatesView: View {
                     .disabled(app.photos.count < 2)
                 }
             }
-            HStack(spacing: 18) {
+            HStack(spacing: 14) {
                 Picker(String(localized: "Scope"), selection: $model.scope) {
                     Text(String(localized: "Entire Library")).tag(DuplicatesModel.Scope.library)
                     Text(String(localized: "Selected Photos")).tag(DuplicatesModel.Scope.selection)
                     ForEach(app.albums) { a in Text(String(localized: "Album: \(a.name)")).tag(DuplicatesModel.Scope.album(a.id)) }
                 }
-                .frame(maxWidth: 260)
+                .fixedSize()
                 .disabled(model.isScanning)
 
                 HStack(spacing: 8) {
-                    Text(String(localized: "Sensitivity")).foregroundStyle(.secondary)
+                    Text(String(localized: "Sensitivity")).foregroundStyle(.secondary).fixedSize()
                     Slider(value: $model.sensitivity, in: model.kind == .duplicates ? 85 ... 99 : 70 ... 95, step: 1)
                         .frame(width: 160)
                         .disabled(model.isScanning)
-                    Text(String(localized: "≥ \(Int(model.sensitivity)) %")).monospacedDigit().frame(width: 52, alignment: .leading)
+                    Text(String(localized: "≥ \(Int(model.sensitivity)) %")).monospacedDigit().fixedSize()
                 }
                 .help(String(localized: "Minimum similarity for photos to be grouped. Lower values find more, but less similar, photos."))
 
@@ -66,7 +66,7 @@ struct DuplicatesView: View {
                             Text(c.displayName).tag(SimilarityCategory?.some(c))
                         }
                     }
-                    .frame(maxWidth: 220)
+                    .fixedSize()
                 }
             }
             if model.isScanning, let p = model.progress {
@@ -92,15 +92,18 @@ struct DuplicatesView: View {
     private var content: some View {
         if model.isScanning && model.groups.isEmpty {
             EmptyStateView(symbol: "sparkle.magnifyingglass", title: String(localized: "Scanning…"),
-                           message: String(localized: "Photos are analyzed on this Mac. Results are cached, so the next scan is much faster."))
+                           message: String(localized: "Photos are analyzed on this Mac. Results are cached, so the next scan is much faster."),
+                           illustration: model.kind == .duplicates ? .duplicates : .similar)
         } else if model.lastReport == nil {
             EmptyStateView(symbol: model.kind == .duplicates ? "square.on.square.dashed" : "rectangle.3.group",
                            title: model.kind == .duplicates ? String(localized: "Find Duplicates") : String(localized: "Find Similar Photos"),
                            message: String(localized: "PhotoFlow compares file contents and image content. Nothing is ever deleted automatically – you review every group and decide."),
-                           actionTitle: String(localized: "Scan Library"), action: { model.scan(app) })
+                           actionTitle: String(localized: "Scan Library"), action: { model.scan(app) },
+                           illustration: model.kind == .duplicates ? .duplicates : .similar)
         } else if model.visibleGroups.isEmpty {
             EmptyStateView(symbol: "checkmark.seal", title: String(localized: "Nothing Found"),
-                           message: String(localized: "No groups at the current sensitivity. Lower the sensitivity to find less similar photos."))
+                           message: String(localized: "No groups at the current sensitivity. Lower the sensitivity to find less similar photos."),
+                           illustration: .done)
         } else {
             ScrollView {
                 LazyVStack(spacing: 14) {

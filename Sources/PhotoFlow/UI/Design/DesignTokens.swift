@@ -101,6 +101,34 @@ struct HistogramView: View {
     }
 
     var body: some View {
+        HistogramPlot(data: data)
+        .task(id: "\(photo.id)-\(recipe?.cacheKey ?? "o")") {
+            let p = photo, r = recipe
+            let cg = await ThumbnailService.shared.thumbnail(for: p, recipe: r, pixelSize: 256)
+            guard let cg else { return }
+            let d = await Task.detached(priority: .utility) { HistogramView.compute(cg) }.value
+            withAnimation(DS.Motion.smooth) { data = d }
+        }
+    }
+}
+
+/// Histogram of an already rendered image (live in the editor – no thumbnail cache involved).
+struct ImageHistogramView: View {
+    var image: CGImage?
+    @State private var data: HistogramView.HistogramData?
+    var body: some View {
+        HistogramPlot(data: data)
+            .task(id: image.map { ObjectIdentifier($0) }) {
+                guard let image else { return }
+                let d = await Task.detached(priority: .utility) { HistogramView.compute(image) }.value
+                withAnimation(DS.Motion.smooth) { data = d }
+            }
+    }
+}
+
+struct HistogramPlot: View {
+    var data: HistogramView.HistogramData?
+    var body: some View {
         ZStack(alignment: .bottom) {
             RoundedRectangle(cornerRadius: DS.Radius.control, style: .continuous)
                 .fill(Color.black.opacity(0.25))
@@ -114,14 +142,10 @@ struct HistogramView: View {
         .compositingGroup()
         .clipShape(RoundedRectangle(cornerRadius: DS.Radius.control, style: .continuous))
         .accessibilityLabel(Text(String(localized: "Histogram")))
-        .task(id: "\(photo.id)-\(recipe?.cacheKey ?? "o")") {
-            let p = photo, r = recipe
-            let cg = await ThumbnailService.shared.thumbnail(for: p, recipe: r, pixelSize: 256)
-            guard let cg else { return }
-            let d = await Task.detached(priority: .utility) { HistogramView.compute(cg) }.value
-            withAnimation(DS.Motion.smooth) { data = d }
-        }
     }
+}
+
+extension HistogramView {
 
     nonisolated static func compute(_ cg: CGImage) -> HistogramData? {
         guard let px = PixelBuffer(cgImage: cg, maxSide: 256) else { return nil }

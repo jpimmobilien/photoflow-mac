@@ -13,6 +13,15 @@ struct ThumbnailImage: View {
     private var key: String { "\(photo.id)-\(photo.fileSignature)-\(recipe?.cacheKey ?? "o")-\(pixelSize)" }
 
     var body: some View {
+        // Color.clear defines the frame; the image fills it and is clipped – never overflows its cell.
+        Color.clear
+            .overlay { content }
+            .clipped()
+            .task(id: key) { await load() }
+    }
+
+    @ViewBuilder
+    private var content: some View {
         ZStack {
             if let image {
                 Image(decorative: image, scale: 1)
@@ -31,16 +40,16 @@ struct ThumbnailImage: View {
                     }
             }
         }
-        .task(id: key) {
-            if let cached = ThumbnailService.shared.cachedImage(for: photo, recipe: recipe, pixelSize: pixelSize) {
-                image = cached
-                return
-            }
-            image = nil
-            guard !photo.isMissing else { return }
-            let loaded = await ThumbnailService.shared.thumbnail(for: photo, recipe: recipe, pixelSize: pixelSize)
-            if !Task.isCancelled { withAnimation(.easeOut(duration: 0.18)) { image = loaded } }
+    }
+
+    private func load() async {
+        if let cached = ThumbnailService.shared.cachedImage(for: photo, recipe: recipe, pixelSize: pixelSize) {
+            image = cached
+            return
         }
+        guard !photo.isMissing else { image = nil; return }
+        let loaded = await ThumbnailService.shared.thumbnail(for: photo, recipe: recipe, pixelSize: pixelSize)
+        if !Task.isCancelled { withAnimation(.easeOut(duration: 0.18)) { image = loaded } }
     }
 }
 
@@ -62,14 +71,20 @@ struct EmptyStateView: View {
     var message: String
     var actionTitle: String?
     var action: (() -> Void)?
+    var illustration: Illustration.Kind?
 
     var body: some View {
         VStack(spacing: 14) {
-            Image(systemName: symbol)
-                .font(.system(size: 54, weight: .light))
-                .foregroundStyle(Theme.accentGradient)
-                .symbolRenderingMode(.hierarchical)
-            Text(title).font(.system(.title2, design: .rounded).weight(.semibold))
+            if let illustration {
+                Illustration(kind: illustration, size: 230)
+                    .padding(.bottom, 4)
+            } else {
+                Image(systemName: symbol)
+                    .font(.system(size: 54, weight: .light))
+                    .foregroundStyle(Theme.accentGradient)
+                    .symbolRenderingMode(.hierarchical)
+            }
+            Text(title).font(DS.Font.title1)
             Text(message).font(.body).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: 420)
             if let actionTitle, let action {
                 Button(action: action) { Label(actionTitle, systemImage: "plus") }
@@ -155,8 +170,10 @@ struct AdjustmentSlider: View {
                     .help(String(localized: "Reset"))
                 }
             }
-            Slider(value: $value, in: range, step: step, onEditingChanged: onEditingChanged)
+            // Continuous slider (stepped sliders draw tick marks on macOS); the value is rounded to `step`.
+            Slider(value: Binding(get: { value }, set: { value = (($0 / step).rounded()) * step }), in: range, onEditingChanged: onEditingChanged)
                 .controlSize(.small)
+                .tint(DS.Palette.indigo)
         }
         .contentShape(Rectangle())
         .onTapGesture(count: 2) {

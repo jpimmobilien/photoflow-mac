@@ -26,7 +26,8 @@ struct TrashView: View {
 
             if app.trashEntries.isEmpty {
                 EmptyStateView(symbol: "trash", title: String(localized: "Trash Is Empty"),
-                               message: String(localized: "Deleted photos are always moved to the macOS Trash first – PhotoFlow never deletes files permanently."))
+                               message: String(localized: "Deleted photos are always moved to the macOS Trash first – PhotoFlow never deletes files permanently."),
+                               illustration: .trash)
             } else {
                 Table(app.trashEntries, selection: $selection) {
                     TableColumn(String(localized: "Name")) { e in

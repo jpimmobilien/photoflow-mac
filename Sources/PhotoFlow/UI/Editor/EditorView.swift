@@ -35,7 +35,18 @@ struct EditorView: View {
 
     private var canvas: some View {
         ZStack(alignment: .bottom) {
-            Color.black.opacity(0.92).ignoresSafeArea()
+            // Dark stage lit by the photo itself
+            Color(white: 0.06).ignoresSafeArea()
+            if let glow = model.original {
+                Image(decorative: glow, scale: 1)
+                    .resizable().aspectRatio(contentMode: .fill)
+                    .blur(radius: 90, opaque: true)
+                    .saturation(1.3)
+                    .opacity(0.42)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+            }
+            Color.black.opacity(0.25).ignoresSafeArea()
             Group {
                 if model.zoom {
                     ZoomedView(model: model)
@@ -120,12 +131,15 @@ struct EditorView: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
+            ImageHistogramView(image: model.edited)
+                .frame(height: 70)
+                .help(String(localized: "Histogram – distribution of dark (left) to bright (right) tones"))
             Button {
                 Task { await model.autoEnhance(strength) }
             } label: {
                 Label(String(localized: "Auto Enhance"), systemImage: "wand.and.stars").frame(maxWidth: .infinity)
             }
-            .prominentButton()
+            .magicButton()
             .controlSize(.large)
             .disabled(model.isAnalyzing)
             if let info = model.recipe.auto, !info.notes.isEmpty {

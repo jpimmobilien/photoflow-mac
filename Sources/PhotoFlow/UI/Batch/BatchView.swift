@@ -29,31 +29,19 @@ struct BatchView: View {
     private var workflowPicker: some View {
         VStack(alignment: .leading, spacing: 10) {
             stepTitle(1, String(localized: "Choose a workflow"))
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 12)], spacing: 12) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 210), spacing: DS.Space.m)], spacing: DS.Space.m) {
                 ForEach(BatchWorkflow.predefined) { wf in
-                    let selected = model.workflow.id == wf.id
-                    Button { model.workflow = wf } label: {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Image(systemName: wf.symbol)
-                                .font(.system(size: 22, weight: .semibold))
-                                .foregroundStyle(selected ? AnyShapeStyle(.white) : AnyShapeStyle(Theme.accentGradient))
-                                .frame(width: 42, height: 42)
-                                .background(selected ? AnyShapeStyle(Theme.accentGradient) : AnyShapeStyle(Color.accentColor.opacity(0.1)),
-                                            in: RoundedRectangle(cornerRadius: 11, style: .continuous))
-                            Text(wf.localizedName).font(.headline)
-                            Text(wf.localizedSummary).font(.caption).foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 130, alignment: .topLeading)
-                        .padding(14)
-                        .glassCard(cornerRadius: 14)
-                        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .strokeBorder(selected ? Color.accentColor : .clear, lineWidth: 2))
+                    WorkflowChoiceCard(workflow: wf, sample: samplePhoto, selected: model.workflow.id == wf.id) {
+                        withAnimation(DS.Motion.snappy) { model.workflow = wf }
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }
+    }
+
+    private var samplePhoto: PhotoRecord? {
+        let pool = model.photosForSource(app)
+        return (pool.first { $0.width > $0.height } ?? pool.first) ?? app.photos.first
     }
 
     // MARK: - 2./3. Photos and options
@@ -155,9 +143,22 @@ struct BatchView: View {
     private var progressCard: some View {
         TimelineView(.periodic(from: .now, by: 1)) { _ in
             VStack(alignment: .leading, spacing: 12) {
-                HStack {
+                HStack(spacing: DS.Space.l) {
+                    ZStack {
+                        ProgressRing(fraction: model.fraction, lineWidth: 9,
+                                     gradient: model.failedCount > 0 ? [DS.Palette.amber, DS.Palette.pink, DS.Palette.amber]
+                                                                     : [DS.Palette.indigo, DS.Palette.cyan, DS.Palette.indigo])
+                        if !model.isRunning && model.failedCount == 0 && model.total > 0 {
+                            Image(systemName: "checkmark").font(.system(size: 26, weight: .bold)).foregroundStyle(DS.Palette.success)
+                                .transition(.scale.combined(with: .opacity))
+                        } else {
+                            Text(verbatim: "\(Int((model.fraction * 100).rounded())) %").font(.system(size: 17, weight: .bold, design: .rounded)).monospacedDigit()
+                        }
+                    }
+                    .frame(width: 76, height: 76)
+                    .animation(DS.Motion.celebrate, value: model.isRunning)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(model.workflow.localizedName).font(.headline)
+                        Text(model.workflow.localizedName).font(DS.Font.title2)
                         Text(statusLine).font(.callout).foregroundStyle(.secondary).monospacedDigit()
                     }
                     Spacer()
@@ -178,7 +179,6 @@ struct BatchView: View {
                         Button { model.reset() } label: { Label(String(localized: "New Batch"), systemImage: "plus") }.prominentButton()
                     }
                 }
-                ProgressView(value: model.fraction).progressViewStyle(.linear).tint(model.failedCount > 0 ? .orange : .accentColor)
                 HStack(spacing: 14) {
                     StatTile(symbol: "checkmark.circle.fill", value: "\(model.completedCount)", label: String(localized: "Done"), tint: .green)
                     StatTile(symbol: "exclamationmark.triangle.fill", value: "\(model.failedCount)", label: String(localized: "Failed"), tint: .orange)
@@ -267,5 +267,64 @@ struct BatchView: View {
         case .failed: Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
         case .skipped: Image(systemName: "minus.circle.fill").foregroundStyle(.secondary)
         }
+    }
+}
+
+/// Workflow choice with a live preview: the workflow's look applied to one of the user's own photos.
+struct WorkflowChoiceCard: View {
+    @EnvironmentObject private var app: AppModel
+    var workflow: BatchWorkflow
+    var sample: PhotoRecord?
+    var selected: Bool
+    var action: () -> Void
+    @State private var hovering = false
+
+    private var previewRecipe: EditRecipe {
+        var r = EditRecipe.illustrativeEnhancement
+        if let id = workflow.presetID, let p = Preset.preset(id: id, custom: app.customPresets) { r = p.apply(to: r) }
+        if workflow.id == "web" { r = .identity }
+        return r
+    }
+
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 0) {
+                ZStack(alignment: .topLeading) {
+                    if let sample {
+                        if workflow.id == "straighten" {
+                            StraightenThumb(photo: sample)
+                        } else {
+                            BeforeAfterThumb(photo: sample, after: previewRecipe)
+                        }
+                    } else {
+                        Rectangle().fill(DS.Palette.brand.opacity(0.25))
+                    }
+                    Image(systemName: workflow.symbol)
+                        .font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                        .frame(width: 28, height: 28)
+                        .background(selected ? AnyShapeStyle(DS.Palette.brand) : AnyShapeStyle(Color.black.opacity(0.45)),
+                                    in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .padding(8)
+                }
+                .frame(height: 104)
+                .clipped()
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(workflow.localizedName).font(DS.Font.headline)
+                    Text(workflow.localizedSummary).font(DS.Font.caption).foregroundStyle(.secondary)
+                        .lineLimit(2).fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(DS.Space.s)
+                .frame(maxWidth: .infinity, minHeight: 64, alignment: .topLeading)
+            }
+            .glassCard(cornerRadius: DS.Radius.card)
+            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.card, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: DS.Radius.card, style: .continuous)
+                .strokeBorder(selected ? AnyShapeStyle(DS.Palette.brand) : AnyShapeStyle(Color.clear), lineWidth: 2.5))
+            .shadow(color: selected ? DS.Palette.indigo.opacity(0.35) : .black.opacity(hovering ? 0.15 : 0), radius: 14, y: 6)
+            .scaleEffect(hovering && !selected ? 1.015 : 1)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { h in withAnimation(DS.Motion.snappy) { hovering = h } }
     }
 }

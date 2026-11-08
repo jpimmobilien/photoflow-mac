@@ -8,14 +8,14 @@ struct ExportOptionsForm: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 120), spacing: 8)], spacing: 8) {
                 ForEach(ExportOptions.Preset.allCases) { p in
                     Button { options.apply(p) } label: {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(p.displayName).font(.callout.weight(.semibold))
                             Text(p.detail).font(.caption2).foregroundStyle(.secondary).lineLimit(2)
                         }
-                        .frame(width: 128, alignment: .leading)
+                        .frame(maxWidth: .infinity, minHeight: 40, alignment: .topLeading)
                         .padding(8)
                         .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 9))
                     }
@@ -157,7 +157,7 @@ struct ExportSheet: View {
             }
         }
         .padding(24)
-        .frame(width: 720)
+        .frame(minWidth: 560, idealWidth: 680, maxWidth: 720)
     }
 
     private var editedCount: Int { photoIDs.filter { app.recipe(for: $0) != nil }.count }
@@ -183,7 +183,8 @@ struct ExportHistoryView: View {
             .padding(20)
             if app.exportHistory.isEmpty {
                 EmptyStateView(symbol: "clock", title: String(localized: "No Exports Yet"),
-                               message: String(localized: "Exported photos are saved to “Processed Photos” in your Pictures folder by default."))
+                               message: String(localized: "Exported photos are saved to “Processed Photos” in your Pictures folder by default."),
+                               illustration: .exports)
             } else {
                 Table(app.exportHistory) {
                     TableColumn(String(localized: "Date")) { e in Text(e.date, format: .dateTime.year().month().day().hour().minute()) }
