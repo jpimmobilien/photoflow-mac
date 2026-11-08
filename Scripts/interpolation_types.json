@@ -71,5 +71,7 @@
  "result.unreadable.count": "int",
  "s.failed": "int",
  "s.ok": "int",
- "total": "int"
+ "total": "int",
+ "unedited": "int",
+ "app.duplicates.groups.count": "int"
 }

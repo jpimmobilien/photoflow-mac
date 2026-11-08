@@ -45,7 +45,6 @@
 "All Photos" = "Alle Fotos";
 "All Photos (%lld)" = "Alle Fotos (%lld)";
 "All analysis and editing runs locally on this Mac. No uploads, no cloud." = "Alle Analysen und Bearbeitungen erfolgen lokal auf diesem Mac. Keine Uploads, keine Cloud.";
-"All analysis – scene recognition, faces, horizon detection, duplicate detection – runs on this Mac with Apple's built-in frameworks. No uploads, no cloud, no account, works offline. %@" = "Alle Analysen – Szenenerkennung, Gesichter, Horizonterkennung, Duplikaterkennung – laufen auf diesem Mac mit den integrierten Frameworks von Apple. Keine Uploads, keine Cloud, kein Account, funktioniert offline. %@";
 "All image analysis runs locally on this Mac." = "Die gesamte Bildanalyse erfolgt lokal auf diesem Mac.";
 "Always" = "Immer";
 "Analyze and improve the selected photos (click), or choose a strength" = "Ausgewählte Fotos analysieren und verbessern (klicken) oder Stärke wählen";
@@ -172,7 +171,6 @@
 "Enhancing…" = "Wird verbessert …";
 "Entire Library" = "Gesamte Mediathek";
 "Every export PhotoFlow has created." = "Alle Exporte, die PhotoFlow erstellt hat.";
-"Exact & similar" = "Exakt & ähnlich";
 "Exact Duplicate" = "Exaktes Duplikat";
 "Export" = "Exportieren";
 "Export %lld Photos" = "%lld Fotos exportieren";
@@ -200,7 +198,6 @@
 "File Names" = "Dateinamen";
 "File Size" = "Dateigröße";
 "File name" = "Dateiname";
-"Files & folders" = "Dateien & Ordner";
 "Files that are no longer in the macOS Trash (e.g. after emptying it) cannot be restored." = "Dateien, die nicht mehr im macOS-Papierkorb sind (z. B. nach dem Entleeren), können nicht wiederhergestellt werden.";
 "Filter" = "Filter";
 "Find Duplicates" = "Duplikate finden";
@@ -228,7 +225,6 @@
 "Higher values are faster on powerful Macs but use more memory. Older Intel Macs work best with 1–2." = "Höhere Werte sind auf leistungsstarken Macs schneller, benötigen aber mehr Arbeitsspeicher. Ältere Intel-Macs arbeiten am besten mit 1–2.";
 "Highest resolution" = "Höchste Auflösung";
 "Highlights" = "Lichter";
-"Horizons & lines" = "Horizonte & Linien";
 "Horizontal" = "Horizontal";
 "Identical" = "Identisch";
 "Import" = "Importieren";
@@ -244,7 +240,6 @@
 "In %lld groups every photo is selected – the recommended one will be kept." = "In %lld Gruppen ist jedes Foto ausgewählt – das empfohlene wird behalten.";
 "Information" = "Informationen";
 "Inspector" = "Inspektor";
-"Intelligent Photo Studio – better photos in a few clicks, entirely on your Mac." = "Intelligentes Fotostudio – bessere Fotos mit wenigen Klicks, komplett auf deinem Mac.";
 "Keep" = "Behalten";
 "Keep All" = "Alle behalten";
 "Keep All in This Group" = "Alle in dieser Gruppe behalten";
@@ -269,7 +264,6 @@
 "Marks every photo except the recommended best version of each group. Nothing is deleted until you confirm." = "Markiert alle Fotos außer der empfohlenen besten Version jeder Gruppe. Gelöscht wird erst nach deiner Bestätigung.";
 "Metadata" = "Metadaten";
 "Minimum similarity for photos to be grouped. Lower values find more, but less similar, photos." = "Mindestähnlichkeit, damit Fotos gruppiert werden. Niedrigere Werte finden mehr, aber weniger ähnliche Fotos.";
-"Missing originals" = "Fehlende Originale";
 "Model" = "Modell";
 "Modified" = "Geändert";
 "Most complete metadata" = "Vollständigste Metadaten";
@@ -311,7 +305,6 @@
 "Nothing Edited Recently" = "Zuletzt nichts bearbeitet";
 "Nothing Found" = "Nichts gefunden";
 "OK" = "OK";
-"One click, per photo" = "Ein Klick, für jedes Foto";
 "Only for many photos" = "Nur bei vielen Fotos";
 "Only needed for troubleshooting graphics problems. Takes effect after restart." = "Nur zur Behebung von Grafikproblemen erforderlich. Wird nach einem Neustart wirksam.";
 "Only problems" = "Nur Probleme";
@@ -321,7 +314,6 @@
 "Open folder" = "Ordner öffnen";
 "Open original location" = "Ursprünglichen Ort öffnen";
 "Opened up dark shadows" = "Dunkle Tiefen aufgehellt";
-"Or delete unwanted" = "Oder Unerwünschtes löschen";
 "Original" = "Original";
 "Original (not edited)" = "Original (nicht bearbeitet)";
 "Original Location" = "Ursprünglicher Ort";
@@ -341,7 +333,6 @@
 "Photo" = "Foto";
 "Photo Library" = "Fotomediathek";
 "Photo enhanced" = "Foto verbessert";
-"PhotoFlow" = "PhotoFlow";
 "PhotoFlow Privacy" = "PhotoFlow-Datenschutz";
 "PhotoFlow analyzes and edits photos entirely on this Mac using Apple's built-in frameworks. Nothing is uploaded, no account is required and there is no tracking." = "PhotoFlow analysiert und bearbeitet Fotos komplett auf diesem Mac mit den integrierten Frameworks von Apple. Es wird nichts hochgeladen, kein Account ist erforderlich und es gibt kein Tracking.";
 "PhotoFlow compares file contents and image content. Nothing is ever deleted automatically – you review every group and decide." = "PhotoFlow vergleicht Dateiinhalte und Bildinhalte. Es wird nie etwas automatisch gelöscht – du prüfst jede Gruppe und entscheidest.";
@@ -350,7 +341,6 @@
 "PhotoFlow uses Apple's built-in on-device frameworks (Vision, Core Image, Core ML runtime, Accelerate). These models are part of macOS – PhotoFlow does not download any models. macOS may ask for permission when you open photos in protected folders such as Desktop, Documents or Downloads." = "PhotoFlow verwendet die integrierten On-Device-Frameworks von Apple (Vision, Core Image, Core ML-Laufzeit, Accelerate). Diese Modelle sind Teil von macOS – PhotoFlow lädt keine Modelle herunter. macOS fragt möglicherweise nach einer Erlaubnis, wenn du Fotos in geschützten Ordnern wie „Schreibtisch“, „Dokumente“ oder „Downloads“ öffnest.";
 "Photos" = "Fotos";
 "Photos are analyzed on this Mac. Results are cached, so the next scan is much faster." = "Fotos werden auf diesem Mac analysiert. Die Ergebnisse werden zwischengespeichert, sodass der nächste Scan viel schneller ist.";
-"Photos in library" = "Fotos in der Mediathek";
 "Photos in this folder (and subfolders) will be imported if needed and processed." = "Fotos in diesem Ordner (und in Unterordnern) werden bei Bedarf importiert und verarbeitet.";
 "Photos involved" = "Betroffene Fotos";
 "Photos you deleted in PhotoFlow are in the macOS Trash. Restore them here – including their edits, favorites and albums." = "Fotos, die du in PhotoFlow gelöscht hast, liegen im macOS-Papierkorb. Stelle sie hier wieder her – inklusive Bearbeitungen, Favoriten und Alben.";
@@ -368,7 +358,6 @@
 "Preset “%@” saved" = "Preset „%@“ gesichert";
 "Presets" = "Presets";
 "Privacy" = "Datenschutz";
-"Private by design" = "Datenschutz von Grund auf";
 "Process many photos at once" = "Viele Fotos auf einmal verarbeiten";
 "Processes %lld photos at a time on this Mac (%@)." = "Verarbeitet %lld Fotos gleichzeitig auf diesem Mac (%@).";
 "Processing %lld of %lld…" = "%lld von %lld wird verarbeitet …";
@@ -378,7 +367,6 @@
 "Quick Look" = "Übersicht";
 "Recent Imports" = "Letzte Importe";
 "Recently Edited" = "Zuletzt bearbeitet";
-"Reclaimable from duplicates" = "Durch Duplikate freigebbar";
 "Recognized: %@" = "Erkannt: %@";
 "Recovered bright highlights" = "Helle Lichter wiederhergestellt";
 "Rectified the document" = "Dokument entzerrt";
@@ -534,7 +522,6 @@
 "White balance" = "Weißabgleich";
 "Whites" = "Weiß";
 "Works completely offline." = "Funktioniert komplett offline.";
-"Your Workflow" = "Dein Workflow";
 "Your photos stay on your Mac" = "Deine Fotos bleiben auf deinem Mac";
 "Zoom to 100 %" = "Auf 100 % zoomen";
 "architecture" = "Architektur";
@@ -551,3 +538,26 @@
 "…and %lld more" = "… und %lld weitere";
 "≥ %lld %%" = "≥ %lld %%";
 "Best estimate: rotated by %@°. The evidence was not conclusive – please check the result (Undo with ⌘Z)." = "Beste Schätzung: um %@° gedreht. Die Hinweise waren nicht eindeutig – bitte prüfe das Ergebnis (Widerrufen mit ⌘Z).";
+"%lld not enhanced yet – PhotoFlow can analyze and improve each one individually." = "%lld noch nicht verbessert – PhotoFlow analysiert und optimiert jedes einzeln.";
+"%lld photos, ready to shine." = "%lld Fotos, bereit zu strahlen.";
+"Better photos in a few clicks – entirely on your Mac." = "Bessere Fotos mit wenigen Klicks – komplett auf deinem Mac.";
+"Clean up" = "Aufräumen";
+"Each photo analyzed individually" = "Jedes Foto einzeln analysiert";
+"Every photo has been enhanced. Export them or look for duplicates." = "Alle Fotos sind verbessert. Exportiere sie oder suche nach Duplikaten.";
+"Everything runs on this Mac – no uploads, no cloud, no account." = "Alles läuft auf diesem Mac – kein Upload, keine Cloud, kein Konto.";
+"Exact and visual duplicates" = "Exakte und visuelle Duplikate";
+"From import to export" = "Vom Import bis zum Export";
+"Histogram" = "Histogramm";
+"Histogram – distribution of dark (left) to bright (right) tones" = "Histogramm – Verteilung von dunklen (links) bis hellen (rechts) Tönen";
+"Horizons and converging lines" = "Horizonte und stürzende Linien";
+"Improve All" = "Alle verbessern";
+"No more duplicates" = "Keine Duplikate mehr";
+"Not checked yet – scan now" = "Noch nicht geprüft – jetzt suchen";
+"One-click enhance" = "Mit einem Klick verbessern";
+"Private & offline" = "Privat & offline";
+"Recently imported" = "Zuletzt importiert";
+"Straight horizons" = "Gerade Horizonte";
+"Web, social media or full quality" = "Web, Social Media oder volle Qualität";
+"enhanced" = "verbessert";
+"in %lld files" = "in %lld Dateien";
+"reclaimable in %lld groups" = "freigebbar in %lld Gruppen";
