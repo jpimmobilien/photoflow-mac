@@ -15,7 +15,7 @@ VERSION="${VERSION:-1.0.0}"
 BUILD="${BUILD:-1}"
 OUT="$ROOT/build"
 APP="$OUT/PhotoFlow.app"
-ARCHS=(arm64 x86_64)
+read -r -a ARCHS <<< "${ARCHS:-arm64 x86_64}"
 
 echo "▸ Toolchain"
 swift --version 2>&1 || true

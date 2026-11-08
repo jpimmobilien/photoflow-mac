@@ -7,6 +7,10 @@ final class LibraryStore: @unchecked Sendable {
     let directory: URL
 
     static func defaultDirectory() -> URL {
+        // Isolated libraries for automated UI reviews and tests
+        if let custom = ProcessInfo.processInfo.environment["PHOTOFLOW_LIBRARY_DIR"], !custom.isEmpty {
+            return URL(fileURLWithPath: custom, isDirectory: true)
+        }
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         return base.appendingPathComponent("PhotoFlow", isDirectory: true)
     }

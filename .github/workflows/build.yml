@@ -1,8 +1,9 @@
 name: Build PhotoFlow
 
 on:
-  push:
   workflow_dispatch:
+  push:
+    tags: ['v*']
 
 permissions:
   contents: write
