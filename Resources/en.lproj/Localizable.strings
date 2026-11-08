@@ -14,7 +14,6 @@
 "%lld photos could not be moved to the Trash" = "%lld photos could not be moved to the Trash";
 "%lld photos enhanced" = "%lld photos enhanced";
 "%lld photos selected" = "%lld photos selected";
-"%lld photos selected for deletion" = "%lld photos selected for deletion";
 "%lld photos, ready to shine." = "%lld photos, ready to shine.";
 "%lld px long side" = "%lld px long side";
 "%lld selected" = "%lld selected";
@@ -452,6 +451,7 @@
 "Select photos in the library, choose an album or import a folder first." = "Select photos in the library, choose an album or import a folder first.";
 "Selected Photos" = "Selected Photos";
 "Selected Photos (%lld)" = "Selected Photos (%lld)";
+"Selected for deletion: %lld" = "Selected for deletion: %lld";
 "Sensitivity" = "Sensitivity";
 "Shadows" = "Shadows";
 "Sharpest image" = "Sharpest image";

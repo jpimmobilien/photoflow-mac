@@ -51,7 +51,9 @@ struct DuplicatesView: View {
 
                 HStack(spacing: 8) {
                     Text(String(localized: "Sensitivity")).foregroundStyle(.secondary).fixedSize()
-                    Slider(value: $model.sensitivity, in: model.kind == .duplicates ? 85 ... 99 : 70 ... 95, step: 1)
+                    Slider(value: Binding(get: { model.sensitivity }, set: { model.sensitivity = $0.rounded() }),
+                           in: model.kind == .duplicates ? 85 ... 99 : 70 ... 95)
+                        .tint(DS.Palette.indigo)
                         .frame(width: 160)
                         .disabled(model.isScanning)
                     Text(String(localized: "≥ \(Int(model.sensitivity)) %")).monospacedDigit().fixedSize()
@@ -133,7 +135,7 @@ struct DuplicatesView: View {
         HStack(spacing: 12) {
             Image(systemName: "trash.circle.fill").font(.title2).foregroundStyle(.red)
             VStack(alignment: .leading, spacing: 1) {
-                Text(String(localized: "\(model.markedForDeletion.count) photos selected for deletion")).font(.headline)
+                Text(String(localized: "Selected for deletion: \(model.markedForDeletion.count)")).font(.headline)
                 Text(String(localized: "\(model.markedBytes.formattedBytes) · moved to the macOS Trash, restorable")).font(.caption).foregroundStyle(.secondary)
             }
             if model.groupsWithEverythingMarked > 0 {

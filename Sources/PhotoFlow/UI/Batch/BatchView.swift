@@ -12,7 +12,7 @@ struct BatchView: View {
                               subtitle: String(localized: "Improve hundreds or thousands of photos at once. Every photo is analyzed and corrected individually."))
                 if model.isRunning || model.hasResults {
                     progressCard
-                    if model.hasResults { resultsSection }
+                    if !model.items.isEmpty { resultsSection }
                 } else {
                     workflowPicker
                     configuration

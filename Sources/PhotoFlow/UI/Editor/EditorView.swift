@@ -18,6 +18,8 @@ struct EditorView: View {
     var body: some View {
         HStack(spacing: 0) {
             canvas
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipped()
             Divider()
             panel.frame(width: 310)
         }
@@ -38,10 +40,14 @@ struct EditorView: View {
             // Dark stage lit by the photo itself
             Color(white: 0.06).ignoresSafeArea()
             if let glow = model.original {
-                Image(decorative: glow, scale: 1)
-                    .resizable().aspectRatio(contentMode: .fill)
-                    .blur(radius: 90, opaque: true)
-                    .saturation(1.3)
+                Color.clear
+                    .overlay {
+                        Image(decorative: glow, scale: 1)
+                            .resizable().aspectRatio(contentMode: .fill)
+                            .blur(radius: 90, opaque: true)
+                            .saturation(1.3)
+                    }
+                    .clipped()
                     .opacity(0.42)
                     .ignoresSafeArea()
                     .allowsHitTesting(false)

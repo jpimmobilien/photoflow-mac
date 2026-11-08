@@ -154,7 +154,7 @@ private struct DuplicateSettings: View {
     private func sliderRow(_ title: String, _ value: Binding<Double>, _ range: ClosedRange<Double>) -> some View {
         HStack {
             Text(title)
-            Slider(value: value, in: range, step: 1)
+            Slider(value: Binding(get: { value.wrappedValue }, set: { value.wrappedValue = $0.rounded() }), in: range)
             Text(verbatim: "\(Int(value.wrappedValue)) %").monospacedDigit().frame(width: 44)
         }
     }

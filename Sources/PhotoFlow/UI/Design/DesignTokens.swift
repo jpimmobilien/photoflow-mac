@@ -58,20 +58,28 @@ struct AmbientBackground: View {
         ZStack {
             Color(nsColor: .windowBackgroundColor)
             if let image {
-                Image(decorative: image, scale: 1)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .blur(radius: 70, opaque: true)
-                    .saturation(1.35)
+                // Color.clear fixes the layout size; the filled image only draws inside it.
+                Color.clear
+                    .overlay {
+                        Image(decorative: image, scale: 1)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .blur(radius: 70, opaque: true)
+                            .saturation(1.35)
+                    }
+                    .clipped()
                     .opacity((scheme == .dark ? 0.55 : 0.38) * intensity)
                     .transition(.opacity)
                     .id(photo?.id)
             } else {
                 // Brand aurora when no photo is available
-                ZStack {
-                    Circle().fill(DS.Palette.indigo.opacity(scheme == .dark ? 0.35 : 0.18)).frame(width: 700).blur(radius: 160).offset(x: -320, y: -260)
-                    Circle().fill(DS.Palette.cyan.opacity(scheme == .dark ? 0.25 : 0.14)).frame(width: 600).blur(radius: 160).offset(x: 380, y: 220)
+                Color.clear.overlay {
+                    ZStack {
+                        Circle().fill(DS.Palette.indigo.opacity(scheme == .dark ? 0.35 : 0.18)).frame(width: 700).blur(radius: 160).offset(x: -320, y: -260)
+                        Circle().fill(DS.Palette.cyan.opacity(scheme == .dark ? 0.25 : 0.14)).frame(width: 600).blur(radius: 160).offset(x: 380, y: 220)
+                    }
                 }
+                .clipped()
             }
             // Keeps text readable on top of the glow
             LinearGradient(colors: [Color(nsColor: .windowBackgroundColor).opacity(scheme == .dark ? 0.25 : 0.45),

@@ -13,7 +13,6 @@
 "%lld photos could not be moved to the Trash" = "%lld Fotos konnten nicht in den Papierkorb gelegt werden";
 "%lld photos enhanced" = "%lld Fotos verbessert";
 "%lld photos selected" = "%lld Fotos ausgewählt";
-"%lld photos selected for deletion" = "%lld Fotos zum Löschen ausgewählt";
 "%lld px long side" = "%lld px lange Seite";
 "%lld selected" = "%lld ausgewählt";
 "%lld unreadable" = "%lld nicht lesbar";
@@ -561,3 +560,4 @@
 "enhanced" = "verbessert";
 "in %lld files" = "in %lld Dateien";
 "reclaimable in %lld groups" = "freigebbar in %lld Gruppen";
+"Selected for deletion: %lld" = "Zum Löschen ausgewählt: %lld";
