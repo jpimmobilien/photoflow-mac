@@ -103,10 +103,11 @@ struct InspectorView: View {
     @ViewBuilder
     private func multiple(_ photos: [PhotoRecord]) -> some View {
         let total = photos.reduce(Int64(0)) { $0 + $1.fileSize }
-        HStack(spacing: -24) {
-            ForEach(photos.prefix(4)) { p in
+        HStack(spacing: -30) {
+            ForEach(Array(photos.prefix(4).enumerated()), id: \.element.id) { i, p in
                 ThumbnailImage(photo: p, recipe: app.recipe(for: p.id), pixelSize: 256)
-                    .frame(width: 84, height: 84)
+                    .frame(width: 76, height: 76)
+                    .rotationEffect(.degrees(Double(i - 1) * 4))
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(.white.opacity(0.6), lineWidth: 1.5))
                     .shadow(radius: 3)

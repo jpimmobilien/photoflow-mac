@@ -104,7 +104,7 @@ Mean angular deviation 7.0° → 5.8° (median 8.8° → 5.8°). The metric is a
 Memory stays flat from 100 to 1,000 photos (no growth/leak). Source photos 2400×1600 / 768×512.
 
 ### Not yet tested
-- **GUI**: no interactive test of the user interface has been performed (CI runners have no screen session for UI testing). All engine code paths used by the UI are covered by the tests above, but window layout, interaction and localisation display have not been verified by a person.
+- **GUI interaction by a person**: not yet. The UI *is* reviewed automatically: `PhotoFlow --ui-tour` (workflow `ui.yml`) launches the real app on a macOS runner with 45 real photos, walks through 23 states (empty library, overview, grid, inspector, multi-selection, list, editor original/enhanced/slider/side-by-side, batch setup/running/results, duplicate scan/results/marking, similar photos, export history, trash, export sheet) in light mode, dark mode and German, and saves screenshots (branch `shots`). Three design-review iterations fixed: thumbnails overflowing grid cells, collapsed header text at narrow widths, a background glow covering the photo grid and pushing the editor panel off-screen, clipped export sheet, slider tick clutter, missing live feedback during batches, and a plural error. Mouse/keyboard interaction (drag & drop, context menus, Quick Look) is not covered by the tour.
 - **Native Intel hardware** (e.g. MacBook Pro 2017): the x86_64 slice was tested under Rosetta on Apple Silicon only.
 - **Metadata preservation with real EXIF**: the test photos carry no EXIF capture dates, so this check was not meaningful (code path exists; selftest covers export safety only).
 - **HEIC / RAW / TIFF sources**: the dataset contains JPEG and PNG only.

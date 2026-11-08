@@ -33,6 +33,7 @@ Open `PhotoFlow.dmg` and drag PhotoFlow to Applications. The app is ad-hoc signe
 - [TEST_REPORT.md](TEST_REPORT.md) – what was tested and the measured results
 - [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md)
 - [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)
+- [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) – visual concept, tokens, glass levels, motion
 
 ## Project layout
 
