@@ -214,12 +214,10 @@ final class DiffusionEngine: @unchecked Sendable {
         do {
             images = try attempt(p)
         } catch {
-            // GPU drivers can fail (hangs, unsupported operations, virtual GPUs). Retry once on the CPU.
-            let hw = AIHardware.current
-            guard !token.isCancelled, !cpuFallback.contains(job.model.id), hw.diffusionPlan(safe: true) != hw.diffusionPlan(safe: false) else {
-                throw Self.friendly(error)
-            }
-            print("AI: run failed (\(error.localizedDescription)) – retrying in safe mode (CPU where possible)")
+            // GPU drivers can fail (hangs, unsupported operations, virtual GPUs). Retry once with a freshly loaded
+            // pipeline in "safe" mode (on Apple Silicon: CPU; on Intel the GPU is required, so a clean reload).
+            guard !token.isCancelled, !cpuFallback.contains(job.model.id) else { throw Self.friendly(error) }
+            print("AI: run failed (\(error.localizedDescription)) – retrying in safe mode")
             cpuFallback.insert(job.model.id)
             lastRunFellBackToCPU = true
             unloadNow()

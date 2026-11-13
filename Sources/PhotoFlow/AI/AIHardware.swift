@@ -80,6 +80,9 @@ struct AIHardware: Sendable {
         if model.requiresAppleSilicon && base.architecture != .appleSilicon {
             return String(localized: "Requires a Mac with Apple Silicon.")
         }
+        if model.kind == .diffusion && isIntel && !base.hasMetal {
+            return String(localized: "Requires a Metal graphics processor – the CPU of Intel Macs cannot run this model.")
+        }
         if memoryGB + 0.5 < model.minMemoryGB {
             return String(localized: "Requires at least \(Int(model.minMemoryGB)) GB memory (this Mac has \(Int(memoryGB.rounded())) GB).")
         }
@@ -114,16 +117,16 @@ struct AIHardware: Sendable {
         var signature: String { "\(base.rawValue)-" + overrides.map { "\($0.key.rawValue)=\($0.value.rawValue)" }.sorted().joined(separator: ",") }
     }
 
-    /// The catalog ships "original" attention variants, which run best on the GPU. On Intel, Core ML cannot run
-    /// the float16 UNet on the CPU (measured on macOS 15), so the UNet always uses the GPU there; the text
-    /// encoder runs on the CPU. "Safe" mode (after a GPU error, or on virtual GPUs) moves everything except
-    /// the Intel UNet to the CPU.
+    /// The catalog ships "original" attention variants, which run best on the GPU.
+    /// Measured on Intel (macOS 15, `--qa ai-diag`): Core ML cannot run the float16 UNet on an x86 CPU at all, and
+    /// the VAE runs but returns wrong values there – so on Intel the UNet and VAE always use the GPU (the text
+    /// encoder is correct on the CPU and runs there). On Apple Silicon the CPU computes float16 natively, so the
+    /// "safe" mode after a GPU error (or on virtual GPUs) runs everything on the CPU.
     func diffusionPlan(safe: Bool) -> DiffusionPlan {
         if !base.hasMetal { return DiffusionPlan(base: .cpuOnly, overrides: [:]) }
-        if safe || !hasUsableGPU {
-            return isIntel ? DiffusionPlan(base: .cpuOnly, overrides: [.unet: .cpuAndGPU]) : DiffusionPlan(base: .cpuOnly, overrides: [:])
-        }
-        return isIntel ? DiffusionPlan(base: .cpuAndGPU, overrides: [.textEncoder: .cpuOnly]) : DiffusionPlan(base: .cpuAndGPU, overrides: [:])
+        if isIntel { return DiffusionPlan(base: .cpuAndGPU, overrides: [.textEncoder: .cpuOnly]) }
+        if safe || !hasUsableGPU { return DiffusionPlan(base: .cpuOnly, overrides: [:]) }
+        return DiffusionPlan(base: .cpuAndGPU, overrides: [:])
     }
 
     /// Low-memory mode loads model parts one after another instead of keeping all of them resident.
