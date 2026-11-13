@@ -64,7 +64,7 @@ jobs:
         if: ${{ !inputs.compile_only }}
         run: |
           mkdir -p /tmp/ai/in /tmp/ai/out
-          for i in 03 07 15 20 23; do curl -sfL --max-time 30 -o /tmp/ai/in/kodim$i.png "https://r0k.us/graphics/kodak/kodak/kodim$i.png" || true; done
+          for i in 03 04 07 15 20 23; do curl -sfL --max-time 30 -o /tmp/ai/in/kodim$i.png "https://r0k.us/graphics/kodak/kodak/kodim$i.png" || true; done
           curl -sfL --max-time 30 -o /tmp/ai/in/portrait.jpg "https://picsum.photos/id/64/1200/1600" || true
           curl -sfL --max-time 30 -o /tmp/ai/in/room.jpg "https://picsum.photos/id/1068/1600/1067" || true
           ls -la /tmp/ai/in
@@ -85,16 +85,16 @@ jobs:
           sysctl -n machdep.cpu.brand_string hw.memsize | tee -a $L
           t "1 info"            $P $CPU --qa ai-info
           t "2 metadata"        $P $CPU --qa ai-metadata /tmp/ai/out/meta.png
-          t "3 install esrgan x4 (pause/resume)" $P $CPU --qa ai-install realesrgan-x4plus pause
+          t "3 install esrgan x4" $P $CPU --qa ai-install realesrgan-x4plus
           t "4 install esrgan x2" $P $CPU --qa ai-install realesrgan-x2plus
           t "5 install esrgan general" $P $CPU --qa ai-install realesr-general-x4v3
           t "6 install lama"    $P $CPU --qa ai-install lama
-          t "7 install ${{ inputs.model }}" $P $CPU --qa ai-install ${{ inputs.model }}
+          t "7 install ${{ inputs.model }} (pause + resume)" $P $CPU --qa ai-install ${{ inputs.model }} pause
           t "8 upscale 2x"      $P $CPU --qa ai-upscale "$IMG" /tmp/ai/out/upscale2.png 2
           t "9 upscale 4x"      $P $CPU --qa ai-upscale "$IMG" /tmp/ai/out/upscale4.png 4
           t "10 enhance denoise" $P $CPU --qa ai-enhance "$IMG" /tmp/ai/out/denoise.png denoise
           t "11 enhance detail" $P $CPU --qa ai-enhance "$IMG" /tmp/ai/out/detail.png restoreDetail
-          t "12 subject (Vision)" $P $CPU --qa ai-subject /tmp/ai/in/portrait.jpg /tmp/ai/out/subject.png
+          t "12 subject (Vision)" $P $CPU --qa ai-subject /tmp/ai/in/kodim04.png /tmp/ai/out/subject.png
           t "13 object removal (LaMa)" $P $CPU --qa ai-remove "$IMG" /tmp/ai/out/remove.png
           t "14 text-to-image (OFFLINE, network denied)" sandbox-exec -p '(version 1)(allow default)(deny network*)' $P $CPU --qa ai-t2i /tmp/ai/out/t2i.png $S repeat
           t "15 image-to-image" $P $CPU --qa ai-i2i "$IMG" /tmp/ai/out/i2i.png $S

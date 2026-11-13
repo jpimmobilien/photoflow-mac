@@ -48,6 +48,10 @@ final class DiffusionEngine: @unchecked Sendable {
     /// Measured seconds per step per model + compute configuration (for ETAs before the first step).
     private var stepTimes: [String: Double] = [:]
     private let stateLock = NSLock()
+    /// Models whose GPU run failed in this session – they continue on the CPU.
+    private var cpuFallback = Set<String>()
+    /// Set when the last run had to switch to the CPU (shown to the user).
+    private(set) var lastRunFellBackToCPU = false
 
     private init() {
         let src = DispatchSource.makeMemoryPressureSource(eventMask: [.warning, .critical], queue: queue)
@@ -108,7 +112,7 @@ final class DiffusionEngine: @unchecked Sendable {
     private func loadPipeline(_ model: AIModelDescriptor) throws -> StableDiffusionPipelineProtocol {
         let hw = AIHardware.current
         let profile = AIPerformanceProfile.current
-        let units = hw.computeUnits(for: profile)
+        let units: MLComputeUnits = cpuFallback.contains(model.id) ? .cpuOnly : hw.computeUnits(for: profile)
         let reduce = hw.reduceMemory(for: model, profile: profile)
         let key = "\(model.id)|\(units.rawValue)|\(reduce)"
         if let pipeline, loadedKey == key { return pipeline }
@@ -182,13 +186,30 @@ final class DiffusionEngine: @unchecked Sendable {
 
         var lastTime: Date?
         var timed: [Double] = []
-        let images = try p.generateImages(configuration: cfg, inpainting: inpainting) { progress in
-            let now = Date()
-            if let lastTime { timed.append(now.timeIntervalSince(lastTime)) }
-            lastTime = now
-            let avg = timed.count >= 2 ? timed.reduce(0, +) / Double(timed.count) : nil
-            onStep(StepReport(step: progress.step + 1, stepCount: progress.stepCount, secondsPerStep: avg))
-            return !token.isCancelled
+        func attempt(_ p: StableDiffusionPipelineProtocol) throws -> [CGImage?] {
+            lastTime = nil
+            timed = []
+            return try p.generateImages(configuration: cfg, inpainting: inpainting) { progress in
+                let now = Date()
+                if let lastTime { timed.append(now.timeIntervalSince(lastTime)) }
+                lastTime = now
+                let avg = timed.count >= 2 ? timed.reduce(0, +) / Double(timed.count) : nil
+                onStep(StepReport(step: progress.step + 1, stepCount: progress.stepCount, secondsPerStep: avg))
+                return !token.isCancelled
+            }
+        }
+        lastRunFellBackToCPU = false
+        let images: [CGImage?]
+        do {
+            images = try attempt(p)
+        } catch {
+            // GPU drivers can fail (hangs, unsupported operations, virtual GPUs). Retry once on the CPU.
+            guard !token.isCancelled, !cpuFallback.contains(job.model.id), AIHardware.current.computeUnits(for: .current) != .cpuOnly else { throw error }
+            print("AI: GPU run failed (\(error.localizedDescription)) – retrying on the CPU")
+            cpuFallback.insert(job.model.id)
+            lastRunFellBackToCPU = true
+            unloadNow()
+            images = try attempt(try loadPipeline(job.model))
         }
         if token.isCancelled { throw AIError.cancelled }
         if timed.count >= 2 {

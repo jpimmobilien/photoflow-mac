@@ -4,12 +4,12 @@ import CoreImage
 import CoreGraphics
 
 /// Loads compiled single-file Core ML models (Real-ESRGAN, LaMa) installed by the ModelStore.
-private func loadCompiledModel(_ desc: AIModelDescriptor, preferNeuralEngine: Bool) throws -> MLModel {
+private func loadCompiledModel(_ desc: AIModelDescriptor, preferNeuralEngine: Bool, cpuOnly: Bool = false) throws -> MLModel {
     let url = ModelStore.compiledModelURL(for: desc.id)
     guard FileManager.default.fileExists(atPath: url.path) else { throw AIError.modelMissing(desc.name) }
     let cfg = MLModelConfiguration()
     let hw = AIHardware.current
-    if !hw.base.hasMetal || UserDefaults.standard.bool(forKey: "forceCPURendering") {
+    if cpuOnly || !hw.hasUsableGPU {
         cfg.computeUnits = .cpuOnly
     } else if hw.hasNeuralEngine && preferNeuralEngine {
         cfg.computeUnits = .all
@@ -32,6 +32,7 @@ final class Upscaler: @unchecked Sendable {
     private let lock = NSLock()
     private var model: MLModel?
     private var loadedID: String?
+    private var cpuOnly = false
 
     func unload() { lock.lock(); model = nil; loadedID = nil; lock.unlock() }
 
@@ -48,15 +49,27 @@ final class Upscaler: @unchecked Sendable {
     private func model(for desc: AIModelDescriptor) throws -> MLModel {
         lock.lock(); defer { lock.unlock() }
         if let model, loadedID == desc.id { return model }
-        let m = try loadCompiledModel(desc, preferNeuralEngine: true)
+        let m = try loadCompiledModel(desc, preferNeuralEngine: true, cpuOnly: cpuOnly)
         model = m
         loadedID = desc.id
         return m
     }
 
     /// Upscales by the model's factor. Runs synchronously – call on the AI queue.
+    /// A failing GPU run is retried once on the CPU.
     func upscaleSync(_ image: CGImage, with desc: AIModelDescriptor, token: AICancelToken,
                      progress: @escaping (Double) -> Void) throws -> CGImage {
+        do {
+            return try upscaleOnce(image, with: desc, token: token, progress: progress)
+        } catch let error where !(error is AIError) && !cpuOnly && AIHardware.current.hasUsableGPU {
+            print("AI: upscaling on the GPU failed (\(error.localizedDescription)) – retrying on the CPU")
+            lock.lock(); cpuOnly = true; model = nil; loadedID = nil; lock.unlock()
+            return try upscaleOnce(image, with: desc, token: token, progress: progress)
+        }
+    }
+
+    private func upscaleOnce(_ image: CGImage, with desc: AIModelDescriptor, token: AICancelToken,
+                             progress: @escaping (Double) -> Void) throws -> CGImage {
         let s = desc.scale
         guard image.width * s <= Self.maxOutputSide, image.height * s <= Self.maxOutputSide,
               image.width * image.height * s * s <= Self.maxOutputPixels else {
@@ -141,6 +154,7 @@ final class LaMaRemover: @unchecked Sendable {
     static let shared = LaMaRemover()
     private let lock = NSLock()
     private var model: MLModel?
+    private var cpuOnly = false
 
     func unload() { lock.lock(); model = nil; lock.unlock() }
 
@@ -148,13 +162,24 @@ final class LaMaRemover: @unchecked Sendable {
         lock.lock(); defer { lock.unlock() }
         if let model { return model }
         guard let desc = AIModelCatalog.model("lama") else { throw AIError.noModel(.objectRemoval) }
-        let m = try loadCompiledModel(desc, preferNeuralEngine: false)
+        let m = try loadCompiledModel(desc, preferNeuralEngine: false, cpuOnly: cpuOnly)
         model = m
         return m
     }
 
     /// Fills the square `image` (any size) where `mask` is white. Returns an image of the same size.
+    /// A failing GPU run is retried once on the CPU.
     func inpaintSquareSync(_ image: CGImage, mask: CGImage, token: AICancelToken) throws -> CGImage {
+        do {
+            return try inpaintOnce(image, mask: mask, token: token)
+        } catch let error where !(error is AIError) && !cpuOnly && AIHardware.current.hasUsableGPU {
+            print("AI: LaMa on the GPU failed (\(error.localizedDescription)) – retrying on the CPU")
+            lock.lock(); cpuOnly = true; model = nil; lock.unlock()
+            return try inpaintOnce(image, mask: mask, token: token)
+        }
+    }
+
+    private func inpaintOnce(_ image: CGImage, mask: CGImage, token: AICancelToken) throws -> CGImage {
         let m = try loaded()
         guard let ic = m.modelDescription.inputDescriptionsByName["image"]?.imageConstraint,
               let mc = m.modelDescription.inputDescriptionsByName["mask"]?.imageConstraint else {

@@ -954,3 +954,4 @@
 "· %@" = "· %@";
 "“%@” needs a local AI model. PhotoFlow does not include models in the app – you choose which ones to download from their official sources." = "„%@“ benötigt ein lokales KI-Modell. PhotoFlow liefert keine Modelle mit – du entscheidest, welche du von den offiziellen Quellen lädst.";
 "Image generation requires macOS 13.1 or later." = "Bildgenerierung benötigt macOS 13.1 oder neuer.";
+"The graphics processor reported an error, so this image was computed on the CPU (slower). PhotoFlow keeps using the CPU for this model until the app is restarted." = "Der Grafikprozessor meldete einen Fehler, daher wurde dieses Bild auf der CPU berechnet (langsamer). PhotoFlow nutzt für dieses Modell bis zum Neustart der App die CPU.";

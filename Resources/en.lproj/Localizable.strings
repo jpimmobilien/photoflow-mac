@@ -807,6 +807,7 @@
 "The file no longer exists at its original location." = "The file no longer exists at its original location.";
 "The file “%@” could not be read as an image." = "The file “%@” could not be read as an image.";
 "The files of %@ are missing or damaged. Remove the model in Model Management and download it again." = "The files of %@ are missing or damaged. Remove the model in Model Management and download it again.";
+"The graphics processor reported an error, so this image was computed on the CPU (slower). PhotoFlow keeps using the CPU for this model until the app is restarted." = "The graphics processor reported an error, so this image was computed on the CPU (slower). PhotoFlow keeps using the CPU for this model until the app is restarted.";
 "The horizon is already straight." = "The horizon is already straight.";
 "The image could not be read. Try another photo or export it as JPEG or PNG first." = "The image could not be read. Try another photo or export it as JPEG or PNG first.";
 "The image could not be saved." = "The image could not be saved.";

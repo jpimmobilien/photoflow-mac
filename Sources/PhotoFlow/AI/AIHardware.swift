@@ -58,6 +58,12 @@ struct AIHardware: Sendable {
     }
 
     var isIntel: Bool { base.architecture == .intel }
+
+    /// A real Metal GPU (virtual machines expose an "Apple Paravirtual device" that cannot run the models reliably).
+    var hasUsableGPU: Bool {
+        base.hasMetal && !(base.gpuName ?? "").localizedCaseInsensitiveContains("paravirtual")
+            && !UserDefaults.standard.bool(forKey: "forceCPURendering")
+    }
     var memoryGB: Double { base.memoryGB }
     var supportsSDXL: Bool { osAtLeast(14) && base.architecture == .appleSilicon && memoryGB >= 15 }
 
@@ -103,7 +109,7 @@ struct AIHardware: Sendable {
     /// Compute units for diffusion models (the catalog ships "original" attention variants, which run
     /// best on the GPU; without Metal everything runs on the CPU).
     func computeUnits(for profile: AIPerformanceProfile) -> MLComputeUnits {
-        if !base.hasMetal || UserDefaults.standard.bool(forKey: "forceCPURendering") { return .cpuOnly }
+        if !hasUsableGPU { return .cpuOnly }
         if isIntel { return profile == .energySaving ? .cpuOnly : .cpuAndGPU }
         return .cpuAndGPU
     }
