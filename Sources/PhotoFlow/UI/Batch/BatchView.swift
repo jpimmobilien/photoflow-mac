@@ -654,9 +654,10 @@ struct WorkflowArt: View {
             }
         }
         .clipped()
+        .loopAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: phase)
         .onAppear {
             guard !DS.Motion.reduced else { phase = true; return }
-            withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true)) { phase = true }
+            DispatchQueue.main.async { phase = true }
         }
     }
 
@@ -693,9 +694,10 @@ struct SampleBeforeAfter: View {
                 CompareDivider(height: g.size.height, compact: true).offset(x: g.size.width * phase - 11)
             }
         }
+        .loopAnimation(.easeInOut(duration: 2.6).repeatForever(autoreverses: true), value: phase)
         .onAppear {
             guard !DS.Motion.reduced else { return }
-            withAnimation(.easeInOut(duration: 2.6).repeatForever(autoreverses: true)) { phase = 0.62 }
+            DispatchQueue.main.async { phase = 0.62 }
         }
     }
 }

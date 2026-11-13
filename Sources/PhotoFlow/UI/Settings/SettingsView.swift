@@ -10,8 +10,28 @@ struct SettingsView: View {
             StorageSettings().tabItem { Label(String(localized: "Storage"), systemImage: "internaldrive") }
             PrivacySettings().tabItem { Label(String(localized: "Privacy"), systemImage: "lock.shield") }
         }
-        .frame(width: 560)
+        .frame(width: 580)
         .padding(20)
+        .tint(DS.Palette.blue)
+    }
+}
+
+/// Brand header at the top of the General tab.
+private struct SettingsBrandHeader: View {
+    var body: some View {
+        HStack(spacing: DS.Space.s) {
+            BrandMark(size: 52)
+                .shadow(color: DS.Palette.blue.opacity(0.25), radius: 10, y: 5)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(verbatim: "PhotoFlow").font(DS.Font.title2)
+                Text(String(localized: "Version \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "–")"))
+                    .font(DS.Font.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Label(String(localized: "100 % on-device"), systemImage: "lock.shield.fill")
+                .font(DS.Font.caption).foregroundStyle(DS.Palette.success)
+        }
+        .padding(.vertical, 4)
     }
 }
 
@@ -26,6 +46,7 @@ private struct GeneralSettings: View {
 
     var body: some View {
         Form {
+            Section { SettingsBrandHeader() }
             Picker(String(localized: "Appearance"), selection: $appearance) {
                 Text(String(localized: "Automatic")).tag("system")
                 Text(String(localized: "Light")).tag("light")

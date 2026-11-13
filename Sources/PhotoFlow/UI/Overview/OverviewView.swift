@@ -397,9 +397,10 @@ struct BeforeAfterThumb: View {
                     .offset(x: g.size.width * phase - 11)
             }
         }
+        .loopAnimation(.easeInOut(duration: 2.6).repeatForever(autoreverses: true), value: phase)
         .onAppear {
             guard animated, !DS.Motion.reduced else { return }
-            withAnimation(.easeInOut(duration: 2.6).repeatForever(autoreverses: true)) { phase = 0.62 }
+            DispatchQueue.main.async { phase = 0.62 }
         }
     }
 }
@@ -430,9 +431,10 @@ struct StraightenThumb: View {
             .foregroundStyle(.white).padding(.horizontal, 10).shadow(radius: 2)
         }
         .clipped()
+        .loopAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true), value: level)
         .onAppear {
             guard !DS.Motion.reduced else { level = true; return }
-            withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true).delay(0.4)) { level = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { level = true }
         }
     }
 }

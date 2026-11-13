@@ -333,6 +333,33 @@ final class EditorModel: ObservableObject {
         change(String(localized: "Rotate")) { $0.quarterTurns = ($0.quarterTurns + (clockwise ? 3 : 1)) % 4; $0.crop = nil }
     }
 
+    /// Crop to an aspect ratio (subject-aware when the analysis found a salient region), trim borders, or remove the crop.
+    func applyCrop(_ mode: AutoCrop.Mode) async {
+        switch mode {
+        case .none:
+            change(String(localized: "Remove Crop")) { $0.crop = nil }
+        case .trimBorders:
+            guard let cg = original, let px = PixelBuffer(cgImage: cg, maxSide: 768), let c = AutoCrop.trimBorders(px) else {
+                message = String(localized: "No borders found.")
+                return
+            }
+            change(String(localized: "Remove borders")) { $0.crop = c }
+        case .aspect(let w, let h):
+            guard let o = original else { return }
+            let a = await ensureAnalysis()
+            var base = CGSize(width: o.width, height: o.height)
+            if recipe.quarterTurns % 2 == 1 { base = CGSize(width: base.height, height: base.width) }
+            var noCrop = recipe
+            noCrop.crop = nil
+            let g = GeometryModel(recipe: noCrop)
+            let size = g.isIdentity ? base : g.inscribedRect(size: base).size
+            // the subject region is only meaningful when the picture is not rotated by quarter turns
+            let salient = recipe.quarterTurns % 4 == 0 ? a?.scene.salientRect : nil
+            change(String(localized: "Crop")) { $0.crop = AutoCrop.aspectCrop(imageSize: size, ratio: w / h, salient: salient) }
+            message = nil
+        }
+    }
+
     func resetAll() {
         set(.identity, name: String(localized: "Reset All"))
         message = nil

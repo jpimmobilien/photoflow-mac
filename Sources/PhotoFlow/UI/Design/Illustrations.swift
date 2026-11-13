@@ -25,7 +25,7 @@ struct Illustration: View {
         .onAppear {
             withAnimation(DS.Motion.smooth.delay(0.05)) { appeared = true }
             if kind == .welcome && !reduceMotion {
-                withAnimation(.easeInOut(duration: 3.2).repeatForever(autoreverses: true)) { floatOffset = -6 }
+                DispatchQueue.main.async { floatOffset = -6 }
             }
         }
         .accessibilityHidden(true)
@@ -45,6 +45,7 @@ struct Illustration: View {
                 BrandMark(size: 132 * u)
                     .shadow(color: DS.Palette.blue.opacity(0.28), radius: 26 * u, y: 14 * u)
                     .offset(y: floatOffset * u)
+                    .loopAnimation(.easeInOut(duration: 3.2).repeatForever(autoreverses: true), value: floatOffset)
                 Sparkle(size: 22 * u).offset(x: 72 * u, y: -58 * u)
             }
         case .duplicates:

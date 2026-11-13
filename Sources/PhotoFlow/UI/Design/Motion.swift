@@ -90,11 +90,12 @@ struct ShimmerBlock: View {
                         .frame(width: g.size.width * 0.6)
                         .offset(x: phase * g.size.width * 1.4)
                 }
+                .loopAnimation(.linear(duration: 1.3).repeatForever(autoreverses: false), value: phase)
                 .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             }
             .onAppear {
                 guard !DS.Motion.reduced else { return }
-                withAnimation(.linear(duration: 1.3).repeatForever(autoreverses: false)) { phase = 1 }
+                DispatchQueue.main.async { phase = 1 }
             }
     }
 }
@@ -169,6 +170,12 @@ struct FocusDepth: ViewModifier {
 }
 
 extension View {
+    /// A looping animation scoped to this view only. (Starting a loop with `withAnimation` in `onAppear`
+    /// would also capture sibling views that appear in the same transaction and make them pulse.)
+    func loopAnimation<V: Equatable>(_ animation: Animation, value: V) -> some View {
+        self.animation(DS.Motion.reduced ? nil : animation, value: value)
+    }
+
     func magneticHover(scale: CGFloat = 1.015, lift: CGFloat = 2, shadow: Bool = true) -> some View {
         modifier(MagneticHover(scale: scale, lift: lift, shadow: shadow))
     }

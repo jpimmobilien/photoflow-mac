@@ -10,7 +10,8 @@ struct PhotoContextMenu: View {
     private var single: PhotoRecord? { ids.count == 1 ? app.photo(ids[0]) : nil }
 
     var body: some View {
-        Button(String(localized: "Open")) { app.openInDefaultApp(ids) }
+        Button(String(localized: "Show Photo")) { app.openViewer(clicked) }
+        Button(String(localized: "Open in Default App")) { app.openInDefaultApp(ids) }
         Button(String(localized: "Quick Look")) { app.quickLook(clicked) }
         Divider()
         Button(String(localized: "Auto Enhance")) { app.autoEnhance(ids) }
@@ -90,17 +91,17 @@ struct PhotoInfoSheet: View {
             HStack(alignment: .top, spacing: 16) {
                 ThumbnailImage(photo: photo, recipe: app.recipe(for: photo.id), pixelSize: 420, contentMode: .fit)
                     .frame(width: 220, height: 180)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .clipShape(RoundedRectangle(cornerRadius: DS.Radius.tile, style: .continuous))
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(photo.filename).font(.title3.weight(.semibold)).lineLimit(2)
+                    Text(photo.filename).font(DS.Font.title2).lineLimit(2)
                     Text(photo.path).font(.caption).foregroundStyle(.secondary).textSelection(.enabled).lineLimit(3)
                 }
             }
             PhotoMetadataGrid(photo: photo, extended: true)
             HStack {
-                Button(String(localized: "Reveal in Finder")) { app.reveal([photo.id]) }
+                Button(String(localized: "Reveal in Finder")) { app.reveal([photo.id]) }.softButton()
                 Spacer()
-                Button(String(localized: "Done")) { dismiss() }.keyboardShortcut(.defaultAction)
+                Button(String(localized: "Done")) { dismiss() }.keyboardShortcut(.defaultAction).prominentButton()
             }
         }
         .padding(22)

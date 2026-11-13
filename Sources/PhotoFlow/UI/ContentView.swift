@@ -259,10 +259,18 @@ struct SelectionBar: View {
     @EnvironmentObject private var app: AppModel
 
     var body: some View {
+        // Full bar when there is room, icon-only variant in narrow windows.
+        ViewThatFits(in: .horizontal) {
+            bar(compact: false)
+            bar(compact: true)
+        }
+    }
+
+    private func bar(compact: Bool) -> some View {
         let ids = app.targetIDs(for: nil)
         let first = ids.compactMap { app.photo($0) }.prefix(3)
         let allFavorite = !ids.isEmpty && ids.allSatisfy { app.photo($0)?.isFavorite == true }
-        HStack(spacing: DS.Space.s) {
+        return HStack(spacing: compact ? DS.Space.xs : DS.Space.s) {
             // fanned stack of the selected photos – regroups when the selection changes
             ZStack {
                 ForEach(Array(first.enumerated().reversed()), id: \.element.id) { i, p in
@@ -285,11 +293,11 @@ struct SelectionBar: View {
                 Text(app.records(ids).reduce(Int64(0)) { $0 + $1.fileSize }.formattedBytes)
                     .font(DS.Font.caption).foregroundStyle(DS.Palette.blue).monospacedDigit()
             }
-            .frame(minWidth: 90, maxWidth: 170, alignment: .leading)
+            .frame(width: compact ? 86 : 150, alignment: .leading)
 
-            Divider().frame(height: 24)
+            Rectangle().fill(DS.Palette.hairline).frame(width: 0.5, height: 24)
 
-            HStack(spacing: 2) {
+            HStack(spacing: 0) {
                 Button { app.toggleFavorite(ids) } label: { HeartIcon(filled: allFavorite) }
                     .buttonStyle(GlassIconButtonStyle(size: 32, tint: allFavorite ? DS.Palette.heart : nil))
                     .tip(String(localized: "Favorite"), shortcut: "⇧⌘F", edge: .top)
@@ -317,9 +325,12 @@ struct SelectionBar: View {
                     .tip(String(localized: "Move to Trash"), shortcut: "⌘⌫", edge: .top)
             }
 
-            Button { app.autoEnhance(ids) } label: { Label(String(localized: "Auto Enhance"), systemImage: "wand.and.stars") }
-                .premiumButton()
-                .tip(String(localized: "Analyze and improve the selected photos"), shortcut: "⌘E", edge: .top)
+            Button { app.autoEnhance(ids) } label: {
+                if compact { Image(systemName: "wand.and.stars") } else { Label(String(localized: "Auto Enhance"), systemImage: "wand.and.stars") }
+            }
+            .premiumButton()
+            .fixedSize()
+            .tip(String(localized: "Analyze and improve the selected photos"), shortcut: "⌘E", edge: .top)
 
             Button { withAnimation(DS.Motion.snappy) { app.selection = [] } } label: { Image(systemName: "xmark") }
                 .buttonStyle(GlassIconButtonStyle(size: 26))
@@ -328,6 +339,7 @@ struct SelectionBar: View {
         .padding(.leading, DS.Space.s)
         .padding(.trailing, DS.Space.xs)
         .padding(.vertical, DS.Space.xs)
+        .fixedSize()
         .glass(.floating, in: Capsule())
     }
 }

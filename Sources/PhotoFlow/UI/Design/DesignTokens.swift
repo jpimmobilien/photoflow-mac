@@ -225,6 +225,8 @@ struct AmbientGlow: View {
         GeometryReader { g in
             let w = g.size.width, h = g.size.height, r = max(w, h)
             let c = colors.isEmpty ? [DS.Palette.sky, DS.Palette.iris, DS.Palette.blue] : colors
+            // without a photo the icon's sky/iris light stays very faint – never a colour field
+            let strength = colors.isEmpty ? self.strength * 0.4 : self.strength
             ZStack {
                 RadialGradient(colors: [c[0].opacity(strength), .clear], center: UnitPoint(x: 0.18, y: 0.0), startRadius: 0, endRadius: r * 0.62)
                 RadialGradient(colors: [c[min(1, c.count - 1)].opacity(strength * 0.85), .clear], center: UnitPoint(x: 0.95, y: 0.95), startRadius: 0, endRadius: r * 0.55)
@@ -420,6 +422,7 @@ struct ProgressRing: View {
                 .stroke(AngularGradient(colors: gradient + [gradient[0]], center: .center, startAngle: .degrees(0), endAngle: .degrees(360 * f)),
                         style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                 .rotationEffect(.degrees(-90))
+                .opacity(fraction > 0.002 ? 1 : 0)
             // glowing tip
             GeometryReader { g in
                 let r = min(g.size.width, g.size.height) / 2
