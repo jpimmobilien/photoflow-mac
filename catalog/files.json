@@ -1,0 +1,622 @@
+{
+ "sdxl-mbp": {
+  "repo": "apple/coreml-stable-diffusion-mixed-bit-palettization",
+  "revision": "959bf38cbad66f1105a84190cd12434ba815e724",
+  "license": "openrail++",
+  "total": 3356763306,
+  "files": [
+   {
+    "path": "TextEncoder.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/TextEncoder.mlmodelc/analytics/coremldata.bin",
+    "size": 207,
+    "sha256": "f732919fa370a1b7b09ec2b227539269b6543149a2b0dbae95cc4cf350e4b697"
+   },
+   {
+    "path": "TextEncoder.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/TextEncoder.mlmodelc/coremldata.bin",
+    "size": 825,
+    "sha256": "9ff26866d8d8fbb4e53a0628f8aab5f7edf1b3ec763a96e6812c8f7fbf4c9827"
+   },
+   {
+    "path": "TextEncoder.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/TextEncoder.mlmodelc/metadata.json",
+    "size": 2710,
+    "sha256": "176aa805f4739009e1fb48802be0fa70e3c1cb01976d0338fe8c8700f1bfd707"
+   },
+   {
+    "path": "TextEncoder.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/TextEncoder.mlmodelc/model.mil",
+    "size": 188382,
+    "sha256": "d14a1bf27f043ab9bf5daee9f85e4ae8280d15611f6e04af3e1f084aff49e7e5"
+   },
+   {
+    "path": "TextEncoder.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/TextEncoder.mlmodelc/weights/weight.bin",
+    "size": 246145536,
+    "sha256": "a86533724aadf50c8f5539592d440887a484f60002d7967505c69c7faf4d7797"
+   },
+   {
+    "path": "TextEncoder2.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/TextEncoder2.mlmodelc/analytics/coremldata.bin",
+    "size": 207,
+    "sha256": "eef66b480388714bb62f2f0f2f97a8953e44acbb00b25f9a9fd63c759f4f0e83"
+   },
+   {
+    "path": "TextEncoder2.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/TextEncoder2.mlmodelc/coremldata.bin",
+    "size": 825,
+    "sha256": "9ff26866d8d8fbb4e53a0628f8aab5f7edf1b3ec763a96e6812c8f7fbf4c9827"
+   },
+   {
+    "path": "TextEncoder2.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/TextEncoder2.mlmodelc/metadata.json",
+    "size": 2711,
+    "sha256": "122146d8e75b524708ee1f630dbb9838683760175998ab2a511ceecfec0ccc14"
+   },
+   {
+    "path": "TextEncoder2.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/TextEncoder2.mlmodelc/model.mil",
+    "size": 491456,
+    "sha256": "3bce3dbe5a221877ab89627d17b50fe212054cde18b88b53ff4a478f9ba43f84"
+   },
+   {
+    "path": "TextEncoder2.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/TextEncoder2.mlmodelc/weights/weight.bin",
+    "size": 1389367424,
+    "sha256": "8bd1fc0bcce11cff685648387b0060e0b6ecfce6c34e580e1ae904cae5903363"
+   },
+   {
+    "path": "Unet.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/Unet.mlmodelc/analytics/coremldata.bin",
+    "size": 243,
+    "sha256": "48f726f7f29091a23eb434bd4febf1f83733c95db26b912dfa671cdccad5d874"
+   },
+   {
+    "path": "Unet.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/Unet.mlmodelc/coremldata.bin",
+    "size": 1338,
+    "sha256": "8aea3887ffdc8e059925f3981259e1cd3227b827e5f91edff613c73ac0ea16f6"
+   },
+   {
+    "path": "Unet.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/Unet.mlmodelc/metadata.json",
+    "size": 4431,
+    "sha256": "0a3dfc9daadc836137278ae8892ea57f7e165f181ec981d5b0e2ee632ca1314d"
+   },
+   {
+    "path": "Unet.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/Unet.mlmodelc/model.mil",
+    "size": 2491351,
+    "sha256": "29cd70b86ed7c3bdbdd9ad9a0151b3efb943d832f02180d8677d0b4d378fd8c6"
+   },
+   {
+    "path": "Unet.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/Unet.mlmodelc/weights/weight.bin",
+    "size": 1450049728,
+    "sha256": "d9219e9fcaa60ff76a31ea84658b485264b50f66147c058e18a7cfd456bb0f3a"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/VAEDecoder.mlmodelc/analytics/coremldata.bin",
+    "size": 207,
+    "sha256": "bac2854504d7f6bfdc5645982dd965cca9cc8c12b9fdd2493cf50cd583684cc2"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/VAEDecoder.mlmodelc/coremldata.bin",
+    "size": 773,
+    "sha256": "766fce2585587fe93a1d32e09bc4d63ad45335ea62239f11b193e481b5888258"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/VAEDecoder.mlmodelc/metadata.json",
+    "size": 2467,
+    "sha256": "41696aba4d2b9b6afc29ff29a3f6514067dbdf19f19a7ddd9988be4ec52ed866"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/VAEDecoder.mlmodelc/model.mil",
+    "size": 168425,
+    "sha256": "0668d332aed2be89699de2d1222e073765d1e16ad0663734b59d77dbcd85f9b4"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/VAEDecoder.mlmodelc/weights/weight.bin",
+    "size": 197977216,
+    "sha256": "7ade814d6037fb5ba892963be1596c8e37852f96c399101401831f8c07e64bd2"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/VAEEncoder.mlmodelc/analytics/coremldata.bin",
+    "size": 207,
+    "sha256": "0e44297c358d64101602d9abfe4d6c9fb96ddb3b120f84fbb74001aa4312cf93"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/VAEEncoder.mlmodelc/coremldata.bin",
+    "size": 783,
+    "sha256": "7269e365034d061c3ad035d9a5b7c38864d7db71bee6fb7545c97a4942a865f1"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/VAEEncoder.mlmodelc/metadata.json",
+    "size": 2494,
+    "sha256": "40db7ca9e8fa6ec32635f31036f3aeb5187c903999a0dd7dd7f2eee0319f25b4"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/VAEEncoder.mlmodelc/model.mil",
+    "size": 138263,
+    "sha256": "e085660e188c8c36d0d8efa071b8c74c6c2da3ca47dbdd851e8548f14c3f9f54"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/VAEEncoder.mlmodelc/weights/weight.bin",
+    "size": 68338112,
+    "sha256": "329f708df0bae1990a1886007b5ae56cfd9a44e7091e8f822db907a9fc411858"
+   },
+   {
+    "path": "merges.txt",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/merges.txt",
+    "size": 524657,
+    "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+   },
+   {
+    "path": "vocab.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization/resolve/959bf38cbad66f1105a84190cd12434ba815e724/coreml-stable-diffusion-xl-base_mbp_4_50_palettized/compiled/vocab.json",
+    "size": 862328,
+    "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+   }
+  ]
+ },
+ "sdxl-fp16": {
+  "repo": "apple/coreml-stable-diffusion-xl-base",
+  "revision": "2027f2c8d5ced83ce5726ff66e00da53a9ef163d",
+  "license": "openrail++",
+  "total": 7041621680,
+  "files": [
+   {
+    "path": "TextEncoder.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/TextEncoder.mlmodelc/analytics/coremldata.bin",
+    "size": 207,
+    "sha256": "f732919fa370a1b7b09ec2b227539269b6543149a2b0dbae95cc4cf350e4b697"
+   },
+   {
+    "path": "TextEncoder.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/TextEncoder.mlmodelc/coremldata.bin",
+    "size": 825,
+    "sha256": "9ff26866d8d8fbb4e53a0628f8aab5f7edf1b3ec763a96e6812c8f7fbf4c9827"
+   },
+   {
+    "path": "TextEncoder.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/TextEncoder.mlmodelc/metadata.json",
+    "size": 2710,
+    "sha256": "176aa805f4739009e1fb48802be0fa70e3c1cb01976d0338fe8c8700f1bfd707"
+   },
+   {
+    "path": "TextEncoder.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/TextEncoder.mlmodelc/model.mil",
+    "size": 188382,
+    "sha256": "d14a1bf27f043ab9bf5daee9f85e4ae8280d15611f6e04af3e1f084aff49e7e5"
+   },
+   {
+    "path": "TextEncoder.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/TextEncoder.mlmodelc/weights/weight.bin",
+    "size": 246145536,
+    "sha256": "a86533724aadf50c8f5539592d440887a484f60002d7967505c69c7faf4d7797"
+   },
+   {
+    "path": "TextEncoder2.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/TextEncoder2.mlmodelc/analytics/coremldata.bin",
+    "size": 207,
+    "sha256": "eef66b480388714bb62f2f0f2f97a8953e44acbb00b25f9a9fd63c759f4f0e83"
+   },
+   {
+    "path": "TextEncoder2.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/TextEncoder2.mlmodelc/coremldata.bin",
+    "size": 825,
+    "sha256": "9ff26866d8d8fbb4e53a0628f8aab5f7edf1b3ec763a96e6812c8f7fbf4c9827"
+   },
+   {
+    "path": "TextEncoder2.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/TextEncoder2.mlmodelc/metadata.json",
+    "size": 2711,
+    "sha256": "122146d8e75b524708ee1f630dbb9838683760175998ab2a511ceecfec0ccc14"
+   },
+   {
+    "path": "TextEncoder2.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/TextEncoder2.mlmodelc/model.mil",
+    "size": 491456,
+    "sha256": "3bce3dbe5a221877ab89627d17b50fe212054cde18b88b53ff4a478f9ba43f84"
+   },
+   {
+    "path": "TextEncoder2.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/TextEncoder2.mlmodelc/weights/weight.bin",
+    "size": 1389367424,
+    "sha256": "8bd1fc0bcce11cff685648387b0060e0b6ecfce6c34e580e1ae904cae5903363"
+   },
+   {
+    "path": "Unet.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/Unet.mlmodelc/analytics/coremldata.bin",
+    "size": 207,
+    "sha256": "df3831a13c76df3097f4ae659ef46a7f6604f93b45c1a5f8d14e362424d15e1f"
+   },
+   {
+    "path": "Unet.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/Unet.mlmodelc/coremldata.bin",
+    "size": 1338,
+    "sha256": "8aea3887ffdc8e059925f3981259e1cd3227b827e5f91edff613c73ac0ea16f6"
+   },
+   {
+    "path": "Unet.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/Unet.mlmodelc/metadata.json",
+    "size": 4291,
+    "sha256": "92d7715f38d23e6f91c01d771acb68933d51d3ba0dd654734f1e2cbaf1aa31b3"
+   },
+   {
+    "path": "Unet.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/Unet.mlmodelc/model.mil",
+    "size": 2332557,
+    "sha256": "7b8aff443c0b6172ecb88a94fc8ec329b2a507ae4ee055f724bd24e2320afb43"
+   },
+   {
+    "path": "Unet.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/Unet.mlmodelc/weights/weight.bin",
+    "size": 5135067072,
+    "sha256": "d34f8b7b5b0b62880733514f5fc39cb79f243a3a4bdb13eff5f8855cf2c82854"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/VAEDecoder.mlmodelc/analytics/coremldata.bin",
+    "size": 207,
+    "sha256": "bac2854504d7f6bfdc5645982dd965cca9cc8c12b9fdd2493cf50cd583684cc2"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/VAEDecoder.mlmodelc/coremldata.bin",
+    "size": 773,
+    "sha256": "766fce2585587fe93a1d32e09bc4d63ad45335ea62239f11b193e481b5888258"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/VAEDecoder.mlmodelc/metadata.json",
+    "size": 2467,
+    "sha256": "41696aba4d2b9b6afc29ff29a3f6514067dbdf19f19a7ddd9988be4ec52ed866"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/VAEDecoder.mlmodelc/model.mil",
+    "size": 168425,
+    "sha256": "0668d332aed2be89699de2d1222e073765d1e16ad0663734b59d77dbcd85f9b4"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/VAEDecoder.mlmodelc/weights/weight.bin",
+    "size": 197977216,
+    "sha256": "7ade814d6037fb5ba892963be1596c8e37852f96c399101401831f8c07e64bd2"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/VAEEncoder.mlmodelc/analytics/coremldata.bin",
+    "size": 207,
+    "sha256": "0e44297c358d64101602d9abfe4d6c9fb96ddb3b120f84fbb74001aa4312cf93"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/VAEEncoder.mlmodelc/coremldata.bin",
+    "size": 783,
+    "sha256": "7269e365034d061c3ad035d9a5b7c38864d7db71bee6fb7545c97a4942a865f1"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/VAEEncoder.mlmodelc/metadata.json",
+    "size": 2494,
+    "sha256": "40db7ca9e8fa6ec32635f31036f3aeb5187c903999a0dd7dd7f2eee0319f25b4"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/VAEEncoder.mlmodelc/model.mil",
+    "size": 138263,
+    "sha256": "e085660e188c8c36d0d8efa071b8c74c6c2da3ca47dbdd851e8548f14c3f9f54"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/VAEEncoder.mlmodelc/weights/weight.bin",
+    "size": 68338112,
+    "sha256": "329f708df0bae1990a1886007b5ae56cfd9a44e7091e8f822db907a9fc411858"
+   },
+   {
+    "path": "merges.txt",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/merges.txt",
+    "size": 524657,
+    "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+   },
+   {
+    "path": "vocab.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-xl-base/resolve/2027f2c8d5ced83ce5726ff66e00da53a9ef163d/compiled/vocab.json",
+    "size": 862328,
+    "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+   }
+  ]
+ },
+ "sd21-palettized": {
+  "repo": "apple/coreml-stable-diffusion-2-1-base-palettized",
+  "revision": "dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c",
+  "license": "openrail++",
+  "total": 1139235130,
+  "files": [
+   {
+    "path": "TextEncoder.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/TextEncoder.mlmodelc/analytics/coremldata.bin",
+    "size": 207,
+    "sha256": "a26bdd792e919ca3412c0685e74ea507a6de835532f0ec58d780c99b0a7a0193"
+   },
+   {
+    "path": "TextEncoder.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/TextEncoder.mlmodelc/coremldata.bin",
+    "size": 839,
+    "sha256": "2f0484a1a04e023da06787de4140cf215f9ccd67f93d916dc388b846d8607899"
+   },
+   {
+    "path": "TextEncoder.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/TextEncoder.mlmodelc/metadata.json",
+    "size": 2792,
+    "sha256": "72df3fb2e265896ba2b34e8b5e245777f0803345f724c386ac4556d54935ebaf"
+   },
+   {
+    "path": "TextEncoder.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/TextEncoder.mlmodelc/model.mil",
+    "size": 391100,
+    "sha256": "819d8e7b680b25c8601d44861545d013c02b9c94b9d9ad42290de3de489a6e52"
+   },
+   {
+    "path": "TextEncoder.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/TextEncoder.mlmodelc/weights/weight.bin",
+    "size": 318860352,
+    "sha256": "4e5ac135bb5f002401ffea7766e8f2231ebb75dd2deee90893eb11a9c1a07d35"
+   },
+   {
+    "path": "Unet.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/Unet.mlmodelc/analytics/coremldata.bin",
+    "size": 207,
+    "sha256": "fb7e6fb835c839f3651203e04393bf965d36b9fd374b4738622b17129fd93b6f"
+   },
+   {
+    "path": "Unet.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/Unet.mlmodelc/coremldata.bin",
+    "size": 1221,
+    "sha256": "5bc742d03b80b46feaa6f9e2159a5c89acda3ed2c1562f2b4f781bb7bfbce110"
+   },
+   {
+    "path": "Unet.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/Unet.mlmodelc/metadata.json",
+    "size": 3696,
+    "sha256": "2b7c07bfb866ef0cad217a4f61244644219119e124d22f268daab491fa4b6f9c"
+   },
+   {
+    "path": "Unet.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/Unet.mlmodelc/model.mil",
+    "size": 968348,
+    "sha256": "324b73dc33f16a1c960d1307f02274970f4b33481de5ba0ac7ab1caed345af6e"
+   },
+   {
+    "path": "Unet.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/Unet.mlmodelc/weights/weight.bin",
+    "size": 649959936,
+    "sha256": "45bf0fd5713dc4f15bf1d14788e33bb6ad27796c80cffbe52e157cf398bbae0b"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/VAEDecoder.mlmodelc/analytics/coremldata.bin",
+    "size": 207,
+    "sha256": "682f30dbd27b8c96fae9dd5d7cec36e85812e370cc2a920d9a6cef7a908e29d3"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/VAEDecoder.mlmodelc/coremldata.bin",
+    "size": 769,
+    "sha256": "57555bee9ff5d60c5b6fd48564eac43523d954a2d34101273b8e3fa8f1aee3d0"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/VAEDecoder.mlmodelc/metadata.json",
+    "size": 2493,
+    "sha256": "19dcc0cdee77617dd0ec273ca9ffe8fc55165985f0490004d9f1bf5a3017c61f"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/VAEDecoder.mlmodelc/model.mil",
+    "size": 181387,
+    "sha256": "4769720187b4f34c1335e8ba79424bdfc41b5b55e5bfccf4cbc41a78116d6bb7"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/VAEDecoder.mlmodelc/weights/weight.bin",
+    "size": 98993280,
+    "sha256": "1fc0794d5ffad51b5599d2e978ee3351638edeab6753a3f6e5453fa612772286"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/VAEEncoder.mlmodelc/analytics/coremldata.bin",
+    "size": 207,
+    "sha256": "15f5816e1040cbb9124d5d3d9b17ea7cee1e32adda5322b45d992b072bfa352a"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/VAEEncoder.mlmodelc/coremldata.bin",
+    "size": 775,
+    "sha256": "d8d5fe5e99e6989b1ea29a9da7a6938025f9a7253e81ef722c6accca4594ae36"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/VAEEncoder.mlmodelc/metadata.json",
+    "size": 2481,
+    "sha256": "82c8cf5e79b465b675ffcba7bae6d994eea691a21f4481fbada13174dd7a2146"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/VAEEncoder.mlmodelc/model.mil",
+    "size": 139736,
+    "sha256": "be4dea02d2304462fa7ed362d99a66173beebc12bfe5a264e1949106abf4cb3a"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/VAEEncoder.mlmodelc/weights/weight.bin",
+    "size": 68338112,
+    "sha256": "6f2d9d29b46a29008068665a44b921c661baea9be0443e1ff5bf12cd7032e516"
+   },
+   {
+    "path": "merges.txt",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/merges.txt",
+    "size": 524657,
+    "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+   },
+   {
+    "path": "vocab.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized/resolve/dca5f2fda9c5143c71aded72bbb4ce39f3c2cc9c/original/compiled/vocab.json",
+    "size": 862328,
+    "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+   }
+  ]
+ },
+ "sd21-fp16": {
+  "repo": "apple/coreml-stable-diffusion-2-1-base",
+  "revision": "3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b",
+  "license": "openrail++",
+  "total": 2583223310,
+  "files": [
+   {
+    "path": "TextEncoder.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/TextEncoder.mlmodelc/analytics/coremldata.bin",
+    "size": 207,
+    "sha256": "6ee59ccda5036f123131d35c0c7a96678b33c793cdf81379afede2950fdfbf17"
+   },
+   {
+    "path": "TextEncoder.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/TextEncoder.mlmodelc/coremldata.bin",
+    "size": 838,
+    "sha256": "2ec66e4fac048e8836ac2cc5103bb66149958908bb06e293f0e55b7f792843dd"
+   },
+   {
+    "path": "TextEncoder.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/TextEncoder.mlmodelc/metadata.json",
+    "size": 2790,
+    "sha256": "099b78bfed0ca7fa78f61fecf34fdda3420093ee90d142d19993c1d6699b2f6d"
+   },
+   {
+    "path": "TextEncoder.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/TextEncoder.mlmodelc/model.mil",
+    "size": 320318,
+    "sha256": "a79b7a70cc6a8780549c65b6a80a36e30e126b2ac63a656fce104fbc7799d32c"
+   },
+   {
+    "path": "TextEncoder.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/TextEncoder.mlmodelc/weights/weight.bin",
+    "size": 680811520,
+    "sha256": "a8b2add9306db70961a5fcfbdcdb123a6a88fca15713bb0f56744e57d273817e"
+   },
+   {
+    "path": "Unet.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/Unet.mlmodelc/analytics/coremldata.bin",
+    "size": 207,
+    "sha256": "ea1118fb496b490008cbd51a114557e82290f19b72912063715c506227b9dbd7"
+   },
+   {
+    "path": "Unet.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/Unet.mlmodelc/coremldata.bin",
+    "size": 1220,
+    "sha256": "22c8cf48d32b10b2976f5b2aa15b2335fe7ff1541b7bb20dc0aaee5316db6a91"
+   },
+   {
+    "path": "Unet.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/Unet.mlmodelc/metadata.json",
+    "size": 3625,
+    "sha256": "9fad6a0c8ad8e5638f448a15f48044289150f958649e471df15cbd33b16c86ac"
+   },
+   {
+    "path": "Unet.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/Unet.mlmodelc/model.mil",
+    "size": 842344,
+    "sha256": "aa4e516fbe2f1799af76f4f74578b1110d58bd4d9ca7d3e5904bfd72477d4ca6"
+   },
+   {
+    "path": "Unet.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/Unet.mlmodelc/weights/weight.bin",
+    "size": 1732124416,
+    "sha256": "fb6d4c183e88a0bf65a632da4324105695b2eb1b60ea40744e7b1a2076657ce5"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/VAEDecoder.mlmodelc/analytics/coremldata.bin",
+    "size": 207,
+    "sha256": "1db010d53a60e24a3c7dbdf7b9d0ca6e9af87b95ec526c39a59cabcc3cf21461"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/VAEDecoder.mlmodelc/coremldata.bin",
+    "size": 768,
+    "sha256": "f02192454e1eef80f93c2139aed5440dfd2704933b4354bfd22859abdadd1c16"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/VAEDecoder.mlmodelc/metadata.json",
+    "size": 2492,
+    "sha256": "43db004a288e30f66f6c7cc9c8948b61b425fa69ad8f95098cd14c9c2275cfb9"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/VAEDecoder.mlmodelc/model.mil",
+    "size": 176862,
+    "sha256": "bf6aa65536d1a72a18d2066a82e1ba5fb002583ae0482625f911d27a49a4f1f6"
+   },
+   {
+    "path": "VAEDecoder.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/VAEDecoder.mlmodelc/weights/weight.bin",
+    "size": 99039232,
+    "sha256": "28f9df1d6be865745a68af92f05d4663ffd2a38dfe6d3f1ce3be51ed0444c479"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/analytics/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/VAEEncoder.mlmodelc/analytics/coremldata.bin",
+    "size": 207,
+    "sha256": "9934361c083fe9eb185378cce34b96411cf01bc47b0aec1b3f82314621012be3"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/coremldata.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/VAEEncoder.mlmodelc/coremldata.bin",
+    "size": 775,
+    "sha256": "3eda574256f39523ff4a06ba6afaf67d8089e110bd2ab87f239d6942f7be13cf"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/metadata.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/VAEEncoder.mlmodelc/metadata.json",
+    "size": 2481,
+    "sha256": "e0e402053afaf9644441f0d7e4cc4e08bfb69ff67e90bf1233f499e3c343957d"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/model.mil",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/VAEEncoder.mlmodelc/model.mil",
+    "size": 135576,
+    "sha256": "d33d5d475d2457cb48abae239a2ba0a6ff14a6fa344633e4866c74c6f7907724"
+   },
+   {
+    "path": "VAEEncoder.mlmodelc/weights/weight.bin",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/VAEEncoder.mlmodelc/weights/weight.bin",
+    "size": 68370240,
+    "sha256": "6b56bc9e7049029326c4efa22b3d45ae755aecc487eaeb38014993c05c23056f"
+   },
+   {
+    "path": "merges.txt",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/merges.txt",
+    "size": 524657,
+    "sha256": "f526393189112391ce6f9795d4695f704121ce452c3aad1f5335cc41337eba85"
+   },
+   {
+    "path": "vocab.json",
+    "url": "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base/resolve/3ec13022f07ad48b6dbc0a6fd77fcf96a106ca1b/original/compiled/vocab.json",
+    "size": 862328,
+    "sha256": "5047b556ce86ccaf6aa22b3ffccfc52d391ea4accdab9c2f2407da5b742d4363"
+   }
+  ]
+ }
+}

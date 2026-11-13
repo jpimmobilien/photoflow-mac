@@ -1,0 +1,32 @@
+{
+ "realesrgan-x4plus": {
+  "file": "realesrgan-x4plus.mlpackage.zip",
+  "size": 31032113,
+  "sha256": "1976d3ee6630283c7e5ce14d53e26fe8c30a843b9b14fe6b5878dbbfe5f2ebe2",
+  "scale": 4,
+  "tile": 256,
+  "source": "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth",
+  "weights_sha256": "4fa0d38905f75ac06eb49a7951b426670021be3018265fd191d2125df9d682f1",
+  "license": "BSD-3-Clause"
+ },
+ "realesrgan-x2plus": {
+  "file": "realesrgan-x2plus.mlpackage.zip",
+  "size": 31073460,
+  "sha256": "d1b6e818de329ec3ec9e2c464e1200bc9b73bc6494b2ca29f3db41e5273e014a",
+  "scale": 2,
+  "tile": 256,
+  "source": "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.1/RealESRGAN_x2plus.pth",
+  "weights_sha256": "49fafd45f8fd7aa8d31ab2a22d14d91b536c34494a5cfe31eb5d89c2fa266abb",
+  "license": "BSD-3-Clause"
+ },
+ "realesr-general-x4v3": {
+  "file": "realesr-general-x4v3.mlpackage.zip",
+  "size": 2285222,
+  "sha256": "f007b1c64ed33b2e9f6bcd303ba30b9f0e077762c42733f5edec7cd11875cc47",
+  "scale": 4,
+  "tile": 256,
+  "source": "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-general-x4v3.pth",
+  "weights_sha256": "8dc7edb9ac80ccdc30c3a5dca6616509367f05fbc184ad95b731f05bece96292",
+  "license": "BSD-3-Clause"
+ }
+}
