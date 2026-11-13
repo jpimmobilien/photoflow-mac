@@ -39,6 +39,7 @@ lipo -create "${BINARIES[@]}" -output "$APP/Contents/MacOS/PhotoFlow"
 sed -e "s/__VERSION__/$VERSION/" -e "s/__BUILD__/$BUILD/" "$ROOT/Packaging/Info.plist" > "$APP/Contents/Info.plist"
 printf "APPL????" > "$APP/Contents/PkgInfo"
 cp "$ROOT/Packaging/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
+cp "$ROOT/Resources/BrandMark.png" "$APP/Contents/Resources/BrandMark.png"
 for lproj in "$ROOT"/Resources/*.lproj; do
     name="$(basename "$lproj")"
     mkdir -p "$APP/Contents/Resources/$name"

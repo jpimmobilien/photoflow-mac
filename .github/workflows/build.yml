@@ -40,6 +40,21 @@ jobs:
           file build/PhotoFlow.app/Contents/MacOS/PhotoFlow
           codesign -dv build/PhotoFlow.app 2>&1 | head -5
 
+      - name: Verify new app icon in app and DMG
+        run: |
+          set -euo pipefail
+          want=$(shasum -a 256 Packaging/AppIcon.icns | cut -d' ' -f1)
+          inapp=$(shasum -a 256 build/PhotoFlow.app/Contents/Resources/AppIcon.icns | cut -d' ' -f1)
+          mnt=$(mktemp -d); hdiutil attach -nobrowse -readonly -mountpoint "$mnt" build/PhotoFlow.dmg >/dev/null
+          indmg=$(shasum -a 256 "$mnt/PhotoFlow.app/Contents/Resources/AppIcon.icns" | cut -d' ' -f1)
+          plist=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIconFile' "$mnt/PhotoFlow.app/Contents/Info.plist")
+          test -f "$mnt/PhotoFlow.app/Contents/Resources/BrandMark.png"
+          sips -s format png "$mnt/PhotoFlow.app/Contents/Resources/AppIcon.icns" --out icon-from-dmg.png >/dev/null
+          hdiutil detach "$mnt" >/dev/null || hdiutil detach -force "$mnt"
+          echo "source $want | app $inapp | dmg $indmg | CFBundleIconFile=$plist" | tee icon-check.log
+          test "$want" = "$inapp" && test "$want" = "$indmg" && test "$plist" = "AppIcon"
+          echo "✓ new icon verified in PhotoFlow.app and PhotoFlow.dmg" | tee -a icon-check.log
+
       - name: Self-test (native arm64)
         run: build/PhotoFlow.app/Contents/MacOS/PhotoFlow --qa selftest 2>&1 | tee selftest-arm64.log
 
@@ -116,7 +131,7 @@ jobs:
           - macOS 13 Ventura oder neuer
           NOTES
           gh release create "$TAG" build/PhotoFlow.dmg --title "PhotoFlow Build ${{ github.run_number }}" --notes-file notes.md --latest
-          mkdir -p /tmp/dist && cp build/PhotoFlow.dmg /tmp/dist/ && cp build.log selftest-*.log qa.log /tmp/dist/ 2>/dev/null || true
+          mkdir -p /tmp/dist && cp build/PhotoFlow.dmg /tmp/dist/ && cp build.log selftest-*.log qa.log icon-check.log icon-from-dmg.png /tmp/dist/ 2>/dev/null || true
           cd /tmp/dist
           git init -q -b dist
           git config user.name "github-actions"
