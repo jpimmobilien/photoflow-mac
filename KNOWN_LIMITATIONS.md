@@ -18,6 +18,8 @@
 - **Portrait retouch / face restoration is not available** – no face-restoration model with a licence that permits use in PhotoFlow was found.
 - **Background replacement** relies on Vision's subject mask (any subject on macOS 14+, people only on macOS 13); fine hair or transparent objects may need manual correction. The shadow is a simple contact shadow, not physically based relighting.
 - **ETA** is shown only after the step time has been measured on this Mac (no estimate is invented before).
+- **Needs a Metal GPU for image generation.** Core ML's CPU-only path cannot run the float16 diffusion models correctly (measured), so there is no CPU fallback for generation. Empty / uniform outputs are detected and reported.
+- **Verification:** Stable Diffusion inference was verified on GitHub's Intel VM GPU (correct image, inpainting with untouched surroundings), but GitHub's virtual Macs cannot run it reliably, so results on real Apple Silicon / Intel GPUs could not be verified by CI – see `TEST_REPORT.md` §3. Downloads, verification, Real-ESRGAN, LaMa, Vision, metadata, cancellation, offline operation and memory behaviour were verified with real models.
 
 ## Image processing
 - Auto Enhance is rule-based and conservative by design; strongly stylised photos (e.g. deliberate high-key or low-key looks not recognised as such) may be nudged toward neutral. Use *Subtle* or adjust afterwards.

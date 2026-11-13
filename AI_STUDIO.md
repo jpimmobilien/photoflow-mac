@@ -47,14 +47,19 @@ contain links; models contain no executable code.
 `AIHardware` reads architecture, chip (e.g. "Apple M2 Pro"), Apple Silicon generation, Neural Engine, Metal GPU
 family, memory, free disk space and macOS version, and assigns a tier:
 
-| Tier | Recommended model | Variants per run | Compute units |
+| Tier | Recommended model | Variants per run | Compute units (diffusion) |
 |---|---|---|---|
-| Intel / no Metal GPU | SD 2.1 (float16) | up to 2 | CPU + GPU (CPU only without Metal or in *Energy saving*) |
+| Intel | SD 2.1 (float16) | up to 2 | text encoder on the CPU, UNet + VAE on the GPU |
 | Apple Silicon < 16 GB | SD 2.1 Compact | up to 2 | CPU + GPU |
 | Apple Silicon ≥ 16 GB | SDXL (4.5-bit) | up to 4 | CPU + GPU |
 
-MLX is not used (it is Apple-Silicon-only); Core ML runs on both architectures. Models that cannot run (macOS too old,
-Intel for SDXL, too little memory) cannot be downloaded and say why; models that run slowly show a warning.
+Image generation needs a Metal GPU: measured on macOS 15 (`--qa ai-diag`), Core ML's CPU-only path cannot run these
+float16 models correctly (on x86 the UNet does not run at all and the VAE returns wrong values). PhotoFlow therefore
+never silently falls back to the CPU for diffusion; a GPU error triggers one clean reload, and a result that is
+empty/uniform is rejected with an explanation instead of being shown. Real-ESRGAN and LaMa run on the CPU, GPU or
+Neural Engine. MLX is not used (it is Apple-Silicon-only); Core ML runs on both architectures. Models that cannot run
+(macOS too old, Intel for SDXL, too little memory, no Metal GPU) cannot be downloaded and say why; models that run
+slowly show a warning.
 
 **Performance profiles:** Energy saving (×0.75 steps, low-memory loading, models released after 1 min), Balanced,
 Maximum quality (×1.25 steps), Maximum speed (×0.7 steps, models kept loaded for 15 min). Low-memory mode

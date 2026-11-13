@@ -110,3 +110,36 @@ Memory stays flat from 100 to 1,000 photos (no growth/leak). Source photos 2400�
 - **HEIC / RAW / TIFF sources**: the dataset contains JPEG and PNG only.
 - **macOS 13/14 and macOS 26**: tested on macOS 15.8 only.
 - WebP export is not available on the runner's macOS (ImageIO cannot encode WebP there); the option is hidden automatically.
+
+## 3. AI Studio (GitHub Actions, `ai-test.yml` / `ui.yml`, real downloads and real inference)
+
+Runners: `macos-15-intel` (Intel Core i7-8700B VM, 14 GB, "Apple Paravirtual" GPU) and `macos-15` (Apple M1 VM, 7 GB).
+
+| Test | Intel VM | Apple Silicon VM |
+|---|---|---|
+| Model catalog, hardware detection (`ai-info`) | ✓ SDXL correctly refused on Intel | ✓ "Apple M1 (Virtual)", tier compact |
+| Download + SHA-256 verification of all files (SD 2.1 fp16: 22 files / 2.58 GB in 36–90 s) | ✓ | ✓ |
+| Pause after 6 s → resume (resume data) | ✓ continued at the paused position | ✓ |
+| Corrupted copy detected by checksum | ✓ | ✓ |
+| In-app download with progress, verification, install (LaMa, UI tour) | – | ✓ |
+| Real-ESRGAN 2× / 4× (600×400 → 2400×1600, tiled) | ✓ consistency 0.010 / 0.011 | – |
+| Denoise / restore detail | ✓ | – |
+| Vision subject mask | ✓ coverage 0.79 (portrait) | ✓ (UI tour) |
+| LaMa object removal | ✓ outside pixels unchanged (diff 0.00000), 42 s on CPU | ✓ (UI tour) |
+| AI metadata (IPTC Digital Source Type read back) | ✓ | ✓ |
+| Text-to-image, SD 2.1, network blocked (`sandbox-exec deny network*`) | ✓ first run: correct 512×512 image (`ai-results/x86_64/t2i.png`), ~47 s/step on the VM GPU | ✗ VM GPU returns an empty image (detected and reported) |
+| Inpainting | ✓ outside the mask unchanged (0.00000) | ✗ (VM GPU) |
+| Cancel | ✓ stops at the next step (0.00 s after the request) | ✓ |
+| Memory over 3 runs | ✓ peak 5.97 → 6.03 → 5.98 GB, no growth, released after unload | – |
+| Offline: nothing contacted the network during generation | ✓ (sandbox) | ✓ |
+
+**Backend diagnostics (`ai-diag`, Intel, macOS 15):** text encoder correct on CPU and GPU; UNet fails on the CPU and
+runs on the GPU; VAE decoder/encoder run on the CPU but return values that differ strongly from the GPU (wrong). Hence
+PhotoFlow runs diffusion on the GPU only.
+
+**What could not be verified:** GitHub's virtual Macs cannot run Stable Diffusion reliably on their GPUs – the Intel
+VM's paravirtual GPU produced one correct image and then hung in the VAE (later run: runner lost), the Apple-Silicon
+VM's GPU produced empty images, and its CPU produced noise. PhotoFlow detects such outputs and reports an error instead
+of showing them. Generation, image-to-image, generative fill, outpainting and background replacement on a real Mac
+GPU (Apple Silicon or Intel) therefore still need to be confirmed on real hardware. SDXL could not be tested (needs
+Apple Silicon with ≥ 16 GB; the runners have 7 GB).
