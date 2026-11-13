@@ -69,9 +69,11 @@ jobs:
           set +e
           APP=build/PhotoFlow.app/Contents/MacOS/PhotoFlow
           mkdir -p /tmp/shots
+          # Intel CI VMs have no usable Metal GPU → use PhotoFlow's CPU-rendering setting there
+          EXTRA=""; [ "$(uname -m)" = "x86_64" ] && EXTRA="-forceCPURendering YES"
           run_tour() {
             rm -rf /tmp/tourlib
-            PHOTOFLOW_LIBRARY_DIR=/tmp/tourlib PHOTOFLOW_TOUR_PHOTOS=/tmp/tour-photos PHOTOFLOW_TOUR_SIZE="${PHOTOFLOW_TOUR_SIZE:-1440x900}" PHOTOFLOW_TOUR_SET="${PHOTOFLOW_TOUR_SET:-full}" "$APP" --ui-tour /tmp/shots "$@" > /tmp/tour.log 2>&1
+            PHOTOFLOW_LIBRARY_DIR=/tmp/tourlib PHOTOFLOW_TOUR_PHOTOS=/tmp/tour-photos PHOTOFLOW_TOUR_SIZE="${PHOTOFLOW_TOUR_SIZE:-1440x900}" PHOTOFLOW_TOUR_SET="${PHOTOFLOW_TOUR_SET:-full}" "$APP" --ui-tour /tmp/shots "$@" $EXTRA > /tmp/tour.log 2>&1
             grep UITOUR /tmp/tour.log; cat /tmp/tour.log >> /tmp/tour-all.log
           }
           run_tour -appearance light -AppleLanguages '(en)'
