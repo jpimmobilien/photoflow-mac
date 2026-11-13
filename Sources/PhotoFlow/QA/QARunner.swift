@@ -50,7 +50,9 @@ enum QARunner {
         case "eval-perspective": try evalPerspective(folder: arg(rest, 0))
         case "batch": try await batch(folder: arg(rest, 0), count: Int(arg(rest, 1)) ?? 100, concurrency: rest.count > 2 ? Int(rest[2]) : nil)
         case "enhance": try enhanceOne(input: arg(rest, 0), output: arg(rest, 1))
-        default: throw QAError(description: "unknown command \(cmd)")
+        default:
+            if try await AIQA.run(cmd, rest) { return }
+            throw QAError(description: "unknown command \(cmd)")
         }
     }
 

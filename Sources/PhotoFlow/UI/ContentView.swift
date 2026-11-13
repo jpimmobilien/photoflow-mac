@@ -134,6 +134,7 @@ struct ContentView: View {
             case .similar: DuplicatesView(model: app.similar)
             case .exportHistory: ExportHistoryView()
             case .trash: TrashView()
+            case .aiStudio: AIStudioView()
             default: LibraryView()
             }
         }
@@ -255,7 +256,8 @@ struct TabBar: View {
          Tab(id: "albums", title: String(localized: "Albums"), symbol: "rectangle.stack", items: [.albums]),
          Tab(id: "favorites", title: String(localized: "Favorites"), symbol: "heart", items: [.favorites]),
          Tab(id: "batch", title: String(localized: "Batch"), symbol: "wand.and.stars", items: [.batch]),
-         Tab(id: "duplicates", title: String(localized: "Duplicates"), symbol: "square.on.square", items: [.duplicates])]
+         Tab(id: "duplicates", title: String(localized: "Duplicates"), symbol: "square.on.square", items: [.duplicates]),
+         Tab(id: "ai", title: String(localized: "AI Studio"), symbol: "sparkles", items: [.aiStudio])]
     }
 
     static let moreItems: [(SidebarItem, String, String)] = [

@@ -37,7 +37,7 @@ jobs:
         run: |
           set +e
           gh release view ai-models-v1 >/dev/null 2>&1 || gh release create ai-models-v1 --title "PhotoFlow AI models v1" --notes "Core ML conversions of official open-weight models (see manifest.json for sources, licences and SHA-256)." --prerelease
-          gh release upload ai-models-v1 models/*.zip models/manifest.json --clobber
+          gh release upload ai-models-v1 models/*.zip models/manifest.json
           mkdir -p /tmp/pub && cp -r probe catalog models/manifest.json convert.log /tmp/pub/
           cd /tmp/pub && git init -q -b ai-probe && git config user.name github-actions && git config user.email github-actions@users.noreply.github.com
           git add -A && git commit -q -m "AI probe ${GITHUB_SHA::7}" && git push -f -q "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" ai-probe
@@ -66,4 +66,4 @@ jobs:
       - name: Publish LaMa
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload ai-models-v1 lama.mlpackage.zip lama-manifest.json --clobber
+        run: gh release upload ai-models-v1 lama.mlpackage.zip lama-manifest.json

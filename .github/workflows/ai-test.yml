@@ -1,0 +1,133 @@
+name: AI Studio tests (real models)
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: 'macos-15-intel (Intel) or macos-15 (Apple Silicon)'
+        default: macos-15-intel
+      model:
+        description: 'Diffusion model to download and test'
+        default: sd21-fp16
+      steps:
+        description: 'Diffusion steps per test image'
+        default: '10'
+      force_cpu:
+        description: 'Run Core ML on the CPU only'
+        type: boolean
+        default: false
+      compile_only:
+        description: 'Only build (fast compile check)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  ai:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 330
+    env:
+      PHOTOFLOW_MODELS_DIR: /Users/runner/ai-models
+      PHOTOFLOW_AI_MODEL: ${{ inputs.model }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest Xcode
+        run: |
+          XC=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          [ -z "$XC" ] && XC=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1)
+          echo "Using $XC"; sudo xcode-select -s "$XC/Contents/Developer"
+          swift --version; xcrun --show-sdk-version
+
+      - name: Build (native architecture)
+        run: |
+          chmod +x Scripts/*.sh
+          ARCHS=$(uname -m) NO_DMG=1 ./Scripts/build_app.sh > build.log 2>&1; rc=$?
+          cat build.log | tail -n 260
+          exit $rc
+
+      - name: Restore model cache
+        if: ${{ !inputs.compile_only }}
+        uses: actions/cache@v4
+        with:
+          path: /Users/runner/ai-models
+          key: ai-models-v1-${{ inputs.model }}-${{ hashFiles('Sources/PhotoFlow/AI/AIModelCatalogData.swift') }}
+
+      - name: Test images
+        if: ${{ !inputs.compile_only }}
+        run: |
+          mkdir -p /tmp/ai/in /tmp/ai/out
+          for i in 03 07 15 20 23; do curl -sfL --max-time 30 -o /tmp/ai/in/kodim$i.png "https://r0k.us/graphics/kodak/kodak/kodim$i.png" || true; done
+          curl -sfL --max-time 30 -o /tmp/ai/in/portrait.jpg "https://picsum.photos/id/64/1200/1600" || true
+          curl -sfL --max-time 30 -o /tmp/ai/in/room.jpg "https://picsum.photos/id/1068/1600/1067" || true
+          ls -la /tmp/ai/in
+
+      - name: AI tests
+        if: ${{ !inputs.compile_only }}
+        run: |
+          set +e
+          P=build/PhotoFlow.app/Contents/MacOS/PhotoFlow
+          CPU=""; [ "${{ inputs.force_cpu }}" = "true" ] && CPU="-forceCPURendering YES"
+          S=${{ inputs.steps }}
+          L=ai-test.log
+          IMG=/tmp/ai/in/kodim23.png; [ -f "$IMG" ] || IMG=$(ls /tmp/ai/in/* | head -1)
+          results=()
+          t() { local name="$1"; shift; echo "=== $name ===" | tee -a $L; local t0=$(date +%s)
+                "$@" 2>&1 | tee -a $L; local rc=${PIPESTATUS[0]}; local dt=$(( $(date +%s) - t0 ))
+                results+=("$name: $([ $rc = 0 ] && echo PASS || echo "FAIL ($rc)") (${dt}s)"); echo "--- $name rc=$rc ${dt}s" | tee -a $L; }
+          sysctl -n machdep.cpu.brand_string hw.memsize | tee -a $L
+          t "1 info"            $P $CPU --qa ai-info
+          t "2 metadata"        $P $CPU --qa ai-metadata /tmp/ai/out/meta.png
+          t "3 install esrgan x4 (pause/resume)" $P $CPU --qa ai-install realesrgan-x4plus pause
+          t "4 install esrgan x2" $P $CPU --qa ai-install realesrgan-x2plus
+          t "5 install esrgan general" $P $CPU --qa ai-install realesr-general-x4v3
+          t "6 install lama"    $P $CPU --qa ai-install lama
+          t "7 install ${{ inputs.model }}" $P $CPU --qa ai-install ${{ inputs.model }}
+          t "8 upscale 2x"      $P $CPU --qa ai-upscale "$IMG" /tmp/ai/out/upscale2.png 2
+          t "9 upscale 4x"      $P $CPU --qa ai-upscale "$IMG" /tmp/ai/out/upscale4.png 4
+          t "10 enhance denoise" $P $CPU --qa ai-enhance "$IMG" /tmp/ai/out/denoise.png denoise
+          t "11 enhance detail" $P $CPU --qa ai-enhance "$IMG" /tmp/ai/out/detail.png restoreDetail
+          t "12 subject (Vision)" $P $CPU --qa ai-subject /tmp/ai/in/portrait.jpg /tmp/ai/out/subject.png
+          t "13 object removal (LaMa)" $P $CPU --qa ai-remove "$IMG" /tmp/ai/out/remove.png
+          t "14 text-to-image (OFFLINE, network denied)" sandbox-exec -p '(version 1)(allow default)(deny network*)' $P $CPU --qa ai-t2i /tmp/ai/out/t2i.png $S repeat
+          t "15 image-to-image" $P $CPU --qa ai-i2i "$IMG" /tmp/ai/out/i2i.png $S
+          t "16 inpainting"     $P $CPU --qa ai-inpaint "$IMG" /tmp/ai/out/inpaint.png $S
+          t "17 outpainting"    $P $CPU --qa ai-outpaint "$IMG" /tmp/ai/out/outpaint.png $S
+          t "18 cancel"         $P $CPU --qa ai-cancel
+          t "19 memory (3 runs)" $P $CPU --qa ai-memory 3
+          printf '%s\n' "${results[@]}" | tee ai-summary.txt
+          cp $L ai-summary.txt /tmp/ai/out/ 2>/dev/null
+
+      - name: Publish results (branch ai-results)
+        if: always() && !inputs.compile_only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          D=/tmp/pub; rm -rf $D; mkdir -p $D/$(uname -m)
+          cp -r /tmp/ai/out/* $D/$(uname -m)/ 2>/dev/null
+          cp build.log $D/$(uname -m)/ 2>/dev/null
+          # keep images small for the branch
+          for f in $D/$(uname -m)/*.png; do [ -f "$f" ] && sips -Z 1600 "$f" >/dev/null 2>&1; done
+          cd $D && git init -q -b ai-results && git config user.name github-actions && git config user.email github-actions@users.noreply.github.com
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          git fetch -q origin ai-results && git checkout -q origin/ai-results -- . 2>/dev/null; cp -r /tmp/ai/out/* $(uname -m)/ 2>/dev/null
+          for f in $(uname -m)/*.png; do [ -f "$f" ] && sips -Z 1600 "$f" >/dev/null 2>&1; done
+          git add -A && git commit -q -m "AI test $(uname -m) ${GITHUB_SHA::7}" && git push -f -q origin HEAD:ai-results
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-test-${{ inputs.runner }}
+          path: |
+            build.log
+            ai-test.log
+            ai-summary.txt
+          if-no-files-found: warn

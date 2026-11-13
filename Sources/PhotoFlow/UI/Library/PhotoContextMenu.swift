@@ -22,6 +22,17 @@ struct PhotoContextMenu: View {
         }
         Button(String(localized: "Edit")) { app.openEditor(clicked) }
         Button(String(localized: "Compare")) { app.compare(ids) }
+        Menu(String(localized: "AI Studio")) {
+            ForEach([AIStudioModel.Section.edit, .fill, .expand, .enhance, .upscale]) { s in
+                Button(s.title) {
+                    guard let p = app.photo(clicked) else { return }
+                    let studio = AIStudioModel.shared
+                    studio.setSource(photo: p)
+                    studio.section = s
+                    app.sidebar = .aiStudio
+                }
+            }
+        }
         if ids.contains(where: { app.recipe(for: $0) != nil }) {
             Button(String(localized: "Restore Original")) { app.revertToOriginal(ids) }
         }

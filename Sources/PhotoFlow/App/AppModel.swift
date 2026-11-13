@@ -7,6 +7,7 @@ enum SidebarItem: Hashable {
     case overview, allPhotos, recentImports, favorites, recentlyEdited
     case albums, album(Int64)
     case batch, duplicates, similar, exportHistory, trash
+    case aiStudio
 }
 
 enum LibrarySort: String, CaseIterable, Identifiable {
@@ -260,6 +261,7 @@ final class AppModel: ObservableObject {
         case .similar: return String(localized: "Similar Photos")
         case .exportHistory: return String(localized: "Export History")
         case .trash: return String(localized: "Trash")
+        case .aiStudio: return String(localized: "AI Studio")
         }
     }
 
@@ -310,7 +312,7 @@ final class AppModel: ObservableObject {
         if panel.runModal() == .OK { importItems(panel.urls) }
     }
 
-    func importItems(_ urls: [URL]) {
+    func importItems(_ urls: [URL], completion: (([PhotoRecord]) -> Void)? = nil) {
         guard let store, !urls.isEmpty else { return }
         let service = ImportService(store: store)
         activity = ActivityStatus(title: String(localized: "Importing…"), completed: 0, total: 0)
@@ -335,7 +337,14 @@ final class AppModel: ObservableObject {
                 var msg = String(localized: "Imported \(result.imported.count) photos")
                 if result.duplicatesSkipped > 0 { msg += " · " + String(localized: "\(result.duplicatesSkipped) already in library") }
                 if !result.unreadable.isEmpty { msg += " · " + String(localized: "\(result.unreadable.count) unreadable") }
-                showToast(msg, symbol: "square.and.arrow.down.fill")
+                if let completion {
+                    // Already imported files (duplicates) are looked up by path so callers still get their records.
+                    var records = result.imported
+                    if records.isEmpty { records = urls.compactMap { u in photos.first { $0.path == u.path } } }
+                    completion(records)
+                } else {
+                    showToast(msg, symbol: "square.and.arrow.down.fill")
+                }
             } catch {
                 activity = nil
                 alert = AppAlert(title: String(localized: "Import failed"), message: error.localizedDescription)
@@ -389,13 +398,13 @@ final class AppModel: ObservableObject {
         refreshVisible()
     }
 
-    func createAlbum(named name: String, with ids: [Int64] = []) {
+    func createAlbum(named name: String, with ids: [Int64] = [], select: Bool = true) {
         guard let store else { return }
         let trimmed = name.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty, let id = try? store.createAlbum(name: trimmed) else { return }
         if !ids.isEmpty { try? store.add(ids, toAlbum: id) }
         reloadAlbums()
-        sidebar = .album(id)
+        if select { sidebar = .album(id) }
     }
 
     func renameAlbum(_ id: Int64, to name: String) {

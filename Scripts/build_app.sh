@@ -26,7 +26,10 @@ BINARIES=()
 for arch in "${ARCHS[@]}"; do
     echo "▸ Compiling for $arch (release)"
     swift build -c release --package-path "$ROOT" --scratch-path "$OUT/.build-$arch" \
-        --triple "$arch-apple-macosx13.0" 2>&1 | tail -n 60
+        --triple "$arch-apple-macosx13.0" > "$OUT/swift-build-$arch.log" 2>&1 || {
+            echo "✗ compile errors ($arch):"; grep -E "error:" "$OUT/swift-build-$arch.log" | sort -u | head -n 200
+            tail -n 40 "$OUT/swift-build-$arch.log"; exit 1; }
+    tail -n 15 "$OUT/swift-build-$arch.log"
     BIN_DIR="$(swift build -c release --package-path "$ROOT" --scratch-path "$OUT/.build-$arch" --triple "$arch-apple-macosx13.0" --show-bin-path)"
     test -x "$BIN_DIR/PhotoFlow" || { echo "✗ build for $arch failed"; exit 1; }
     BINARIES+=("$BIN_DIR/PhotoFlow")
