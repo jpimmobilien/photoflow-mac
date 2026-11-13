@@ -107,6 +107,21 @@ jobs:
           PHOTOFLOW_TOUR_SIZE=1920x1080 PHOTOFLOW_TOUR_SET=sizes run_tour -appearance light -AppleLanguages '(en)'
           PHOTOFLOW_TOUR_SIZE=1920x1080 PHOTOFLOW_TOUR_SET=sizes run_tour -appearance dark -AppleLanguages '(de)'
           grep -h "UITOUR-CHECK\|UITOUR-SUMMARY\|UITOUR: screen" /tmp/tour-all.log | tee /tmp/shots/interaction-checks.txt
+          # crash reports (if any) – first frames of the crashed thread
+          for f in $(ls -t ~/Library/Logs/DiagnosticReports/PhotoFlow* 2>/dev/null | head -2); do
+            echo "=== $f" | tee -a /tmp/shots/crash.txt
+            python3 - "$f" <<'PY' | tee -a /tmp/shots/crash.txt
+          import json, sys
+          t = open(sys.argv[1]).read().split("\n", 1)
+          d = json.loads(t[1]) if len(t) > 1 else {}
+          imgs = d.get("usedImages", [])
+          for th in d.get("threads", []):
+              if th.get("triggered"):
+                  for fr in th.get("frames", [])[:40]:
+                      im = imgs[fr.get("imageIndex", 0)].get("name", "?") if imgs else "?"
+                      print(im, fr.get("symbol", hex(fr.get("imageOffset", 0))))
+          PY
+          done
           ls -la /tmp/shots | head -100
 
       - name: Publish screenshots (shots branch)
@@ -115,7 +130,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set +e
-          mkdir -p /tmp/pub; cp /tmp/shots/*.png /tmp/pub/ 2>/dev/null; cp build.log /tmp/tour.log /tmp/tour-all.log /tmp/shots/interaction-checks.txt /tmp/pub/ 2>/dev/null
+          mkdir -p /tmp/pub; cp /tmp/shots/*.png /tmp/pub/ 2>/dev/null; cp build.log /tmp/tour.log /tmp/tour-all.log /tmp/shots/interaction-checks.txt /tmp/shots/crash.txt /tmp/pub/ 2>/dev/null
           cd /tmp/pub
           # downscale to keep the branch small (1440 pt windows at 2x → 1440 px wide)
           for f in *.png; do sips -Z 1600 "$f" >/dev/null 2>&1; done

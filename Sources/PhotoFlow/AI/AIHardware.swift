@@ -24,11 +24,12 @@ struct AIHardware: Sendable {
     let appleSiliconGeneration: Int?   // 1 = M1, 2 = M2 …
     let hasNeuralEngine: Bool
     let metalFamily: String?
-    let freeDiskBytes: Int64
     let osVersion: OperatingSystemVersion
     let tier: Tier
 
-    static var current: AIHardware { AIHardware() }
+    static let current = AIHardware()
+
+    var freeDiskBytes: Int64 { AIHardware.freeDisk() }
 
     private init() {
         base = HardwareProfile.current
@@ -46,7 +47,6 @@ struct AIHardware: Sendable {
         } else {
             metalFamily = nil
         }
-        freeDiskBytes = AIHardware.freeDisk()
         osVersion = ProcessInfo.processInfo.operatingSystemVersion
         if base.architecture == .intel || !base.hasMetal {
             tier = .intel
