@@ -248,8 +248,8 @@ enum AIError: LocalizedError {
         switch self {
         case .noModel(let c):
             return String(localized: "No model for “\(c.title)” is installed. Open Model Management and download one – it only takes a moment once.")
-        case .modelMissing(let n):
-            return String(localized: "The files of \(n) are missing or damaged. Remove the model in Model Management and download it again.")
+        case .modelMissing(let modelName):
+            return String(localized: "The files of \(modelName) are missing or damaged. Remove the model in Model Management and download it again.")
         case .imageUnreadable: return String(localized: "The image could not be read. Try another photo or export it as JPEG or PNG first.")
         case .emptyMask: return String(localized: "Paint over the area you want to change first.")
         case .emptyPrompt: return String(localized: "Describe what you want to see.")
