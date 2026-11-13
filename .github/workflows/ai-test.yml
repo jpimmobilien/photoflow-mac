@@ -47,6 +47,7 @@ jobs:
 
       - name: Build (native architecture)
         run: |
+          set +e
           chmod +x Scripts/*.sh
           ARCHS=$(uname -m) NO_DMG=1 ./Scripts/build_app.sh > build.log 2>&1; rc=$?
           cat build.log | tail -n 260
