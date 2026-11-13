@@ -80,6 +80,7 @@
 "Automatic enhancement" = "Automatic enhancement";
 "Back to Library" = "Back to Library";
 "Balanced" = "Balanced";
+"Batch" = "Batch";
 "Batch Process Selection…" = "Batch Process Selection…";
 "Batch Processing" = "Batch Processing";
 "Batch comparison: switch all results between original and edited" = "Batch comparison: switch all results between original and edited";
@@ -126,6 +127,7 @@
 "Color" = "Color";
 "Color Space" = "Color Space";
 "Colors" = "Colors";
+"Compact Grid" = "Compact Grid";
 "Compare" = "Compare";
 "Comparing file contents (%lld of %lld)…" = "Comparing file contents (%lld of %lld)…";
 "Comparing photos…" = "Comparing photos…";
@@ -166,6 +168,7 @@
 "Done" = "Done";
 "Double-click to open" = "Double-click to open";
 "Drag photos onto the album in the sidebar, or use “Move to Album” in the context menu." = "Drag photos onto the album in the sidebar, or use “Move to Album” in the context menu.";
+"Drag to browse the photos of this page" = "Drag to browse the photos of this page";
 "Drag to compare original (left) and edited (right)" = "Drag to compare original (left) and edited (right)";
 "Drop photos or whole folders here" = "Drop photos or whole folders here";
 "Drop to import" = "Drop to import";
@@ -221,6 +224,7 @@
 "File Names" = "File Names";
 "File Size" = "File Size";
 "File name" = "File name";
+"File name or camera" = "File name or camera";
 "Files that are no longer in the macOS Trash (e.g. after emptying it) cannot be restored." = "Files that are no longer in the macOS Trash (e.g. after emptying it) cannot be restored.";
 "Filter" = "Filter";
 "Find Duplicates" = "Find Duplicates";
@@ -297,6 +301,7 @@
 "Minimum similarity for photos to be grouped. Lower values find more, but less similar, photos." = "Minimum similarity for photos to be grouped. Lower values find more, but less similar, photos.";
 "Model" = "Model";
 "Modified" = "Modified";
+"More" = "More";
 "Mosaic" = "Mosaic";
 "Most complete metadata" = "Most complete metadata";
 "Move %lld photos to the Trash?" = "Move %lld photos to the Trash?";
@@ -310,6 +315,7 @@
 "Moved %lld files" = "Moved %lld files";
 "Moved %lld photos to the Trash" = "Moved %lld photos to the Trash";
 "Moving to Trash…" = "Moving to Trash…";
+"Multiple selection – Auto Enhance, export or batch-process them together" = "Multiple selection – Auto Enhance, export or batch-process them together";
 "My Albums" = "My Albums";
 "Name" = "Name";
 "Natural" = "Natural";
@@ -410,6 +416,7 @@
 "Professional Clean" = "Professional Clean";
 "Quality" = "Quality";
 "Quick Look" = "Quick Look";
+"Random Photo" = "Random Photo";
 "Recent Imports" = "Recent Imports";
 "Recently Edited" = "Recently Edited";
 "Recently imported" = "Recently imported";
@@ -460,6 +467,7 @@
 "Rotate 90° left" = "Rotate 90° left";
 "Rotate 90° right" = "Rotate 90° right";
 "Rotated by %@°." = "Rotated by %@°.";
+"Running in the background" = "Running in the background";
 "Same as Original" = "Same as Original";
 "Sample image" = "Sample image";
 "Sample image – import photos to preview the workflow on your own pictures." = "Sample image – import photos to preview the workflow on your own pictures.";
@@ -474,7 +482,6 @@
 "Scan Library" = "Scan Library";
 "Scanning…" = "Scanning…";
 "Scores combine file hashes, perceptual hashes and Apple's on-device image feature prints. They are practical guides, not mathematical guarantees – always review groups before deleting." = "Scores combine file hashes, perceptual hashes and Apple's on-device image feature prints. They are practical guides, not mathematical guarantees – always review groups before deleting.";
-"Search file names" = "Search file names";
 "Select All Except Recommended" = "Select All Except Recommended";
 "Select All Photos" = "Select All Photos";
 "Select a photo to see its details. Double-click or press Space to open it." = "Select a photo to see its details. Double-click or press Space to open it.";
@@ -484,6 +491,7 @@
 "Selected Photos (%lld)" = "Selected Photos (%lld)";
 "Selected for deletion: %lld" = "Selected for deletion: %lld";
 "Sensitivity" = "Sensitivity";
+"Settings" = "Settings";
 "Shadows" = "Shadows";
 "Sharpest image" = "Sharpest image";
 "Sharpness" = "Sharpness";
@@ -578,6 +586,7 @@
 "White balance" = "White balance";
 "Whites" = "Whites";
 "Works completely offline." = "Works completely offline.";
+"You can keep working – PhotoFlow stays responsive." = "You can keep working – PhotoFlow stays responsive.";
 "Your photos stay on your Mac" = "Your photos stay on your Mac";
 "Zoom to 100 %" = "Zoom to 100 %";
 "architecture" = "architecture";

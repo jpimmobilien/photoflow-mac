@@ -21,7 +21,7 @@ struct OverviewView: View {
             }
             .padding(.horizontal, DS.Space.page)
             .padding(.top, ContentView.topBarHeight + DS.Space.xxs)
-            .padding(.bottom, DS.Space.huge)
+            .padding(.bottom, 200)
             .frame(maxWidth: 1320, alignment: .leading)
             .frame(maxWidth: .infinity)
         }

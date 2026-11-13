@@ -35,7 +35,7 @@ enum EditFilter: String, CaseIterable, Identifiable {
     }
 }
 
-enum LibraryViewMode: String { case mosaic, grid, list }
+enum LibraryViewMode: String { case mosaic, grid, compact, list }
 
 struct Toast: Identifiable, Equatable {
     let id = UUID()
@@ -105,10 +105,10 @@ final class AppModel: ObservableObject {
         didSet { UserDefaults.standard.set(thumbnailSize, forKey: "thumbnailSize") }
     }
     @Published var editorPhotoID: Int64?
-    @Published var sidebarVisible: Bool = UserDefaults.standard.object(forKey: "sidebarVisible") as? Bool ?? true {
+    @Published var sidebarVisible: Bool = UserDefaults.standard.object(forKey: "sidebarVisible") as? Bool ?? false {
         didSet { UserDefaults.standard.set(sidebarVisible, forKey: "sidebarVisible") }
     }
-    @Published var inspectorVisible: Bool = UserDefaults.standard.object(forKey: "showInspector") as? Bool ?? true {
+    @Published var inspectorVisible: Bool = UserDefaults.standard.object(forKey: "showInspector") as? Bool ?? false {
         didSet { UserDefaults.standard.set(inspectorVisible, forKey: "showInspector") }
     }
     /// Full-size photo viewer (detail view with inspector) – opened by double-click / Space.
@@ -694,6 +694,34 @@ final class AppModel: ObservableObject {
         selection = [id]
         lastClicked = id
         viewerPhotoID = id
+    }
+
+    /// The photo the dock and the viewer refer to: the last clicked photo of the selection.
+    var currentPhoto: PhotoRecord? {
+        if let id = lastClicked, selection.contains(id), let p = photo(id) { return p }
+        return selectedPhotos.first ?? selection.first.flatMap { photo($0) }
+    }
+
+    /// Moves the single selection through the visible photos (dock ◀ ▶, scrubbing).
+    func stepSelection(_ delta: Int) {
+        let list = visiblePhotos
+        guard !list.isEmpty else { return }
+        let i = currentPhoto.flatMap { c in list.firstIndex { $0.id == c.id } } ?? (delta > 0 ? -1 : list.count)
+        selectIndex(i + delta)
+    }
+
+    func selectIndex(_ index: Int) {
+        let list = visiblePhotos
+        guard !list.isEmpty else { return }
+        let n = min(max(index, 0), list.count - 1)
+        selection = [list[n].id]
+        lastClicked = list[n].id
+    }
+
+    /// Opens a random photo of the current page in the viewer ("shuffle").
+    func showRandomPhoto() {
+        guard let p = visiblePhotos.randomElement() else { return }
+        openViewer(p.id)
     }
 
     /// The photo whose colours light the interface (effect 1 – Dynamic Ambient Light).

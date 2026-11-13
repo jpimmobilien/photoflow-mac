@@ -153,6 +153,9 @@ enum UITour {
         app.viewMode = .grid
         await pause(3)
         shot("16-all-photos-grid")
+        app.viewMode = .compact
+        await pause(3)
+        shot("16b-all-photos-compact")
         app.viewMode = .list
         await pause(2.5)
         shot("17-all-photos-list")
@@ -271,11 +274,14 @@ enum UITour {
         await pause(1)
 
         // Sidebar hidden via the keyboard shortcut path (menu command)
-        app.sidebarVisible = false
-        app.sidebar = .overview
-        await pause(2)
-        shot("39-overview-sidebar-hidden")
+        // Optional full sidebar (⌃⌘S) – shown with the library and the tab bar
         app.sidebarVisible = true
+        app.sidebar = .allPhotos
+        if let f = app.visiblePhotos.first?.id { app.selection = [f]; app.lastClicked = f }
+        await pause(2.5)
+        shot("39-library-with-sidebar")
+        app.sidebarVisible = false
+        app.selection = []
         await pause(1)
 
         // Settings window

@@ -124,7 +124,7 @@ struct LibraryView: View {
                         }
                         .padding(.horizontal, DS.Space.page)
                         .padding(.top, ContentView.topBarHeight + DS.Space.xxs)
-                        .padding(.bottom, 110)    // room for the floating selection bar
+                        .padding(.bottom, 200)    // room for the floating photo dock
                         .background(GeometryReader { g in
                             Color.clear.onAppear { width = g.size.width - DS.Space.page * 2 }
                                 .onChange(of: g.size.width) { w in width = w - DS.Space.page * 2 }
@@ -209,33 +209,42 @@ struct TopFadeMask: View {
 
 struct LibraryHeader: View {
     @EnvironmentObject private var app: AppModel
+    @State private var showSize = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: DS.Space.s) {
-            PageHeader(app.sidebarTitle, subtitle: subtitle)
-            ViewThatFits(in: .horizontal) {
-                controlsRow(compact: false)
-                controlsRow(compact: true)
+            // Title left, floating control capsule right (same row)
+            HStack(alignment: .center, spacing: DS.Space.m) {
+                Text(app.sidebarTitle)
+                    .font(DS.Font.display)
+                    .foregroundStyle(DS.Palette.textPrimary)
+                    .lineLimit(1).minimumScaleFactor(0.7)
+                    .layoutPriority(1)
+                Spacer(minLength: DS.Space.s)
+                ViewThatFits(in: .horizontal) {
+                    controls(compact: false)
+                    controls(compact: true)
+                }
             }
-        }
-    }
-
-    private func controlsRow(compact: Bool) -> some View {
-        HStack(spacing: DS.Space.s) {
-            GlassSearchField(text: $app.searchText, prompt: String(localized: "Search file names"))
-                .frame(minWidth: compact ? 200 : 260, maxWidth: 420)
-            Spacer(minLength: DS.Space.xs)
-            controls(compact: compact)
+            GlassSearchField(text: $app.searchText, prompt: String(localized: "File name or camera"))
+                .frame(maxWidth: 620)
+            Text(subtitle)
+                .font(DS.Font.callout).foregroundStyle(DS.Palette.textSecondary).monospacedDigit()
+                .contentTransitionNumeric()
+                .padding(.leading, 2)
         }
     }
 
     private func controls(compact: Bool) -> some View {
-        HStack(spacing: DS.Space.xxs) {
+        HStack(spacing: 2) {
             GlassSegmented(selection: Binding(get: { app.viewMode }, set: { m in withAnimation(DS.Motion.adaptive(DS.Motion.smooth)) { app.viewMode = m } }),
                            options: [.init(value: .mosaic, title: String(localized: "Mosaic"), symbol: "square.grid.3x3.topleft.filled"),
                                      .init(value: .grid, title: String(localized: "Grid"), symbol: "square.grid.2x2"),
+                                     .init(value: .compact, title: String(localized: "Compact Grid"), symbol: "square.grid.4x3.fill"),
                                      .init(value: .list, title: String(localized: "List"), symbol: "list.bullet")],
                            compact: true)
+
+            capsuleDivider
 
             if app.sidebar != .recentImports && app.sidebar != .recentlyEdited {
                 Menu {
@@ -247,11 +256,12 @@ struct LibraryHeader: View {
                     Toggle(String(localized: "Ascending"), isOn: $app.sortAscending)
                 } label: {
                     HStack(spacing: 5) {
-                        Image(systemName: "arrow.up.arrow.down")
-                        if !compact { Text(app.sort.displayName) }
-                        Image(systemName: app.sortAscending ? "arrow.up" : "arrow.down").font(.system(size: 9, weight: .bold))
+                        Image(systemName: "arrow.up.arrow.down").font(.system(size: 12, weight: .semibold))
+                        if !compact { Text(app.sort.displayName).font(.system(size: 13, weight: .semibold)) }
+                        Image(systemName: app.sortAscending ? "arrow.up" : "arrow.down").font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(DS.Palette.blue)
                     }
-                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(DS.Palette.textPrimary)
                 }
                 .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
                 .padding(.horizontal, DS.Space.xs)
@@ -270,29 +280,47 @@ struct LibraryHeader: View {
                 }
                 .pickerStyle(.inline)
             } label: {
-                HStack(spacing: 5) {
-                    Image(systemName: isFiltered ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease")
-                        .foregroundStyle(isFiltered ? DS.Palette.blue : DS.Palette.textPrimary)
-                    if !compact { Text(filterLabel) }
-                }
-                .font(.system(size: 12, weight: .medium))
+                Image(systemName: isFiltered ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(isFiltered ? DS.Palette.blue : DS.Palette.textPrimary)
+                    .frame(width: 30, height: 30)
             }
             .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
-            .padding(.horizontal, DS.Space.xs)
-            .tip(String(localized: "Filter"))
+            .tip(isFiltered ? filterLabel : String(localized: "Filter"))
 
-            if app.viewMode != .list && !compact {
-                HStack(spacing: 4) {
-                    Image(systemName: "photo").font(.system(size: 9)).foregroundStyle(DS.Palette.textTertiary)
-                    FluidSlider(value: $app.thumbnailSize, range: 90 ... 340, step: 1).frame(width: 84)
-                    Image(systemName: "photo").font(.system(size: 13)).foregroundStyle(DS.Palette.textTertiary)
-                }
-                .padding(.horizontal, DS.Space.xs)
+            Button { showSize.toggle() } label: { Image(systemName: "slider.horizontal.3") }
+                .buttonStyle(GlassIconButtonStyle(size: 30))
+                .disabled(app.viewMode == .list)
                 .tip(String(localized: "Thumbnail size"))
-            }
+                .popover(isPresented: $showSize, arrowEdge: .bottom) {
+                    VStack(alignment: .leading, spacing: DS.Space.s) {
+                        ControlLabel(text: String(localized: "Thumbnail size"))
+                        HStack(spacing: 6) {
+                            Image(systemName: "photo").font(.system(size: 10)).foregroundStyle(DS.Palette.textTertiary)
+                            FluidSlider(value: $app.thumbnailSize, range: 90 ... 340, step: 1).frame(width: 180)
+                            Image(systemName: "photo").font(.system(size: 15)).foregroundStyle(DS.Palette.textTertiary)
+                        }
+                    }
+                    .padding(DS.Space.m)
+                }
+
+            capsuleDivider
+
+            Button { app.showRandomPhoto() } label: { Image(systemName: "shuffle") }
+                .buttonStyle(GlassIconButtonStyle(size: 30))
+                .disabled(app.visiblePhotos.isEmpty)
+                .tip(String(localized: "Random Photo"))
+            Button { NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil) } label: { Image(systemName: "gearshape") }
+                .buttonStyle(GlassIconButtonStyle(size: 30))
+                .tip(String(localized: "Settings"), shortcut: "⌘,")
         }
-        .padding(DS.Space.xxs)
+        .padding(4)
         .glass(.floating, in: Capsule())
+        .fixedSize()
+    }
+
+    private var capsuleDivider: some View {
+        Rectangle().fill(DS.Palette.hairline).frame(width: 0.5, height: 20).padding(.horizontal, 4)
     }
 
     private var isFiltered: Bool { app.editFilter != .all || app.formatFilter != nil }
@@ -321,7 +349,7 @@ struct PhotoSections: View {
 
     var body: some View {
         let groups = PhotoGrouping.groups(for: app.visiblePhotos, sidebar: app.sidebar, sort: app.sort)
-        let spacing: CGFloat = app.viewMode == .mosaic ? 6 : 10
+        let spacing: CGFloat = 6
         LazyVStack(alignment: .leading, spacing: DS.Space.xl, pinnedViews: []) {
             ForEach(groups) { group in
                 VStack(alignment: .leading, spacing: DS.Space.s) {
@@ -338,10 +366,22 @@ struct PhotoSections: View {
                                 }
                             }
                         }
-                    } else {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: app.thumbnailSize, maximum: app.thumbnailSize * 1.6), spacing: spacing)], spacing: spacing) {
+                    } else if app.viewMode == .grid {
+                        // large square tiles with title and details below (album-style)
+                        let side = max(140, app.thumbnailSize * 1.25)
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: side, maximum: side * 1.35), spacing: DS.Space.l)], spacing: DS.Space.xl) {
                             ForEach(group.photos) { photo in
-                                cell(photo, index: 0).frame(height: app.thumbnailSize)
+                                VStack(alignment: .leading, spacing: 7) {
+                                    cell(photo, index: 0).aspectRatio(1, contentMode: .fit)
+                                    PhotoCaption(photo: photo, highlighted: app.selection.contains(photo.id))
+                                }
+                            }
+                        }
+                    } else {
+                        let side = max(70, app.thumbnailSize * 0.62)
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: side, maximum: side * 1.4), spacing: 6)], spacing: 6) {
+                            ForEach(group.photos) { photo in
+                                cell(photo, index: 0).aspectRatio(1, contentMode: .fit)
                             }
                         }
                     }
@@ -356,7 +396,7 @@ struct PhotoSections: View {
     private func cell(_ photo: PhotoRecord, index: Int) -> some View {
         let fresh = app.freshlyImported.contains(photo.id)
         return PhotoCell(photo: photo, recipe: app.recipe(for: photo.id), selected: app.selection.contains(photo.id),
-                         radius: app.viewMode == .mosaic ? 8 : DS.Radius.tile)
+                         radius: app.viewMode == .grid ? DS.Radius.card : (app.viewMode == .mosaic ? 8 : DS.Radius.xs + 2))
             .contextMenu { PhotoContextMenu(clicked: photo.id) }
             .onDrag { dragProvider(for: photo) }
             .reveal(index: fresh ? (app.visiblePhotos.firstIndex(of: photo) ?? 0) : 0, enabled: fresh)
@@ -372,6 +412,26 @@ struct PhotoSections: View {
             return nil
         }
         return provider
+    }
+}
+
+/// Title + details under a large grid tile; the active photo's title is tinted with the accent colour.
+struct PhotoCaption: View {
+    let photo: PhotoRecord
+    var highlighted: Bool
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+                Text(photo.filename).font(.system(size: 13, weight: .semibold)).lineLimit(1)
+                    .foregroundStyle(highlighted ? DS.Palette.blue : DS.Palette.textPrimary)
+                if photo.isFavorite { Image(systemName: "heart.fill").font(.system(size: 9)).foregroundStyle(DS.Palette.heart) }
+            }
+            Text(photo.cameraDescription ?? photo.formatName).font(.system(size: 12)).foregroundStyle(DS.Palette.textSecondary).lineLimit(1)
+            Text(verbatim: "\(photo.displayDate.formatted(.dateTime.day().month(.abbreviated).year())) · \(photo.width) × \(photo.height) · \(photo.fileSize.formattedBytes)")
+                .font(.system(size: 11)).foregroundStyle(DS.Palette.textTertiary).monospacedDigit().lineLimit(1)
+        }
+        .padding(.horizontal, 2)
+        .animation(DS.Motion.snappy, value: highlighted)
     }
 }
 

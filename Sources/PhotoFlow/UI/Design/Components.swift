@@ -89,7 +89,7 @@ struct PageHeader<Trailing: View>: View {
         HStack(alignment: .lastTextBaseline, spacing: DS.Space.m) {
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(DS.Font.largeTitle)
+                    .font(DS.Font.display)
                     .foregroundStyle(DS.Palette.textPrimary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
