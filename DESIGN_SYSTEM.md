@@ -133,19 +133,27 @@ magnetic hover, zoom and stagger. Looping animations are always *scoped* to thei
 `ToastView`, `ProgressRing`, `HistogramPlot`, `SegmentBar`, `BrandMark`, `Illustration`, `SamplePhoto`,
 `BeforeAfterSlider`, `CompareDivider`, `OptionChip`, `GlassMenuRow`, `SelectionBar`, `TopBar`.
 
-## 8. Window structure
+## 8. Window structure (layout after the supplied reference, colours from the brief)
 
 ```
-┌ Background Glass sidebar (236) ┬ stage ──────────────────────────────────────────┐
-│ ● ● ●                 ⎕       │  [⎕]                    [activity] [◨] [+ Import] │ ← floating top bar (drag area)
-│ ◉ PhotoFlow                    │  Large Title                                      │
-│ Library                        │  count line                                        │
-│  ▸ Overview  (glass pill)      │  [search……………]          (mosaic|grid|list ↕ ⌯ ━○━) │ ← floating control capsule
-│ Albums / Tools                 │  Month section ───────────────────────────────    │
-│                                │  photo mosaic …                       ┌Inspector┐ │ ← floating glass panel
-│ 🔒 100 % on-device             │        ( selection bar – floating glass )│        │ │
-└────────────────────────────────┴──────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────────┐
+│ ● ● ● [⎕]     ( ✦Übersicht │ ▣Fotos │ ▤Alben │ ♡Favoriten │ ✧Stapel │ ⧉Duplikate │ …Mehr )   [◨][+ Import] │
+│                                                                                     │
+│ Fotos (display title)                      ( ▦ ▩ ▤ ☰ │ ↕ Aufnahmedatum ↓  ⌯  ≡ │ ⤨ ⚙ ) │
+│ [ 🔍 Dateiname oder Kamera ……………………… ]                                              │
+│ 1.234 Fotos · 12 GB                                                                 │
+│ November 2026  24 Fotos ───────────────────────────────────────────────────────    │
+│ ▢▢▢▢ mosaic / grid with captions …                                                  │
+│        ╭──────────────────────────── photo dock (Floating Glass) ──────────────╮   │
+│        │ ▣  photo-28.jpg                              ♡ ⧉ ▤ ⇪ 🗑 ⤢ ✕         │   │
+│        │    8. Nov 2026, 15:37  (accent)                                         │   │
+│        │    2400 × 1600 · 893 KB · JPEG                                          │   │
+│        │    12 ━━━━━━━━━━━○──────────────────────── 45                           │   │
+│        │    ▫━━○━━▫          ⤨  ◀◀  (◉)  ▶▶  ⧉       (✦ Auto Enhance) (Bearbeiten) │   │
+│        ╰─────────────────────────────────────────────────────────────────────────╯   │
+└───────────────────────────────────────────────────────────────────────────────────┘
 ```
+The sidebar (Background Glass, structure from the brief) slides in from the left on demand (⌃⌘S).
 
 ## 9. Accessibility
 

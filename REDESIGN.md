@@ -20,6 +20,17 @@ it is listed explicitly under "Engine changes".
 - All screens use the tokens; legacy names (`indigo`, `cyan`, `pink`, …) now map onto the new palette.
 
 ## Window & navigation
+- **Layout adopted from the supplied reference screenshot** (structure only, colours from the brief):
+  floating Liquid-Glass **tab bar** centred at the top (Overview · Photos · Albums · Favorites · Batch ·
+  Duplicates · More ▸ Recent Imports, Recently Edited, Similar Photos, Export History, Trash) with icon + label,
+  gliding tinted pill, icon-only variant in narrow windows; **title row** with the large page title on the
+  left and a floating **control capsule** on the right (Mosaic · Grid · Compact Grid · List, sort with
+  direction, filter, thumbnail size popover, random photo, settings); wide **search field** and **count line**
+  below; **month sections** with hairline; **grid** of large tiles with title and details underneath;
+  floating **photo dock** at the bottom (the "now playing" bar of PhotoFlow): large preview, file name,
+  date in the accent colour, details line, quick actions, a **position bar that scrubs through the page**
+  (or shows the progress of a background job), random/previous/open/next/compare controls, thumbnail-size
+  slider and pill buttons *Auto Enhance* and *Edit*.
 - Hidden title bar; window is dragged by the top strip; content scrolls under a transparent floating top bar
   with a soft fade mask.
 - **New sidebar** (custom, Background Glass): brand row, groups *Library* (Overview, All Photos, Recent Imports,
@@ -28,8 +39,9 @@ it is listed explicitly under "Engine changes".
   light, filled symbols when active, live counts, busy indicators, album drag & drop and context menus kept.
   Hide/show with the button, ⌃⌘S or View menu; animated.
 - Page changes unfold (fade + rise + scale) instead of switching abruptly.
-- Floating **Inspector** panel (⌥⌘I), floating **Selection bar** (fanned thumbnails, count, size, favourite,
-  edit, compare, album, export, trash, Auto Enhance, deselect) with a compact variant for narrow windows.
+- The full sidebar of the brief stays available (button top-left, ⌃⌘S, View menu); it starts hidden so the
+  photos get the full width, as in the reference.
+- Floating **Inspector** panel (⌥⌘I, off by default; the dock and the viewer carry the details).
 - Contextual glass tooltips with keyboard shortcuts.
 
 ## Screens
