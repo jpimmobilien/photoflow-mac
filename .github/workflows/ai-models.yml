@@ -1,0 +1,35 @@
+name: AI models (probe + Core ML conversion)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  models:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Probe official model repositories
+        run: python3 Scripts/ai/probe_models.py
+      - name: Install converter (CPU torch + coremltools)
+        run: |
+          pip install --quiet torch==2.4.1 --index-url https://download.pytorch.org/whl/cpu
+          pip install --quiet coremltools==8.1 numpy==1.26.4
+      - name: Convert Real-ESRGAN to Core ML
+        run: python3 Scripts/ai/convert_realesrgan.py 2>&1 | tee convert.log
+      - name: Publish (release ai-models-v1 + ai-probe branch)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          gh release view ai-models-v1 >/dev/null 2>&1 || gh release create ai-models-v1 --title "PhotoFlow AI models v1" --notes "Core ML conversions of official open-weight models (see manifest.json for sources, licences and SHA-256)." --prerelease
+          gh release upload ai-models-v1 models/*.zip models/manifest.json --clobber
+          mkdir -p /tmp/pub && cp -r probe models/manifest.json convert.log /tmp/pub/
+          cd /tmp/pub && git init -q -b ai-probe && git config user.name github-actions && git config user.email github-actions@users.noreply.github.com
+          git add -A && git commit -q -m "AI probe ${GITHUB_SHA::7}" && git push -f -q "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" ai-probe
