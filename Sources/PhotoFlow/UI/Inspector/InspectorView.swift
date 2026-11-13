@@ -1,101 +1,29 @@
 import SwiftUI
 
+/// Floating inspector next to the library (Floating Glass). Shows details for one photo, a summary for
+/// several, or library statistics when nothing is selected.
 struct InspectorView: View {
     @EnvironmentObject private var app: AppModel
-    @AppStorage(SettingsKeys.defaultStrength) private var strengthRaw = EnhanceStrength.balanced.rawValue
-
-    private var strength: EnhanceStrength { EnhanceStrength(rawValue: strengthRaw) ?? .balanced }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: DS.Space.m) {
                 let selected = app.selectedPhotos
                 if selected.count == 1, let photo = selected.first {
-                    single(photo)
+                    PhotoDetailsPanel(photo: photo, showsPreview: true)
+                        .id(photo.id)
+                        .transition(.opacity.combined(with: .offset(x: 12)))
                 } else if selected.count > 1 {
                     multiple(selected)
+                        .transition(.opacity)
                 } else {
                     nothing
+                        .transition(.opacity)
                 }
             }
-            .padding(16)
+            .padding(DS.Space.m)
         }
-        .background(
-            AmbientBackground(photo: app.selectedPhotos.count == 1 ? app.selectedPhotos.first : nil,
-                              recipe: app.selectedPhotos.first.flatMap { app.recipe(for: $0.id) }, intensity: 0.9)
-        )
-        .animation(DS.Motion.smooth, value: app.selection)
-    }
-
-    // MARK: - Single photo
-
-    @ViewBuilder
-    private func single(_ photo: PhotoRecord) -> some View {
-        let recipe = app.recipe(for: photo.id)
-        ThumbnailImage(photo: photo, recipe: recipe, pixelSize: 640, contentMode: .fit)
-            .frame(maxWidth: .infinity)
-            .frame(height: 190)
-            .shadow(color: .black.opacity(0.28), radius: 14, y: 8)
-            .onTapGesture(count: 2) { app.openEditor(photo.id) }
-            .id(photo.id)
-            .transition(.opacity.combined(with: .scale(scale: 0.97)))
-
-        VStack(alignment: .leading, spacing: 4) {
-            Text(photo.filename).font(DS.Font.headline).lineLimit(2).textSelection(.enabled)
-            Text(photo.displayDate.formatted(date: .long, time: .shortened)).font(DS.Font.caption).foregroundStyle(.secondary)
-        }
-
-        // Key facts as chips
-        FlowChips(items: chips(for: photo))
-
-        HistogramView(photo: photo, recipe: recipe)
-            .frame(height: 64)
-            .help(String(localized: "Histogram – distribution of dark (left) to bright (right) tones"))
-
-        enhanceCard(ids: [photo.id])
-
-        if let info = recipe?.auto, !info.notes.isEmpty {
-            VStack(alignment: .leading, spacing: 6) {
-                Label(String(localized: "What Auto Enhance did"), systemImage: "sparkles").font(DS.Font.headline)
-                ForEach(info.notes, id: \.self) { n in
-                    Label(n, systemImage: "checkmark").font(DS.Font.caption).foregroundStyle(.secondary)
-                }
-            }
-            .padding(12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .glassCard(cornerRadius: 12)
-        }
-
-        DisclosureGroup {
-            PhotoMetadataGrid(photo: photo).padding(.top, 6)
-        } label: {
-            Text(String(localized: "Information")).font(DS.Font.headline)
-        }
-        .padding(12)
-        .glassCard(cornerRadius: 12)
-
-        HStack {
-            Button { app.openEditor(photo.id) } label: { Label(String(localized: "Edit"), systemImage: "slider.horizontal.3") }
-            Button { app.openEditor(photo.id, compare: true) } label: { Label(String(localized: "Compare"), systemImage: "square.split.2x1") }
-        }
-        .softButton()
-
-        if photo.isMissing {
-            Button { app.locate(photo) } label: { Label(String(localized: "Locate Original…"), systemImage: "magnifyingglass") }
-                .softButton()
-        }
-    }
-
-    private func chips(for p: PhotoRecord) -> [(String, String)] {
-        var c: [(String, String)] = [
-            ("aspectratio", "\(p.width) × \(p.height)"),
-            ("doc", p.fileSize.formattedBytes),
-            ("photo", p.formatName)
-        ]
-        if let cam = p.cameraDescription { c.append(("camera", cam)) }
-        if p.isEdited { c.append(("slider.horizontal.3", String(localized: "Edited"))) }
-        if p.isFavorite { c.append(("heart.fill", String(localized: "Favorite"))) }
-        return c
+        .animation(DS.Motion.adaptive(DS.Motion.smooth), value: app.selection)
     }
 
     // MARK: - Multiple
@@ -103,72 +31,203 @@ struct InspectorView: View {
     @ViewBuilder
     private func multiple(_ photos: [PhotoRecord]) -> some View {
         let total = photos.reduce(Int64(0)) { $0 + $1.fileSize }
-        HStack(spacing: -30) {
-            ForEach(Array(photos.prefix(4).enumerated()), id: \.element.id) { i, p in
+        ZStack {
+            ForEach(Array(photos.prefix(4).enumerated().reversed()), id: \.element.id) { i, p in
                 ThumbnailImage(photo: p, recipe: app.recipe(for: p.id), pixelSize: 256)
-                    .frame(width: 76, height: 76)
-                    .rotationEffect(.degrees(Double(i - 1) * 4))
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(.white.opacity(0.6), lineWidth: 1.5))
-                    .shadow(radius: 3)
+                    .frame(width: 112, height: 112)
+                    .clipShape(RoundedRectangle(cornerRadius: DS.Radius.tile, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: DS.Radius.tile, style: .continuous).strokeBorder(.white.opacity(0.75), lineWidth: 1.5))
+                    .shadow(color: .black.opacity(0.18), radius: 6, y: 3)
+                    .rotationEffect(.degrees(Double(i) * 6 - 6))
+                    .offset(x: CGFloat(i) * 16 - 20)
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 6)
+        .frame(height: 150)
+        .animation(DS.Motion.adaptive(DS.Motion.smooth), value: photos.map(\.id))
 
-        Text(String(localized: "\(photos.count) photos selected")).font(.headline)
-        Text(total.formattedBytes).font(.callout).foregroundStyle(.secondary)
-
-        enhanceCard(ids: photos.map(\.id))
-
-        VStack(alignment: .leading, spacing: 8) {
-            Button { app.sidebar = .batch; app.batch.source = .selection } label: {
-                Label(String(localized: "Batch Process Selection…"), systemImage: "square.stack.3d.up")
-            }
-            Button { app.exportRequest = photos.map(\.id) } label: { Label(String(localized: "Export…"), systemImage: "square.and.arrow.up") }
-            Button { app.newAlbumRequest = photos.map(\.id) } label: { Label(String(localized: "New Album from Selection"), systemImage: "rectangle.stack.badge.plus") }
-            Button(role: .destructive) { app.requestTrash(photos.map(\.id)) } label: { Label(String(localized: "Move to Trash"), systemImage: "trash") }
+        VStack(alignment: .leading, spacing: 2) {
+            Text(String(localized: "\(photos.count) photos selected")).font(DS.Font.title2).foregroundStyle(DS.Palette.textPrimary)
+            Text(total.formattedBytes).font(DS.Font.callout).foregroundStyle(DS.Palette.textSecondary).monospacedDigit()
         }
-        .buttonStyle(.plain)
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .glassCard(cornerRadius: 12)
+
+        EnhanceCard(ids: photos.map(\.id))
+
+        VStack(alignment: .leading, spacing: 0) {
+            InspectorAction(title: String(localized: "Batch Process Selection…"), symbol: "wand.and.stars") {
+                app.sidebar = .batch; app.batch.source = .selection
+            }
+            InspectorAction(title: String(localized: "Export…"), symbol: "square.and.arrow.up") { app.exportRequest = photos.map(\.id) }
+            InspectorAction(title: String(localized: "New Album from Selection"), symbol: "rectangle.stack.badge.plus") { app.newAlbumRequest = photos.map(\.id) }
+            InspectorAction(title: String(localized: "Move to Trash"), symbol: "trash", destructive: true) { app.requestTrash(photos.map(\.id)) }
+        }
+        .padding(DS.Space.xxs)
+        .background(DS.Palette.hover, in: RoundedRectangle(cornerRadius: DS.Radius.card, style: .continuous))
     }
 
     // MARK: - Nothing selected
 
     private var nothing: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text(String(localized: "Library")).font(.headline)
-            StatTile(symbol: "photo.on.rectangle", value: "\(app.photos.count)", label: String(localized: "Photos"), tint: .blue)
-            StatTile(symbol: "slider.horizontal.3", value: "\(app.editedCount)", label: String(localized: "Edited"), tint: .purple)
-            StatTile(symbol: "internaldrive", value: app.totalBytes.formattedBytes, label: String(localized: "Total size"), tint: .teal)
-            Text(String(localized: "Select a photo to see its details. Double-click to edit."))
-                .font(.callout).foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: DS.Space.s) {
+            ControlLabel(text: String(localized: "Library"))
+            StatTile(symbol: "photo.on.rectangle", value: "\(app.photos.count)", label: String(localized: "Photos"), tint: DS.Palette.blue)
+            StatTile(symbol: "wand.and.stars", value: "\(app.editedCount)", label: String(localized: "Edited"), tint: DS.Palette.iris)
+            StatTile(symbol: "heart.fill", value: "\(app.favoriteCount)", label: String(localized: "Favorites"), tint: DS.Palette.heart)
+            StatTile(symbol: "internaldrive", value: app.totalBytes.formattedBytes, label: String(localized: "Total size"), tint: DS.Palette.sky)
+            Label(String(localized: "Select a photo to see its details. Double-click or press Space to open it."), systemImage: "info.circle")
+                .font(DS.Font.callout).foregroundStyle(DS.Palette.textSecondary)
+                .padding(.top, DS.Space.xxs)
+        }
+    }
+}
+
+/// Everything about one photo – used by the library inspector and the full-size viewer.
+struct PhotoDetailsPanel: View {
+    let photo: PhotoRecord
+    var showsPreview = true
+    @EnvironmentObject private var app: AppModel
+
+    var body: some View {
+        let recipe = app.recipe(for: photo.id)
+        VStack(alignment: .leading, spacing: DS.Space.m) {
+            if showsPreview {
+                ThumbnailImage(photo: photo, recipe: recipe, pixelSize: 640, contentMode: .fit)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 180)
+                    .shadow(color: .black.opacity(0.22), radius: 14, y: 8)
+                    .onTapGesture(count: 2) { app.openViewer(photo.id) }
+                    .help(String(localized: "Double-click to open"))
+            }
+
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(photo.filename).font(DS.Font.title3).foregroundStyle(DS.Palette.textPrimary).lineLimit(2).textSelection(.enabled)
+                    Text(photo.displayDate.formatted(date: .long, time: .shortened)).font(DS.Font.callout).foregroundStyle(DS.Palette.textSecondary)
+                }
+                Spacer()
+                Button { app.toggleFavorite([photo.id]) } label: { HeartIcon(filled: photo.isFavorite) }
+                    .buttonStyle(GlassIconButtonStyle(size: 30, tint: photo.isFavorite ? DS.Palette.heart : nil))
+                    .help(String(localized: "Favorite"))
+            }
+
+            HistogramView(photo: photo, recipe: recipe)
+                .frame(height: 70)
+                .help(String(localized: "Histogram – distribution of dark (left) to bright (right) tones"))
+
+            VStack(spacing: 0) {
+                infoRow("aspectratio", String(localized: "Resolution"), "\(photo.width) × \(photo.height) · \(String(format: "%.1f", photo.megapixels)) MP")
+                infoRow("doc", String(localized: "Format"), photo.formatName)
+                infoRow("internaldrive", String(localized: "File Size"), photo.fileSize.formattedBytes)
+                if let d = photo.captureDate { infoRow("calendar", String(localized: "Taken"), d.formatted(date: .abbreviated, time: .shortened)) }
+                if let cam = photo.cameraDescription { infoRow("camera", String(localized: "Camera"), cam) }
+                if let lens = photo.lensModel { infoRow("camera.aperture", String(localized: "Lens"), lens) }
+                if let ex = photo.exposureDescription { infoRow("timer", String(localized: "Exposure"), ex) }
+                infoRow(photo.isEdited ? "wand.and.stars" : "photo", String(localized: "Status"), status, tint: photo.isEdited ? DS.Palette.iris : nil, last: true)
+            }
+            .padding(.horizontal, DS.Space.s)
+            .background(DS.Palette.hover, in: RoundedRectangle(cornerRadius: DS.Radius.card, style: .continuous))
+
+            EnhanceCard(ids: [photo.id])
+
+            if let info = recipe?.auto, !info.notes.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    Label(String(localized: "What Auto Enhance did"), systemImage: "sparkles").font(DS.Font.headline)
+                        .foregroundStyle(DS.Palette.textPrimary)
+                    ForEach(info.notes, id: \.self) { n in
+                        Label(n, systemImage: "checkmark").font(DS.Font.caption).foregroundStyle(DS.Palette.textSecondary)
+                    }
+                }
+                .padding(DS.Space.s)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(DS.Palette.iris.opacity(0.08), in: RoundedRectangle(cornerRadius: DS.Radius.card, style: .continuous))
+            }
+
+            HStack(spacing: DS.Space.xs) {
+                Button { app.openEditor(photo.id) } label: { Label(String(localized: "Edit"), systemImage: "slider.horizontal.3").frame(maxWidth: .infinity) }
+                Button { app.openEditor(photo.id, compare: true) } label: { Label(String(localized: "Compare"), systemImage: "square.split.2x1").frame(maxWidth: .infinity) }
+            }
+            .softButton()
+
+            if photo.isMissing {
+                Button { app.locate(photo) } label: { Label(String(localized: "Locate Original…"), systemImage: "magnifyingglass") }
+                    .softButton()
+            }
         }
     }
 
-    // MARK: - Auto Enhance card
+    private var status: String {
+        if photo.isMissing { return String(localized: "Original missing") }
+        if let e = photo.editedAt { return String(localized: "Edited \(e.formatted(.relative(presentation: .named)))") }
+        return String(localized: "Original (not edited)")
+    }
 
-    private func enhanceCard(ids: [Int64]) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Picker(String(localized: "Strength"), selection: $strengthRaw) {
-                ForEach(EnhanceStrength.allCases) { Text($0.localizedName).tag($0.rawValue) }
+    private func infoRow(_ symbol: String, _ key: String, _ value: String, tint: Color? = nil, last: Bool = false) -> some View {
+        HStack(spacing: DS.Space.xs) {
+            Image(systemName: symbol).font(.system(size: 11, weight: .medium)).foregroundStyle(tint ?? DS.Palette.textTertiary).frame(width: 16)
+            Text(key).font(DS.Font.callout).foregroundStyle(DS.Palette.textSecondary)
+            Spacer(minLength: DS.Space.xs)
+            Text(value).font(DS.Font.callout.weight(.medium)).foregroundStyle(tint ?? DS.Palette.textPrimary)
+                .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
+        }
+        .padding(.vertical, 7)
+        .overlay(alignment: .bottom) { if !last { Rectangle().fill(DS.Palette.hairline).frame(height: 0.5) } }
+    }
+}
+
+/// Auto Enhance moment (Premium Glass): strength + action.
+struct EnhanceCard: View {
+    var ids: [Int64]
+    @EnvironmentObject private var app: AppModel
+    @AppStorage(SettingsKeys.defaultStrength) private var strengthRaw = EnhanceStrength.balanced.rawValue
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DS.Space.s) {
+            HStack(spacing: 6) {
+                Image(systemName: "wand.and.stars").foregroundStyle(DS.Palette.magic)
+                Text(String(localized: "Auto Enhance")).font(DS.Font.headline).foregroundStyle(DS.Palette.textPrimary)
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            Button { app.autoEnhance(ids, strength: strength) } label: {
-                Label(String(localized: "Auto Enhance"), systemImage: "wand.and.stars")
-                    .frame(maxWidth: .infinity)
+            GlassSegmented(selection: $strengthRaw,
+                           options: EnhanceStrength.allCases.map { .init(value: $0.rawValue, title: $0.localizedName) })
+            Button { app.autoEnhance(ids, strength: EnhanceStrength(rawValue: strengthRaw) ?? .balanced) } label: {
+                Label(String(localized: "Auto Enhance"), systemImage: "sparkles").frame(maxWidth: .infinity)
             }
-            .magicButton()
-            .controlSize(.large)
+            .buttonStyle(GlassButtonStyle(kind: .premium, large: true))
             .disabled(app.activity != nil)
             Text(String(localized: "Each photo is analyzed individually on this Mac."))
-                .font(.caption2).foregroundStyle(.secondary)
+                .font(DS.Font.caption).foregroundStyle(DS.Palette.textTertiary)
         }
-        .padding(12)
-        .glassCard(cornerRadius: 12)
+        .padding(DS.Space.s)
+        .background {
+            RoundedRectangle(cornerRadius: DS.Radius.card, style: .continuous)
+                .fill(LinearGradient(colors: [DS.Palette.blue.opacity(0.08), DS.Palette.iris.opacity(0.08), DS.Palette.sun.opacity(0.06)],
+                                     startPoint: .topLeading, endPoint: .bottomTrailing))
+                .overlay(RoundedRectangle(cornerRadius: DS.Radius.card, style: .continuous).strokeBorder(DS.Palette.rim, lineWidth: 0.6))
+        }
+    }
+}
+
+struct InspectorAction: View {
+    var title: String
+    var symbol: String
+    var destructive = false
+    var action: () -> Void
+    @State private var hovering = false
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: DS.Space.xs) {
+                Image(systemName: symbol).frame(width: 18)
+                Text(title)
+                Spacer()
+                Image(systemName: "chevron.right").font(.system(size: 10, weight: .semibold)).opacity(hovering ? 0.7 : 0.3)
+            }
+            .font(DS.Font.body)
+            .foregroundStyle(destructive ? DS.Palette.danger : DS.Palette.textPrimary)
+            .padding(.horizontal, DS.Space.s).padding(.vertical, 8)
+            .background(RoundedRectangle(cornerRadius: DS.Radius.control, style: .continuous).fill(hovering ? DS.Palette.hover : .clear))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { h in withAnimation(DS.Motion.quick) { hovering = h } }
     }
 }
 
@@ -180,9 +239,10 @@ struct FlowChips: View {
             ForEach(Array(items.enumerated()), id: \.offset) { _, item in
                 Label(item.1, systemImage: item.0)
                     .font(DS.Font.caption)
+                    .foregroundStyle(DS.Palette.textSecondary)
                     .lineLimit(1)
                     .padding(.horizontal, 8).padding(.vertical, 4)
-                    .background(Color.primary.opacity(0.07), in: Capsule())
+                    .background(DS.Palette.hover, in: Capsule())
             }
         }
     }

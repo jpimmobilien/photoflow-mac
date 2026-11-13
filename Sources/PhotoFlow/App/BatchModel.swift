@@ -28,6 +28,15 @@ final class BatchModel: ObservableObject {
     @Published private(set) var exportedBytes: Int64 = 0
     @Published var showOnlyProblems = false
 
+    // Live preview (the real planner applied to one photo of the chosen source)
+    @Published var previewPhotoID: Int64?
+    @Published private(set) var previewRecipe: EditRecipe?
+    @Published private(set) var previewNotes: [String] = []
+    @Published private(set) var cardRecipes: [String: EditRecipe] = [:]
+    @Published private(set) var previewLoading = false
+    private var analysisCache: [Int64: PhotoAnalysis] = [:]
+    private var previewTask: Task<Void, Never>?
+
     private var task: Task<Void, Never>?
     private var runner: BatchRunner?
     private var positions: [Int64: Int] = [:]
@@ -58,6 +67,53 @@ final class BatchModel: ObservableObject {
             return app.photos.filter { $0.path.hasPrefix(prefix) }
         }
     }
+
+    /// The photo shown in the live preview: the user's pick, else a landscape-format photo of the source.
+    func previewPhoto(_ app: AppModel) -> PhotoRecord? {
+        if let id = previewPhotoID, let p = app.photo(id), !p.isMissing { return p }
+        let pool = photosForSource(app).filter { !$0.isMissing }
+        return pool.first { $0.width > $0.height } ?? pool.first ?? app.photos.first { !$0.isMissing }
+    }
+
+    /// Recomputes the preview recipe (debounced). The photo is analysed once and cached; changing settings
+    /// only re-runs the cheap planning step, so the preview updates without reloading the screen.
+    func refreshPreview(_ app: AppModel) {
+        previewTask?.cancel()
+        guard let photo = previewPhoto(app) else {
+            previewRecipe = nil; previewNotes = []; cardRecipes = [:]; previewLoading = false
+            return
+        }
+        let wf = workflow, presets = app.customPresets, base = app.recipe(for: photo.id)
+        let cached = analysisCache[photo.id]
+        previewLoading = true
+        previewTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 120_000_000)
+            if Task.isCancelled { return }
+            let analysis: PhotoAnalysis?
+            if let cached { analysis = cached } else {
+                analysis = await Task.detached(priority: .userInitiated) { PhotoAnalyzer.analyze(url: photo.url, iso: photo.iso) }.value
+            }
+            guard !Task.isCancelled, let self else { return }
+            if let analysis {
+                if self.analysisCache.count > 24 { self.analysisCache.removeAll() }
+                self.analysisCache[photo.id] = analysis
+            }
+            let planned = BatchPlanner.recipe(workflow: wf, analysis: analysis, base: base, customPresets: presets)
+            var cards: [String: EditRecipe] = [:]
+            for w in BatchWorkflow.predefined {
+                cards[w.id] = BatchPlanner.recipe(workflow: w, analysis: analysis, base: base, customPresets: presets).recipe
+            }
+            withAnimation(DS.Motion.smooth) {
+                self.previewRecipe = planned.recipe
+                self.previewNotes = planned.notes
+                self.cardRecipes = cards
+                self.previewLoading = false
+            }
+        }
+    }
+
+    /// The photo currently being processed (for the live processing view).
+    var currentItem: Item? { items.last { $0.status == .processing } }
 
     func chooseFolder(_ app: AppModel) {
         let panel = NSOpenPanel()

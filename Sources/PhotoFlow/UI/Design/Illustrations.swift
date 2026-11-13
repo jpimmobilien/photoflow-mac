@@ -7,13 +7,14 @@ struct Illustration: View {
     var kind: Kind
     var size: CGFloat = 220
     @State private var appeared = false
+    @State private var floatOffset: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack {
             // soft halo
             Circle()
-                .fill(RadialGradient(colors: [DS.Palette.indigo.opacity(0.28), DS.Palette.cyan.opacity(0.08), .clear],
+                .fill(RadialGradient(colors: [DS.Palette.sky.opacity(0.22), DS.Palette.iris.opacity(0.10), .clear],
                                      center: .center, startRadius: 0, endRadius: size * 0.55))
                 .frame(width: size * 1.15, height: size * 1.15)
             content
@@ -21,7 +22,12 @@ struct Illustration: View {
         .frame(width: size, height: size * 0.8)
         .scaleEffect(appeared || reduceMotion ? 1 : 0.92)
         .opacity(appeared || reduceMotion ? 1 : 0)
-        .onAppear { withAnimation(DS.Motion.smooth.delay(0.05)) { appeared = true } }
+        .onAppear {
+            withAnimation(DS.Motion.smooth.delay(0.05)) { appeared = true }
+            if kind == .welcome && !reduceMotion {
+                withAnimation(.easeInOut(duration: 3.2).repeatForever(autoreverses: true)) { floatOffset = -6 }
+            }
+        }
         .accessibilityHidden(true)
     }
 
@@ -30,12 +36,16 @@ struct Illustration: View {
         let u = size / 220
         switch kind {
         case .welcome:
+            // The app icon itself, floating above two photo cards – depth from layering and soft shadows.
             ZStack {
-                PhotoCard(palette: .dusk).frame(width: 120 * u, height: 92 * u).rotationEffect(.degrees(-12)).offset(x: -44 * u, y: 10 * u)
-                PhotoCard(palette: .ocean).frame(width: 120 * u, height: 92 * u).rotationEffect(.degrees(9)).offset(x: 44 * u, y: 6 * u)
-                PhotoCard(palette: .sunset).frame(width: 132 * u, height: 100 * u).offset(y: -6 * u)
-                Sparkle(size: 34 * u).offset(x: 62 * u, y: -54 * u)
-                Sparkle(size: 16 * u).offset(x: 86 * u, y: -24 * u)
+                PhotoCard(palette: .dusk).frame(width: 104 * u, height: 80 * u).rotationEffect(.degrees(-14)).offset(x: -70 * u, y: 18 * u)
+                    .opacity(0.9)
+                PhotoCard(palette: .sunset).frame(width: 104 * u, height: 80 * u).rotationEffect(.degrees(12)).offset(x: 70 * u, y: 14 * u)
+                    .opacity(0.9)
+                BrandMark(size: 132 * u)
+                    .shadow(color: DS.Palette.blue.opacity(0.28), radius: 26 * u, y: 14 * u)
+                    .offset(y: floatOffset * u)
+                Sparkle(size: 22 * u).offset(x: 72 * u, y: -58 * u)
             }
         case .duplicates:
             ZStack {
@@ -113,15 +123,15 @@ struct PhotoCard: View {
         case sunset, ocean, forest, dusk
         var sky: [Color] {
             switch self {
-            case .sunset: return [Color(red: 1.0, green: 0.76, blue: 0.47), Color(red: 1.0, green: 0.47, blue: 0.59)]
-            case .ocean: return [Color(red: 0.55, green: 0.85, blue: 1.0), Color(red: 0.25, green: 0.55, blue: 0.95)]
-            case .forest: return [Color(red: 0.78, green: 0.93, blue: 0.85), Color(red: 0.42, green: 0.75, blue: 0.62)]
-            case .dusk: return [Color(red: 0.64, green: 0.56, blue: 1.0), Color(red: 0.34, green: 0.30, blue: 0.75)]
+            case .sunset: return [Color(red: 0.36, green: 0.71, blue: 1.0), Color(red: 0.82, green: 0.75, blue: 0.91), Color(red: 0.99, green: 0.72, blue: 0.53)]
+            case .ocean: return [Color(red: 0.55, green: 0.82, blue: 1.0), Color(red: 0.30, green: 0.58, blue: 0.97)]
+            case .forest: return [Color(red: 0.80, green: 0.92, blue: 0.98), Color(red: 0.55, green: 0.80, blue: 0.78)]
+            case .dusk: return [Color(red: 0.62, green: 0.60, blue: 0.98), Color(red: 0.40, green: 0.40, blue: 0.82)]
             }
         }
         var hills: (Color, Color) {
             switch self {
-            case .sunset: return (Color(red: 0.36, green: 0.28, blue: 0.78), Color(red: 0.18, green: 0.47, blue: 0.9))
+            case .sunset: return (Color(red: 0.22, green: 0.55, blue: 0.97), Color(red: 0.31, green: 0.52, blue: 0.93))
             case .ocean: return (Color(red: 0.10, green: 0.30, blue: 0.62), Color(red: 0.05, green: 0.52, blue: 0.75))
             case .forest: return (Color(red: 0.13, green: 0.45, blue: 0.35), Color(red: 0.24, green: 0.6, blue: 0.4))
             case .dusk: return (Color(red: 0.2, green: 0.15, blue: 0.45), Color(red: 0.45, green: 0.25, blue: 0.65))
@@ -139,7 +149,8 @@ struct PhotoCard: View {
                 RoundedRectangle(cornerRadius: min(w, h) * 0.12, style: .continuous).fill(.white)
                 ZStack {
                     LinearGradient(colors: palette.sky, startPoint: .top, endPoint: .bottom)
-                    Circle().fill(.white.opacity(0.9)).frame(width: h * 0.2)
+                    Circle().fill(palette == .sunset ? AnyShapeStyle(LinearGradient(colors: [Color(red: 1, green: 0.84, blue: 0.45), Color(red: 1, green: 0.72, blue: 0.4)], startPoint: .top, endPoint: .bottom)) : AnyShapeStyle(Color.white.opacity(0.9)))
+                        .frame(width: h * 0.2)
                         .position(x: w * (0.68 + sunOffset * 0.3), y: h * (0.3 + sunOffset * 0.2))
                     Path { p in
                         p.move(to: CGPoint(x: 0, y: h)); p.addLine(to: CGPoint(x: w * 0.32, y: h * 0.42)); p.addLine(to: CGPoint(x: w * 0.62, y: h))

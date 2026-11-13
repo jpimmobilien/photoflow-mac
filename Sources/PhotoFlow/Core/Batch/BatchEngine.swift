@@ -132,7 +132,6 @@ final class BatchRunner: @unchecked Sendable {
             guard FileManager.default.fileExists(atPath: photo.path) else {
                 throw ExportEngine.ExportError.sourceMissing(photo.filename)
             }
-            var recipe = workflow.keepExistingEdits ? (base ?? .identity) : .identity
             let preset = workflow.presetID.flatMap { Preset.preset(id: $0, custom: customPresets) }
             let needsAnalysis = workflow.enhance || (preset?.adaptive ?? false) || workflow.autoCrop != .none
             var analysis: PhotoAnalysis?
@@ -140,33 +139,10 @@ final class BatchRunner: @unchecked Sendable {
                 analysis = autoreleasepool { PhotoAnalyzer.analyze(url: photo.url, iso: photo.iso) }
                 guard analysis != nil else { throw ImageLoader.LoadError.unreadable(photo.filename) }
             }
-            if let a = analysis, workflow.enhance || (preset?.adaptive ?? false) {
-                let opts = workflow.enhance ? workflow.options : .enhanceOnly
-                let strength = workflow.enhance ? workflow.strength : .subtle
-                let outcome = AutoEnhanceEngine.enhance(a, base: recipe, strength: strength, options: opts)
-                recipe = outcome.recipe
-                notes = outcome.notes
-            }
-            if let preset {
-                let auto = recipe.auto
-                recipe = preset.apply(to: recipe)
-                recipe.auto = auto
-                notes.append(String(localized: "Applied preset “\(preset.localizedName)”"))
-            }
-            if let a = analysis {
-                switch workflow.autoCrop {
-                case .none: break
-                case .trimBorders:
-                    if !recipe.hasGeometry, let px = PixelBuffer(cgImage: a.analysisImage, maxSide: 768), let crop = AutoCrop.trimBorders(px) {
-                        recipe.crop = crop
-                        notes.append(String(localized: "Removed borders"))
-                    }
-                case .aspect(let w, let h):
-                    let size = CGSize(width: a.analysisImage.width, height: a.analysisImage.height)
-                    recipe.crop = AutoCrop.aspectCrop(imageSize: size, ratio: w / h, salient: a.scene.salientRect)
-                    notes.append(String(localized: "Cropped to \(Int(w)):\(Int(h))"))
-                }
-            }
+            // Same function the live preview uses – what you preview is exactly what the batch produces.
+            let planned = BatchPlanner.recipe(workflow: workflow, analysis: analysis, base: base, customPresets: customPresets)
+            let recipe = planned.recipe
+            notes = planned.notes
             var editedAt: Date?
             if workflow.saveToLibrary {
                 editedAt = try store.saveRecipe(recipe, for: photo.id)
@@ -185,5 +161,44 @@ final class BatchRunner: @unchecked Sendable {
             return BatchItemResult(photoID: photo.id, status: .failed(error.localizedDescription), recipe: nil, editedAt: nil,
                                    exportedURL: nil, exportedBytes: 0, duration: Date().timeIntervalSince(started), notes: notes)
         }
+    }
+}
+
+
+/// Decides the edit recipe for one photo under a workflow (pure, no side effects).
+/// Used by the batch runner and by the live preview in the batch screen.
+enum BatchPlanner {
+    static func recipe(workflow: BatchWorkflow, analysis: PhotoAnalysis?, base: EditRecipe?, customPresets: [Preset]) -> (recipe: EditRecipe, notes: [String]) {
+        var recipe = workflow.keepExistingEdits ? (base ?? .identity) : .identity
+        var notes: [String] = []
+        let preset = workflow.presetID.flatMap { Preset.preset(id: $0, custom: customPresets) }
+        if let a = analysis, workflow.enhance || (preset?.adaptive ?? false) {
+            let opts = workflow.enhance ? workflow.options : .enhanceOnly
+            let strength = workflow.enhance ? workflow.strength : .subtle
+            let outcome = AutoEnhanceEngine.enhance(a, base: recipe, strength: strength, options: opts)
+            recipe = outcome.recipe
+            notes = outcome.notes
+        }
+        if let preset {
+            let auto = recipe.auto
+            recipe = preset.apply(to: recipe)
+            recipe.auto = auto
+            notes.append(String(localized: "Applied preset “\(preset.localizedName)”"))
+        }
+        if let a = analysis {
+            switch workflow.autoCrop {
+            case .none: break
+            case .trimBorders:
+                if !recipe.hasGeometry, let px = PixelBuffer(cgImage: a.analysisImage, maxSide: 768), let crop = AutoCrop.trimBorders(px) {
+                    recipe.crop = crop
+                    notes.append(String(localized: "Removed borders"))
+                }
+            case .aspect(let w, let h):
+                let size = CGSize(width: a.analysisImage.width, height: a.analysisImage.height)
+                recipe.crop = AutoCrop.aspectCrop(imageSize: size, ratio: w / h, salient: a.scene.salientRect)
+                notes.append(String(localized: "Cropped to \(Int(w)):\(Int(h))"))
+            }
+        }
+        return (recipe, notes)
     }
 }

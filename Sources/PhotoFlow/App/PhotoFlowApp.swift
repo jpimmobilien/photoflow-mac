@@ -18,10 +18,11 @@ struct PhotoFlowApp: App {
         WindowGroup("PhotoFlow", id: "main") {
             ContentView()
                 .environmentObject(AppModel.shared)
-                .frame(minWidth: 1040, minHeight: 640)
+                .frame(minWidth: 1000, minHeight: 640)
                 .preferredColorScheme(appearance == "light" ? .light : appearance == "dark" ? .dark : nil)
         }
-        .windowToolbarStyle(.unified(showsTitle: false))
+        .windowStyle(.hiddenTitleBar)
+        .defaultSize(width: 1440, height: 900)
         .commands { PhotoFlowCommands(model: AppModel.shared) }
 
         Settings {
@@ -66,6 +67,17 @@ struct PhotoFlowCommands: Commands {
             }
             .keyboardShortcut("z", modifiers: [.command, .shift])
         }
+        CommandGroup(before: .toolbar) {
+            Button(model.sidebarVisible ? String(localized: "Hide Sidebar") : String(localized: "Show Sidebar")) {
+                withAnimation(DS.Motion.adaptive(DS.Motion.smooth)) { model.sidebarVisible.toggle() }
+            }
+            .keyboardShortcut("s", modifiers: [.command, .control])
+            Button(model.inspectorVisible ? String(localized: "Hide Inspector") : String(localized: "Show Inspector")) {
+                withAnimation(DS.Motion.adaptive(DS.Motion.smooth)) { model.inspectorVisible.toggle() }
+            }
+            .keyboardShortcut("i", modifiers: [.command, .option])
+            Divider()
+        }
         CommandGroup(after: .pasteboard) {
             Divider()
             Button(String(localized: "Select All Photos")) { model.selectAll() }
@@ -101,6 +113,8 @@ struct PhotoFlowCommands: Commands {
             Button(String(localized: "Add to Favorites")) { model.toggleFavorite(Array(model.selection)) }
                 .keyboardShortcut("f", modifiers: [.command, .shift])
                 .disabled(model.selection.isEmpty)
+            Button(String(localized: "Open Photo")) { if let id = model.selection.first { model.openViewer(id) } }
+                .disabled(model.selection.count != 1 || model.viewerPhotoID != nil || model.editorPhotoID != nil)
             Button(String(localized: "Quick Look")) { model.quickLook(model.selection.first) }
                 .keyboardShortcut("y", modifiers: [.command])
                 .disabled(model.selection.isEmpty)
@@ -116,11 +130,28 @@ struct PhotoFlowCommands: Commands {
                 .keyboardShortcut(.delete, modifiers: [.command])
                 .disabled(model.selection.isEmpty)
         }
+        CommandGroup(replacing: .appInfo) {
+            Button(String(localized: "About PhotoFlow")) { AboutPanel.show() }
+        }
         CommandGroup(replacing: .help) {
             Button(String(localized: "PhotoFlow Privacy")) {
                 model.alert = AppAlert(title: String(localized: "Your photos stay on your Mac"),
                                        message: String(localized: "PhotoFlow analyzes and edits photos entirely on this Mac using Apple's built-in frameworks. Nothing is uploaded, no account is required and there is no tracking."))
             }
         }
+    }
+}
+
+
+/// Native About panel showing the new icon and a short credit line.
+enum AboutPanel {
+    @MainActor static func show() {
+        let credits = NSAttributedString(
+            string: String(localized: "Intelligent photo studio – 100 % on-device."),
+            attributes: [.font: NSFont.systemFont(ofSize: 11), .foregroundColor: NSColor.secondaryLabelColor])
+        var options: [NSApplication.AboutPanelOptionKey: Any] = [.credits: credits]
+        if let icon = NSApp.applicationIconImage { options[.applicationIcon] = icon }
+        NSApp.orderFrontStandardAboutPanel(options: options)
+        NSApp.activate(ignoringOtherApps: true)
     }
 }

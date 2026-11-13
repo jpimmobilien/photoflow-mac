@@ -5,7 +5,7 @@ import UniformTypeIdentifiers
 
 enum SidebarItem: Hashable {
     case overview, allPhotos, recentImports, favorites, recentlyEdited
-    case album(Int64)
+    case albums, album(Int64)
     case batch, duplicates, similar, exportHistory, trash
 }
 
@@ -35,7 +35,7 @@ enum EditFilter: String, CaseIterable, Identifiable {
     }
 }
 
-enum LibraryViewMode: String { case grid, list }
+enum LibraryViewMode: String { case mosaic, grid, list }
 
 struct Toast: Identifiable, Equatable {
     let id = UUID()
@@ -90,7 +90,7 @@ final class AppModel: ObservableObject {
     private var index: [Int64: Int] = [:]
 
     // Navigation & presentation
-    @Published var sidebar: SidebarItem = .allPhotos { didSet { if oldValue != sidebar { editorPhotoID = nil; refreshVisible() } } }
+    @Published var sidebar: SidebarItem = .overview { didSet { if oldValue != sidebar { editorPhotoID = nil; viewerPhotoID = nil; refreshVisible() } } }
     @Published var selection: Set<Int64> = []
     @Published var lastClicked: Int64?
     @Published var searchText = "" { didSet { refreshVisible() } }
@@ -98,13 +98,25 @@ final class AppModel: ObservableObject {
     @Published var sortAscending = false { didSet { refreshVisible() } }
     @Published var formatFilter: String? { didSet { refreshVisible() } }
     @Published var editFilter: EditFilter = .all { didSet { refreshVisible() } }
-    @Published var viewModeRaw: String = UserDefaults.standard.string(forKey: "libraryViewMode") ?? LibraryViewMode.grid.rawValue {
+    @Published var viewModeRaw: String = UserDefaults.standard.string(forKey: "libraryViewMode") ?? LibraryViewMode.mosaic.rawValue {
         didSet { UserDefaults.standard.set(viewModeRaw, forKey: "libraryViewMode") }
     }
     @Published var thumbnailSize: Double = UserDefaults.standard.object(forKey: "thumbnailSize") as? Double ?? 170 {
         didSet { UserDefaults.standard.set(thumbnailSize, forKey: "thumbnailSize") }
     }
     @Published var editorPhotoID: Int64?
+    @Published var sidebarVisible: Bool = UserDefaults.standard.object(forKey: "sidebarVisible") as? Bool ?? true {
+        didSet { UserDefaults.standard.set(sidebarVisible, forKey: "sidebarVisible") }
+    }
+    @Published var inspectorVisible: Bool = UserDefaults.standard.object(forKey: "showInspector") as? Bool ?? true {
+        didSet { UserDefaults.standard.set(inspectorVisible, forKey: "showInspector") }
+    }
+    /// Full-size photo viewer (detail view with inspector) – opened by double-click / Space.
+    @Published var viewerPhotoID: Int64?
+    /// Where the opened thumbnail sits on screen (in the "stage" coordinate space) – the viewer zooms from/to it.
+    @Published var viewerSourceRect: CGRect?
+    /// IDs of photos that arrived with the latest import – the grid reveals them with a staggered animation.
+    @Published var freshlyImported: Set<Int64> = []
     @Published var editorStartsInCompare = false
 
     // Feedback
@@ -129,7 +141,7 @@ final class AppModel: ObservableObject {
     private var activityTask: Task<Void, Never>?
 
     var viewMode: LibraryViewMode {
-        get { LibraryViewMode(rawValue: viewModeRaw) ?? .grid }
+        get { LibraryViewMode(rawValue: viewModeRaw) ?? .mosaic }
         set { viewModeRaw = newValue.rawValue }
     }
 
@@ -241,6 +253,7 @@ final class AppModel: ObservableObject {
         case .recentImports: return String(localized: "Recent Imports")
         case .favorites: return String(localized: "Favorites")
         case .recentlyEdited: return String(localized: "Recently Edited")
+        case .albums: return String(localized: "My Albums")
         case .album(let id): return albums.first { $0.id == id }?.name ?? String(localized: "Album")
         case .batch: return String(localized: "Batch Processing")
         case .duplicates: return String(localized: "Duplicate Finder")
@@ -309,15 +322,19 @@ final class AppModel: ObservableObject {
                         }
                     }
                 }.value
+                freshlyImported = Set(result.imported.map(\.id))
                 photos.append(contentsOf: result.imported)
                 rebuildIndex()
                 refreshVisible()
                 activity = nil
+                Task { @MainActor in
+                    try? await Task.sleep(nanoseconds: 4_000_000_000)
+                    AppModel.shared.freshlyImported = []
+                }
                 var msg = String(localized: "Imported \(result.imported.count) photos")
                 if result.duplicatesSkipped > 0 { msg += " · " + String(localized: "\(result.duplicatesSkipped) already in library") }
                 if !result.unreadable.isEmpty { msg += " · " + String(localized: "\(result.unreadable.count) unreadable") }
                 showToast(msg, symbol: "square.and.arrow.down.fill")
-                if result.imported.count > 0 && sidebar == .overview { sidebar = .recentImports }
             } catch {
                 activity = nil
                 alert = AppAlert(title: String(localized: "Import failed"), message: error.localizedDescription)
@@ -666,8 +683,34 @@ final class AppModel: ObservableObject {
 
     func openEditor(_ id: Int64, compare: Bool = false) {
         editorStartsInCompare = compare
+        viewerPhotoID = nil
         editorPhotoID = id
         selection = [id]
+    }
+
+    /// Opens the full-size viewer for `id`, zooming from `rect` (the thumbnail's frame) when known.
+    func openViewer(_ id: Int64, from rect: CGRect? = nil) {
+        viewerSourceRect = rect
+        selection = [id]
+        lastClicked = id
+        viewerPhotoID = id
+    }
+
+    /// The photo whose colours light the interface (effect 1 – Dynamic Ambient Light).
+    var ambientPhoto: PhotoRecord? {
+        if let id = editorPhotoID ?? viewerPhotoID, let p = photo(id) { return p }
+        if let id = lastClicked, selection.contains(id), let p = photo(id) { return p }
+        if let id = selection.first, let p = photo(id) { return p }
+        if sidebar == .overview || sidebar == .batch { return highlightPhotos.first }
+        return nil
+    }
+
+    /// A handful of recent, well-sized photos for the Overview mosaic (cheap: looks only at the newest imports).
+    var highlightPhotos: [PhotoRecord] {
+        let recent = photos.suffix(80).filter { !$0.isMissing }
+        let ranked = recent.sorted { ($0.importedAt, $0.megapixels) > ($1.importedAt, $1.megapixels) }
+        let landscape = ranked.filter { $0.width >= $0.height }
+        return Array((landscape + ranked.filter { $0.width < $0.height }).prefix(7))
     }
 
     func compare(_ ids: [Int64]) {
