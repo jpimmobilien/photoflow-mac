@@ -189,6 +189,10 @@ enum UITour {
             check("⌘Z undoes Auto Enhance in the editor", editor.recipe != before)
             key(window, code: 6, flags: [.command, .shift])   // ⇧⌘Z
             await pause(1.5)
+            if editor.recipe != before {
+                key(window, code: 6, flags: [.command, .shift], chars: "z")
+                await pause(1.5)
+            }
             check("⇧⌘Z redoes it", editor.recipe == before)
             editor.mode = .split
             await pause(2)
@@ -261,6 +265,10 @@ enum UITour {
         try? FileManager.default.createDirectory(atPath: opts.destinationPath, withIntermediateDirectories: true)
         app.runExport(Array(app.photos.prefix(3).map(\.id)), options: opts, source: "UI tour")
         await waitUntil(60) { app.activity == nil }
+        await pause(2)
+        // the export reveals its folder in Finder – hide Finder again so it does not cover later screenshots
+        NSWorkspace.shared.runningApplications.first { $0.bundleIdentifier == "com.apple.finder" }?.hide()
+        NSApp.activate(ignoringOtherApps: true)
         await pause(1)
         app.sidebar = .exportHistory
         await pause(2)
@@ -343,8 +351,8 @@ enum UITour {
         }
     }
 
-    static func key(_ window: NSWindow, code: UInt16, flags: NSEvent.ModifierFlags = []) {
-        let chars: String
+    static func key(_ window: NSWindow, code: UInt16, flags: NSEvent.ModifierFlags = [], chars override: String? = nil) {
+        var chars: String
         switch code {
         case 49: chars = " "
         case 53: chars = "\u{1b}"
@@ -353,6 +361,7 @@ enum UITour {
         case 6: chars = flags.contains(.shift) ? "Z" : "z"
         default: chars = ""
         }
+        if let override { chars = override }
         for type in [NSEvent.EventType.keyDown, .keyUp] {
             if let e = NSEvent.keyEvent(with: type, location: .zero, modifierFlags: flags, timestamp: ProcessInfo.processInfo.systemUptime,
                                         windowNumber: window.windowNumber, context: nil, characters: chars, charactersIgnoringModifiers: chars,

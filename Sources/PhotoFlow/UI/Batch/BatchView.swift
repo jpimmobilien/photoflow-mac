@@ -26,16 +26,16 @@ struct BatchView: View {
             .padding(.horizontal, DS.Space.page)
             .padding(.top, ContentView.topBarHeight + DS.Space.xxs)
             .padding(.bottom, DS.Space.huge)
-            .frame(maxWidth: 1320, alignment: .leading)
+            .frame(maxWidth: 1680, alignment: .leading)
             .frame(maxWidth: .infinity)
         }
         .mask(TopFadeMask())
         .animation(DS.Motion.adaptive(DS.Motion.page), value: model.isRunning || model.hasResults)
-        .onAppear { model.refreshPreview(app) }
+        .onAppear { model.refreshPreview(app); model.refreshCards(app) }
         .onChange(of: model.workflow) { _ in model.refreshPreview(app) }
-        .onChange(of: model.source) { _ in model.previewPhotoID = nil; model.refreshPreview(app) }
+        .onChange(of: model.source) { _ in model.previewPhotoID = nil; model.refreshPreview(app); model.refreshCards(app) }
         .onChange(of: model.previewPhotoID) { _ in model.refreshPreview(app) }
-        .onChange(of: app.photos.count) { _ in model.refreshPreview(app) }
+        .onChange(of: app.photos.count) { _ in model.refreshPreview(app); model.refreshCards(app) }
     }
 
     // MARK: - Setup
@@ -46,7 +46,8 @@ struct BatchView: View {
                 GroupHeader(title: String(localized: "Choose a workflow"), detail: nil)
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 196), spacing: DS.Space.m)], spacing: DS.Space.m) {
                     ForEach(Array(BatchWorkflow.predefined.enumerated()), id: \.element.id) { i, wf in
-                        WorkflowChoiceCard(workflow: wf, sample: model.previewPhoto(app), recipe: model.cardRecipes[wf.id],
+                        WorkflowChoiceCard(workflow: wf, sample: model.cardPhotos[wf.id].flatMap { app.photo($0) } ?? model.previewPhoto(app),
+                                           recipe: model.cardRecipes[wf.id],
                                            selected: model.workflow.id == wf.id) {
                             withAnimation(DS.Motion.adaptive(DS.Motion.snappy)) { model.workflow = wf }
                         }

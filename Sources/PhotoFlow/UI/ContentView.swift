@@ -630,7 +630,7 @@ struct HeartIcon: View {
 struct DropOverlay: View {
     var body: some View {
         ZStack {
-            DS.Palette.canvas.opacity(0.55)
+            DS.Palette.canvas.opacity(0.92)
             RoundedRectangle(cornerRadius: DS.Radius.hero, style: .continuous)
                 .strokeBorder(DS.Palette.brand, style: StrokeStyle(lineWidth: 2.5, dash: [10, 7]))
                 .padding(14)

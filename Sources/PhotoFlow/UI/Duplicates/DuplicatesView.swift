@@ -37,7 +37,7 @@ struct DuplicatesView: View {
             .padding(.horizontal, DS.Space.page)
             .padding(.top, ContentView.topBarHeight + DS.Space.xxs)
             .padding(.bottom, 120)
-            .frame(maxWidth: 1320, alignment: .leading)
+            .frame(maxWidth: 1680, alignment: .leading)
             .frame(maxWidth: .infinity)
         }
         .mask(TopFadeMask())

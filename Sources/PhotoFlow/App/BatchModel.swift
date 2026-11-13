@@ -33,6 +33,9 @@ final class BatchModel: ObservableObject {
     @Published private(set) var previewRecipe: EditRecipe?
     @Published private(set) var previewNotes: [String] = []
     @Published private(set) var cardRecipes: [String: EditRecipe] = [:]
+    /// Each workflow card shows its own library photo (with that workflow's real planned result).
+    @Published private(set) var cardPhotos: [String: Int64] = [:]
+    private var cardTask: Task<Void, Never>?
     @Published private(set) var previewLoading = false
     private var analysisCache: [Int64: PhotoAnalysis] = [:]
     private var previewTask: Task<Void, Never>?
@@ -95,19 +98,43 @@ final class BatchModel: ObservableObject {
             }
             guard !Task.isCancelled, let self else { return }
             if let analysis {
-                if self.analysisCache.count > 24 { self.analysisCache.removeAll() }
+                if self.analysisCache.count > 40 { self.analysisCache.removeAll() }
                 self.analysisCache[photo.id] = analysis
             }
             let planned = BatchPlanner.recipe(workflow: wf, analysis: analysis, base: base, customPresets: presets)
-            var cards: [String: EditRecipe] = [:]
-            for w in BatchWorkflow.predefined {
-                cards[w.id] = BatchPlanner.recipe(workflow: w, analysis: analysis, base: base, customPresets: presets).recipe
-            }
             withAnimation(DS.Motion.smooth) {
                 self.previewRecipe = planned.recipe
                 self.previewNotes = planned.notes
-                self.cardRecipes = cards
                 self.previewLoading = false
+            }
+        }
+    }
+
+    /// Picks a different photo for every workflow card and plans that workflow on it (photos analysed once,
+    /// results cached). Runs only when the source changes – not on every settings change.
+    func refreshCards(_ app: AppModel) {
+        cardTask?.cancel()
+        var pool = photosForSource(app).filter { !$0.isMissing }
+        if pool.isEmpty { pool = app.photos.filter { !$0.isMissing } }
+        let landscape = pool.filter { $0.width >= $0.height }
+        pool = Array((landscape + pool.filter { $0.width < $0.height }).prefix(BatchWorkflow.predefined.count))
+        guard !pool.isEmpty else { cardRecipes = [:]; cardPhotos = [:]; return }
+        let presets = app.customPresets
+        cardTask = Task { [weak self] in
+            for (i, w) in BatchWorkflow.predefined.enumerated() {
+                guard let self, !Task.isCancelled else { return }
+                let p = pool[i % pool.count]
+                var analysis = self.analysisCache[p.id]
+                if analysis == nil {
+                    analysis = await Task.detached(priority: .utility) { PhotoAnalyzer.analyze(url: p.url, iso: p.iso) }.value
+                    if let analysis { self.analysisCache[p.id] = analysis }
+                }
+                guard !Task.isCancelled else { return }
+                let r = BatchPlanner.recipe(workflow: w, analysis: analysis, base: app.recipe(for: p.id), customPresets: presets).recipe
+                withAnimation(DS.Motion.smooth) {
+                    self.cardPhotos[w.id] = p.id
+                    self.cardRecipes[w.id] = r
+                }
             }
         }
     }
