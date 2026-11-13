@@ -17,7 +17,10 @@ A native macOS app (SwiftUI + AppKit) that makes large photo collections look be
 
 - **100 % local:** no uploads, no cloud AI, no account, no analytics, works offline.
 - **Universal:** Intel (x86_64) and Apple Silicon (arm64), macOS 13 Ventura or newer.
-- **Design:** Liquid Glass on macOS 26, a matching material-based fallback on macOS 13–15, Light/Dark mode.
+- **Design (PhotoFlow 2.0):** a complete redesign around the new app icon – warm light grey / deep anthracite,
+  sky-blue / iris / cyan accents from the icon, four glass material levels (native Liquid Glass on macOS 26,
+  matching fallback on 13–15), floating glass tab bar, photo mosaic, photo dock, full-size viewer, and a motion
+  system that respects Reduce Motion. See `DESIGN_SYSTEM.md` and `REDESIGN.md`.
 - **Languages:** English, German.
 
 ## Install
