@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths: ['Sources/**', 'Resources/**', 'Packaging/**', 'Scripts/**', '.github/workflows/ui.yml']
   workflow_dispatch:
+    inputs:
+      runner:
+        description: 'Runner image'
+        default: macos-15
 
 permissions:
   contents: write
@@ -19,7 +23,7 @@ concurrency:
 
 jobs:
   screenshots:
-    runs-on: macos-15
+    runs-on: ${{ inputs.runner || 'macos-15' }}
     timeout-minutes: 100
     steps:
       - uses: actions/checkout@v4
@@ -33,7 +37,7 @@ jobs:
       - name: Build (arm64 only, fast)
         run: |
           chmod +x Scripts/*.sh
-          ARCHS=arm64 NO_DMG=1 ./Scripts/build_app.sh 2>&1 | tee build.log
+          ARCHS=$(uname -m) NO_DMG=1 ./Scripts/build_app.sh 2>&1 | tee build.log
 
       - name: Cache test photos
         uses: actions/cache@v4
