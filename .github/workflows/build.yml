@@ -2,6 +2,10 @@ name: Build PhotoFlow
 
 on:
   workflow_dispatch:
+    inputs:
+      runner:
+        description: 'Runner image (macos-15 = Apple Silicon, macos-15-intel = Intel fallback when arm64 capacity is short)'
+        default: macos-15
   push:
     tags: ['v*']
 
@@ -14,7 +18,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: ${{ inputs.runner || 'macos-15' }}
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
@@ -55,10 +59,13 @@ jobs:
           test "$want" = "$inapp" && test "$want" = "$indmg" && test "$plist" = "AppIcon"
           echo "✓ new icon verified in PhotoFlow.app and PhotoFlow.dmg" | tee -a icon-check.log
 
-      - name: Self-test (native arm64)
-        run: build/PhotoFlow.app/Contents/MacOS/PhotoFlow --qa selftest 2>&1 | tee selftest-arm64.log
+      - name: Self-test (native slice of this runner)
+        run: |
+          A=$(uname -m); [ "$A" = "x86_64" ] && N=x86_64 || N=arm64
+          build/PhotoFlow.app/Contents/MacOS/PhotoFlow --qa selftest 2>&1 | tee selftest-$N.log
 
       - name: Self-test (x86_64 slice via Rosetta)
+        if: runner.arch == 'ARM64'
         run: |
           /usr/sbin/softwareupdate --install-rosetta --agree-to-license >/dev/null 2>&1 || true
           arch -x86_64 build/PhotoFlow.app/Contents/MacOS/PhotoFlow --qa info 2>&1 | tee selftest-x86_64.log
