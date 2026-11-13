@@ -377,6 +377,7 @@
 "How should the photo change? – e.g. winter evening with snow on the roofs" = "How should the photo change? – e.g. winter evening with snow on the roofs";
 "Identical" = "Identical";
 "Image generation & editing" = "Image generation & editing";
+"Image generation requires macOS 13.1 or later." = "Image generation requires macOS 13.1 or later.";
 "Image to image" = "Image to image";
 "Import" = "Import";
 "Import Photos" = "Import Photos";

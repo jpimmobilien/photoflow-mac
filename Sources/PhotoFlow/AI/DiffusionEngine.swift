@@ -39,7 +39,8 @@ final class DiffusionEngine: @unchecked Sendable {
     static let shared = DiffusionEngine()
 
     private let queue = DispatchQueue(label: "photoflow.ai.diffusion", qos: .userInitiated)
-    private var pipeline: StableDiffusionPipelineProtocol?
+    /// The loaded pipeline (typed as Any so the engine itself does not require macOS 13.1).
+    private var pipelineStorage: Any?
     private var loadedKey: String?
     private(set) var loadedModelID: String?
     private var idleWork: DispatchWorkItem?
@@ -81,9 +82,15 @@ final class DiffusionEngine: @unchecked Sendable {
 
     func unload() { queue.async { [weak self] in self?.unloadNow() } }
 
+    @available(macOS 13.1, *)
+    private var pipeline: StableDiffusionPipelineProtocol? {
+        get { pipelineStorage as? StableDiffusionPipelineProtocol }
+        set { pipelineStorage = newValue }
+    }
+
     private func unloadNow() {
-        pipeline?.unloadResources()
-        pipeline = nil
+        if #available(macOS 13.1, *) { pipeline?.unloadResources() }
+        pipelineStorage = nil
         stateLock.lock(); loadedKey = nil; loadedModelID = nil; stateLock.unlock()
     }
 
@@ -97,6 +104,7 @@ final class DiffusionEngine: @unchecked Sendable {
 
     // MARK: Loading (engine queue only)
 
+    @available(macOS 13.1, *)
     private func loadPipeline(_ model: AIModelDescriptor) throws -> StableDiffusionPipelineProtocol {
         let hw = AIHardware.current
         let profile = AIPerformanceProfile.current
@@ -134,6 +142,14 @@ final class DiffusionEngine: @unchecked Sendable {
 
     /// Generates one image. Call through `perform` (runs on the engine queue).
     func generateSync(_ job: DiffusionJob, token: AICancelToken, onStep: @escaping (StepReport) -> Void) throws -> CGImage {
+        guard #available(macOS 13.1, *) else {
+            throw AIError.unsupported(String(localized: "Image generation requires macOS 13.1 or later."))
+        }
+        return try run(job, token: token, onStep: onStep)
+    }
+
+    @available(macOS 13.1, *)
+    private func run(_ job: DiffusionJob, token: AICancelToken, onStep: @escaping (StepReport) -> Void) throws -> CGImage {
         idleWork?.cancel()
         defer { scheduleIdleUnload() }
         if token.isCancelled { throw AIError.cancelled }

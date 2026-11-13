@@ -953,3 +953,4 @@
 "up to %lld" = "bis zu %lld";
 "· %@" = "· %@";
 "“%@” needs a local AI model. PhotoFlow does not include models in the app – you choose which ones to download from their official sources." = "„%@“ benötigt ein lokales KI-Modell. PhotoFlow liefert keine Modelle mit – du entscheidest, welche du von den offiziellen Quellen lädst.";
+"Image generation requires macOS 13.1 or later." = "Bildgenerierung benötigt macOS 13.1 oder neuer.";
