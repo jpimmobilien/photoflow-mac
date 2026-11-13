@@ -9,6 +9,10 @@ on:
       runner:
         description: 'Runner image'
         default: macos-15
+      ai_generate:
+        description: 'Download a diffusion model and generate a real image during the tour'
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -24,7 +28,7 @@ concurrency:
 jobs:
   screenshots:
     runs-on: ${{ inputs.runner || 'macos-15' }}
-    timeout-minutes: 100
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
 
@@ -38,6 +42,25 @@ jobs:
         run: |
           chmod +x Scripts/*.sh
           ARCHS=$(uname -m) NO_DMG=1 ./Scripts/build_app.sh 2>&1 | tee build.log
+
+      - name: Restore AI model cache
+        if: ${{ inputs.ai_generate }}
+        uses: actions/cache@v4
+        with:
+          path: /Users/runner/ai-models
+          key: ai-models-v1-${{ runner.arch == 'X64' && 'sd21-fp16' || 'sd21-palettized' }}-${{ hashFiles('Sources/PhotoFlow/AI/AIModelCatalogData.swift') }}
+
+      - name: Install AI models for the tour
+        if: ${{ inputs.ai_generate }}
+        run: |
+          set +e
+          APP=build/PhotoFlow.app/Contents/MacOS/PhotoFlow
+          M=${{ runner.arch == 'X64' && 'sd21-fp16' || 'sd21-palettized' }}
+          export PHOTOFLOW_MODELS_DIR=/Users/runner/ai-models
+          $APP --qa ai-install $M 2>&1 | tail -5
+          $APP --qa ai-install realesr-general-x4v3 2>&1 | tail -2
+          rm -rf /Users/runner/ai-models/lama   # the tour downloads it in the app (real progress UI)
+          $APP --qa ai-info
 
       - name: Cache test photos
         uses: actions/cache@v4
@@ -73,10 +96,10 @@ jobs:
           EXTRA=""; [ "$(uname -m)" = "x86_64" ] && EXTRA="-forceCPURendering YES"
           run_tour() {
             rm -rf /tmp/tourlib
-            PHOTOFLOW_LIBRARY_DIR=/tmp/tourlib PHOTOFLOW_TOUR_PHOTOS=/tmp/tour-photos PHOTOFLOW_TOUR_SIZE="${PHOTOFLOW_TOUR_SIZE:-1440x900}" PHOTOFLOW_TOUR_SET="${PHOTOFLOW_TOUR_SET:-full}" "$APP" --ui-tour /tmp/shots "$@" $EXTRA > /tmp/tour.log 2>&1
+            PHOTOFLOW_MODELS_DIR=/Users/runner/ai-models PHOTOFLOW_LIBRARY_DIR=/tmp/tourlib PHOTOFLOW_TOUR_PHOTOS=/tmp/tour-photos PHOTOFLOW_TOUR_SIZE="${PHOTOFLOW_TOUR_SIZE:-1440x900}" PHOTOFLOW_TOUR_SET="${PHOTOFLOW_TOUR_SET:-full}" "$APP" --ui-tour /tmp/shots "$@" $EXTRA > /tmp/tour.log 2>&1
             grep UITOUR /tmp/tour.log; cat /tmp/tour.log >> /tmp/tour-all.log
           }
-          run_tour -appearance light -AppleLanguages '(en)'
+          PHOTOFLOW_TOUR_AI_GENERATE=${{ inputs.ai_generate && '1' || '0' }} run_tour -appearance light -AppleLanguages '(en)'
           run_tour -appearance dark -AppleLanguages '(en)'
           run_tour -appearance light -AppleLanguages '(de)'
           run_tour -appearance dark -AppleLanguages '(de)'

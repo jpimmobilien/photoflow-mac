@@ -30,7 +30,8 @@ enum UITour {
             NSApp.terminate(nil)
         }
         // Safety net: never hang a CI job.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1100) { report(); exit(3) }
+        let limit: Double = ProcessInfo.processInfo.environment["PHOTOFLOW_TOUR_AI_GENERATE"] == "1" ? 4200 : 1500
+        DispatchQueue.main.asyncAfter(deadline: .now() + limit) { report(); exit(3) }
     }
 
     private static func pause(_ s: Double) async { try? await Task.sleep(nanoseconds: UInt64(s * 1_000_000_000)) }
@@ -305,7 +306,97 @@ enum UITour {
             shot("40-settings", window: settings)
             settings.close()
         }
+        await aiTour(app, full: true)
         print("UITOUR: done → \(outDir.path)")
+    }
+
+    /// AI Studio: every section, real model download progress and – when a diffusion model is installed and
+    /// PHOTOFLOW_TOUR_AI_GENERATE=1 – a real generation (progress + result). Nothing is staged.
+    private static func aiTour(_ app: AppModel, full: Bool) async {
+        let studio = AIStudioModel.shared
+        let store = ModelStore.shared
+        app.selection = []
+        app.sidebar = .aiStudio
+        store.reload()
+        studio.section = .generate
+        await pause(2.5); shot("41-ai-generate")
+        check("AI Studio opens", app.sidebar == .aiStudio)
+        studio.prompt = "bright scandinavian living room with large windows, oak floor, plants, morning light"
+        studio.styleID = "realestate"
+        studio.showAdvanced = true
+        await pause(1.5); shot("42-ai-generate-prompt")
+        studio.showAdvanced = false
+        if ProcessInfo.processInfo.environment["PHOTOFLOW_TOUR_AI_GENERATE"] == "1", studio.activeModel != nil {
+            studio.quality = .draft
+            studio.variants = 1
+            studio.generate()
+            await waitUntil(240) { if case .steps(let s, _, _) = studio.job?.phase { return s >= 2 } else { return studio.job == nil } }
+            shot("43-ai-generating")
+            await waitUntil(1800) { studio.job == nil }
+            await pause(2)
+            shot("44-ai-result")
+            check("AI generation produced a result", !studio.results.isEmpty)
+        }
+        if full {
+            studio.prompt = "haus am see bei sonnenuntergang"
+            studio.assist(.improve)
+            await waitUntil(30) { studio.suggestion != nil }
+            await pause(1); shot("45-ai-prompt-assistant")
+            studio.suggestion = nil
+        }
+
+        studio.section = .models
+        await pause(2.5); shot("46-ai-models")
+        if full, let lama = AIModelCatalog.model("lama"), !store.isInstalled("lama") {
+            store.download(lama)
+            await waitUntil(120) { if case .downloading(let p) = store.state("lama") { return p.received > 20_000_000 } else { return false } }
+            shot("47-ai-model-downloading")
+            await waitUntil(900) { !store.state("lama").isBusy }
+            check("Model download + verification", store.isInstalled("lama"))
+            await pause(1); shot("47b-ai-model-installed")
+        }
+
+        if let p = app.photos.first(where: { $0.filename.hasPrefix("kodim23") }) ?? app.photos.first {
+            studio.setSource(photo: p)
+            await waitUntil(20) { studio.source != nil }
+            studio.section = .fill
+            studio.fillMode = .fill
+            studio.mask.clear()
+            studio.mask.operations.append(MaskDocument.Operation(tool: .brush, points: [CGPoint(x: 0.42, y: 0.4), CGPoint(x: 0.5, y: 0.46), CGPoint(x: 0.58, y: 0.42)], size: 0.08))
+            studio.mask.operations.append(MaskDocument.Operation(tool: .ellipse, points: [CGPoint(x: 0.15, y: 0.6), CGPoint(x: 0.3, y: 0.85)], size: 0))
+            await pause(2.5); shot("48-ai-fill-mask")
+            studio.fillMode = .remove
+            await pause(1.5); shot("49-ai-remove")
+            if full && store.isInstalled("lama") {
+                studio.runFill()
+                await waitUntil(600) { studio.job == nil }
+                await pause(2); shot("50-ai-remove-result")
+                check("Object removal produced a result", studio.results.contains { $0.creation.kind == .remove })
+            }
+            studio.mask.clear()
+            studio.fillMode = .background
+            studio.selectSubject()
+            await waitUntil(60) { studio.job == nil }
+            await pause(2); shot("51-ai-background-subject")
+            studio.section = .expand
+            studio.expansion = AIEditWorkspace.toAspect(16.0 / 9, studio.source!.image)
+            await pause(2.5); shot("52-ai-expand")
+            studio.section = .enhance
+            studio.enhanceKind = .backgroundBlur
+            await pause(2); shot("53-ai-enhance")
+            if full {
+                studio.runEnhance()
+                await waitUntil(120) { studio.job == nil }
+                await pause(2); shot("54-ai-enhance-result")
+            }
+            studio.section = .upscale
+            await pause(2); shot("55-ai-upscale")
+            studio.section = .edit
+            await pause(2); shot("56-ai-edit")
+        }
+        studio.section = .creations
+        await pause(2.5); shot("57-ai-creations")
+        studio.section = .generate
     }
 
     /// Reduced set for additional window sizes.
@@ -324,6 +415,7 @@ enum UITour {
         app.sidebar = .duplicates; app.duplicates.scan(app)
         await waitUntil(300) { !app.duplicates.isScanning }
         await pause(3); shot("33-duplicates-results")
+        await aiTour(app, full: false)
         print("UITOUR: done → \(outDir.path)")
     }
 
