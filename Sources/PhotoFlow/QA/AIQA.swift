@@ -245,6 +245,7 @@ enum AIQA {
         let inner = diff(src, img, inside: r.insetBy(dx: 12, dy: 12)).inside
         print(String(format: "inpaint: changed inside %.4f, outside (excluding 24 px band) %.5f", inner, d.outside))
         guard inner > 0.02 else { throw Failure(description: "masked area did not change") }
+        if let filled = AIImage.crop(img, r.insetBy(dx: 8, dy: 8)) { try checkPlausible(filled, "inpaint filled area") }
         guard d.outside < 0.002 else { throw Failure(description: "pixels outside the mask changed") }
         try save(img, out, kind: .fill, prompt: s.prompt, model: s.model.id, seed: 11)
         print("inpaint OK")
@@ -319,13 +320,21 @@ enum AIQA {
         print("subject OK")
     }
 
-    /// Loads every sub-model of a diffusion model with each compute-unit setting and runs one prediction
-    /// with neutral inputs – shows which backend works on this Mac.
+    /// Loads every sub-model of a diffusion model with each compute-unit setting, runs one prediction with
+    /// realistic inputs and compares the outputs numerically (NaN count, spread, difference to the GPU run).
     static func diagnose(_ id: String) throws {
         let dir = ModelStore.directory(for: id)
         let parts = (try FileManager.default.contentsOfDirectory(atPath: dir.path)).filter { $0.hasSuffix(".mlmodelc") }.sorted()
-        let unitSets: [(String, MLComputeUnits)] = [("cpuOnly", .cpuOnly), ("cpuAndGPU", .cpuAndGPU), ("all", .all)]
+        let unitSets: [(String, MLComputeUnits)] = [("cpuAndGPU", .cpuAndGPU), ("cpuOnly", .cpuOnly), ("all", .all)]
+        var rng = SystemRandomNumberGenerator()
+        _ = rng
         for p in parts {
+            // Fixed pseudo-random inputs shared by all unit settings.
+            var seed: UInt64 = 12345
+            func next() -> Double { seed = seed &* 6364136223846793005 &+ 1442695040888963407; return Double(seed >> 11) / Double(1 << 53) }
+            func gauss() -> Double { let u = max(next(), 1e-9), v = next(); return sqrt(-2 * log(u)) * cos(2 * .pi * v) }
+            var inputs: [String: [Double]] = [:]
+            var reference: [String: [Float]]?
             for (name, units) in unitSets {
                 let cfg = MLModelConfiguration()
                 cfg.computeUnits = units
@@ -334,16 +343,44 @@ enum AIQA {
                     let m = try MLModel(contentsOf: dir.appendingPathComponent(p), configuration: cfg)
                     var dict: [String: MLFeatureValue] = [:]
                     for (k, d) in m.modelDescription.inputDescriptionsByName {
-                        if let c = d.multiArrayConstraint {
-                            let a = try MLMultiArray(shape: c.shape, dataType: c.dataType == .float16 ? .float16 : .float32)
-                            for i in 0..<a.count { a[i] = 0.01 }
-                            dict[k] = MLFeatureValue(multiArray: a)
+                        guard let c = d.multiArrayConstraint else { continue }
+                        let count = c.shape.reduce(1) { $0 * $1.intValue }
+                        if inputs[k] == nil {
+                            if k.contains("input_ids") {
+                                let toks: [Double] = [49406, 320, 2533, 1395, 593, 320, 3965, 1662, 49407]
+                                inputs[k] = (0..<count).map { $0 < toks.count ? toks[$0] : 49407 }
+                            } else if k.contains("timestep") {
+                                inputs[k] = Array(repeating: 500, count: count)
+                            } else {
+                                inputs[k] = (0..<count).map { _ in gauss() * (k.contains("hidden") ? 0.5 : 1) }
+                            }
                         }
+                        let a = try MLMultiArray(shape: c.shape, dataType: c.dataType == .float16 ? .float16 : .float32)
+                        for (i, v) in inputs[k]!.enumerated() { a[i] = NSNumber(value: v) }
+                        dict[k] = MLFeatureValue(multiArray: a)
                     }
                     let tl = Date().timeIntervalSince(t0)
                     let t1 = Date()
-                    _ = try m.prediction(from: MLDictionaryFeatureProvider(dictionary: dict))
-                    print(String(format: "diag %@ %@: OK load %.1fs predict %.2fs", p, name, tl, Date().timeIntervalSince(t1)))
+                    let out = try m.prediction(from: MLDictionaryFeatureProvider(dictionary: dict))
+                    var outs: [String: [Float]] = [:]
+                    for n in out.featureNames { if let a = out.featureValue(for: n)?.multiArrayValue {
+                        outs[n] = (0..<a.count).map { a[$0].floatValue }
+                    } }
+                    var line = String(format: "diag %@ %@: OK load %.1fs predict %.2fs", p, name, tl, Date().timeIntervalSince(t1))
+                    for (n, v) in outs.sorted(by: { $0.key < $1.key }) {
+                        let nan = v.filter { !$0.isFinite }.count
+                        let fin = v.filter { $0.isFinite }
+                        let mean = fin.reduce(0, +) / Float(max(1, fin.count))
+                        let std = sqrt(fin.reduce(0) { $0 + ($1 - mean) * ($1 - mean) } / Float(max(1, fin.count)))
+                        line += String(format: " | %@ nan=%d mean=%.4f std=%.4f", n, nan, mean, std)
+                        if let ref = reference?[n], ref.count == v.count {
+                            var maxd: Float = 0
+                            for i in 0..<v.count where v[i].isFinite && ref[i].isFinite { maxd = max(maxd, abs(v[i] - ref[i])) }
+                            line += String(format: " maxdiff-vs-gpu=%.4f", maxd)
+                        }
+                    }
+                    if reference == nil { reference = outs }
+                    print(line)
                 } catch {
                     print("diag \(p) \(name): FAIL \(String(describing: error).prefix(160))")
                 }
