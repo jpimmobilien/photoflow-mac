@@ -13,9 +13,10 @@ A native macOS app (SwiftUI + AppKit) that makes large photo collections look be
 | **Batch processing** | 1,000+ photos with controlled concurrency, progress, ETA, pause/resume, cancel, retry, and seven predefined workflows. |
 | **Duplicates & similar photos** | SHA-256 for exact copies; perceptual hashes + Apple Vision feature prints + registration-based crop verification for visual duplicates; grouped review with a "Best version to keep" recommendation. Never deletes automatically. |
 | **Library** | Albums, favourites, search, sorting, filters, grid/list, drag & drop, native context menu, Quick Look, safe deletion via the macOS Trash, restore. |
+| **AI Studio** | Local image generation (Stable Diffusion 2.1 / XL via Core ML), image-to-image, generative fill, object removal (LaMa), background replacement, outpainting, Real-ESRGAN upscaling and restoration, prompt assistant, persistent creations gallery and model management with licence information. Models are optional downloads, verified by SHA-256; everything runs on the Mac. See `AI_STUDIO.md`. |
 | **Non-destructive** | Originals are never modified; edits are stored as recipes and exported as new files ("Processed Photos"). |
 
-- **100 % local:** no uploads, no cloud AI, no account, no analytics, works offline.
+- **100 % local:** no uploads, no cloud AI, no account, no analytics, works offline (AI models are downloaded once, on request).
 - **Universal:** Intel (x86_64) and Apple Silicon (arm64), macOS 13 Ventura or newer.
 - **Design (PhotoFlow 2.0):** a complete redesign around the new app icon – warm light grey / deep anthracite,
   sky-blue / iris / cyan accents from the icon, four glass material levels (native Liquid Glass on macOS 26,
@@ -31,6 +32,7 @@ Open `PhotoFlow.dmg` and drag PhotoFlow to Applications. The app is ad-hoc signe
 
 - [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) – build the app and DMG
 - [FEATURES.md](FEATURES.md) – complete feature list and where it lives in the code
+- [AI_STUDIO.md](AI_STUDIO.md) – local generative AI: models, licences, hardware profiles, how inpainting/outpainting work, privacy
 - [LOCAL_AI_ARCHITECTURE.md](LOCAL_AI_ARCHITECTURE.md) – what is machine learning, what is classic computer vision, and how each decision is made
 - [DUPLICATE_DETECTION.md](DUPLICATE_DETECTION.md) – the duplicate/similarity pipeline and its calibration
 - [TEST_REPORT.md](TEST_REPORT.md) – what was tested and the measured results

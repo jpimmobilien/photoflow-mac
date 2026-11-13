@@ -5,9 +5,19 @@
 - The app is **not sandboxed** (like the earlier AndroidBridge / Music Library builds). This lets it reference originals anywhere without copying them. Sandbox-ready code paths (security-scoped bookmarks) exist but an App Store build would need entitlements and a sandbox review.
 
 ## "AI" scope
-- PhotoFlow uses Apple's built-in on-device models via Vision plus its own computer-vision algorithms. It does **not** bundle a generative or learned enhancement model (no "neural" retouching, relighting, denoising or upscaling). This keeps it offline, small (no model download) and Intel-compatible.
+- The library, Auto Enhance, duplicates and batch features use Apple's built-in on-device models via Vision plus PhotoFlow's own computer-vision algorithms (no download needed).
 - `VNCalculateImageAestheticsScoresRequest` exists only on macOS 15+; on 13–14 the keep recommendation uses technical quality factors only.
 - Scene classification labels are Apple's taxonomy; unusual scenes may get no or generic labels, which simply means neutral default targets.
+
+## AI Studio
+- **Models are optional downloads** (1.1–7 GB for image generation, 2–190 MB for upscaling / removal); nothing generative is bundled in the DMG.
+- **Fixed model sizes:** the Core ML diffusion models generate 512 × 512 (SD 2.1) or 1024 × 1024 (SDXL) squares. Other formats are cropped from the square; free resolutions are not offered. Larger output comes from Real-ESRGAN upscaling.
+- **Inpainting / outpainting use the standard text-to-image UNets with masked latent blending**, not dedicated inpainting UNets (no Core ML inpainting model with a suitable licence and current Apple conversion exists). Results are good for textures, backgrounds and objects; very large masks over complex structures can look less coherent than a dedicated inpainting model. Outpainted areas are generated at model resolution and upscaled, so on large photos they are softer than the original.
+- **Intel Macs:** generation runs on the CPU/GPU without a Neural Engine and takes minutes per image; SDXL is not offered on Intel. Upscaling, object removal and enhancement run well.
+- **Prompt understanding:** the CLIP text encoders understand English best. The prompt assistant can translate when Apple Intelligence is available (macOS 26 + Apple Silicon); otherwise it uses rule-based English templates.
+- **Portrait retouch / face restoration is not available** – no face-restoration model with a licence that permits use in PhotoFlow was found.
+- **Background replacement** relies on Vision's subject mask (any subject on macOS 14+, people only on macOS 13); fine hair or transparent objects may need manual correction. The shadow is a simple contact shadow, not physically based relighting.
+- **ETA** is shown only after the step time has been measured on this Mac (no estimate is invented before).
 
 ## Image processing
 - Auto Enhance is rule-based and conservative by design; strongly stylised photos (e.g. deliberate high-key or low-key looks not recognised as such) may be nudged toward neutral. Use *Subtle* or adjust afterwards.

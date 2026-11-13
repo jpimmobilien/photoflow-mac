@@ -1,6 +1,6 @@
 # Local AI architecture
 
-PhotoFlow's "intelligence" runs **only on the Mac**. Nothing is uploaded, no cloud service is contacted, no model is downloaded. The app works fully offline.
+PhotoFlow's "intelligence" runs **only on the Mac**. Nothing is uploaded and no cloud service is contacted. The analysis features described here use only models built into macOS (no download). The generative features of **AI Studio** use optional models the user downloads once – see `AI_STUDIO.md`. The app works fully offline.
 
 This document is deliberately precise about which parts are **machine learning** and which are **classic computer vision / image statistics** — the prompt for this product asked not to label ordinary filters as AI, and PhotoFlow's UI says "on-device analysis", not "AI magic".
 
