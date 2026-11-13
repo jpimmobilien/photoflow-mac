@@ -16,8 +16,16 @@ let package = Package(
         .executable(name: "PhotoFlow", targets: ["PhotoFlow"])
     ],
     targets: [
+        // Apple's Core ML Stable Diffusion pipeline (MIT), vendored with PhotoFlow's inpainting addition.
+        .target(
+            name: "StableDiffusion",
+            path: "Sources/StableDiffusion",
+            exclude: ["LICENSE.md", "README.md", "UPSTREAM_REVISION"],
+            linkerSettings: [.linkedFramework("CoreML"), .linkedFramework("Accelerate")]
+        ),
         .executableTarget(
             name: "PhotoFlow",
+            dependencies: ["StableDiffusion"],
             path: "Sources/PhotoFlow",
             linkerSettings: [
                 .linkedLibrary("sqlite3"),
@@ -25,7 +33,8 @@ let package = Package(
                 .linkedFramework("CoreImage"),
                 .linkedFramework("Vision"),
                 .linkedFramework("Metal"),
-                .linkedFramework("QuickLook")
+                .linkedFramework("QuickLook"),
+                .linkedFramework("CoreML")
             ]
         )
     ],

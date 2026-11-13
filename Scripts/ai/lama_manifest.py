@@ -6,7 +6,7 @@ def sha(p):
     with open(p, "rb") as f:
         for b in iter(lambda: f.read(1 << 20), b""): h.update(b)
     return h.hexdigest()
-w = glob.glob(os.path.expanduser("~/.cache/torch/hub/checkpoints/big-lama.pt"))
+w = glob.glob("Scripts/ai/lama/big-lama.pt")
 m = {"lama": {"file": "lama.mlpackage.zip", "size": os.path.getsize("lama.mlpackage.zip"), "sha256": sha("lama.mlpackage.zip"),
               "input": 800, "source": "https://github.com/Sanster/models/releases/download/add_big_lama/big-lama.pt",
               "weights_sha256": sha(w[0]) if w else None, "license": "Apache-2.0"}}

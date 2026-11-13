@@ -2,12 +2,18 @@ name: AI models (probe + Core ML conversion)
 
 on:
   workflow_dispatch:
+    inputs:
+      only_lama:
+        description: 'Skip probe/Real-ESRGAN and only convert LaMa'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
 
 jobs:
   models:
+    if: ${{ !inputs.only_lama }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -39,6 +45,7 @@ jobs:
   lama:
     runs-on: ubuntu-latest
     needs: models
+    if: ${{ always() && (needs.models.result == 'success' || needs.models.result == 'skipped') }}
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -48,10 +55,11 @@ jobs:
       - name: Install LaMa converter
         run: |
           pip install --quiet torch==2.2.0 torchvision==0.17.0 --index-url https://download.pytorch.org/whl/cpu
-          pip install --quiet coremltools==7.2 numpy==1.26.4 IOPaint==1.3.3
+          pip install --quiet coremltools==7.2 numpy==1.26.4
       - name: Convert Big-LaMa to Core ML (CoreMLaMa, Apache-2.0)
         run: |
-          cd Scripts/ai/lama && python3 convert_lama.py 2>&1 | tail -20
+          set -o pipefail
+          cd Scripts/ai/lama && python3 convert_lama.py 2>&1 | tail -30
           zip -qr ../../../lama.mlpackage.zip LaMa.mlpackage
           cd ../../..
           python3 Scripts/ai/lama_manifest.py

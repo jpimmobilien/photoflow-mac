@@ -1,11 +1,24 @@
-# From github.com/mallman/CoreMLaMa (Apache-2.0, see LICENSE.txt). Used unchanged to convert Big-LaMa to Core ML.
+# Based on github.com/mallman/CoreMLaMa (Apache-2.0, see LICENSE.txt).
+# PhotoFlow change: the TorchScript Big-LaMa export (the file IOPaint uses) is loaded directly with
+# torch.jit.load instead of importing IOPaint, whose dependency chain no longer installs cleanly.
+import hashlib, os, urllib.request
 import coremltools as ct
 import torch
 
-from iopaint.model.lama import LaMa
 from CoreMLaMa import CoreMLaMa
 
-model_manager = LaMa("cpu")
+URL = "https://github.com/Sanster/models/releases/download/add_big_lama/big-lama.pt"
+MD5 = "e3aa4aaa15225a33ec84f9f4bc47e500"   # checksum IOPaint pins for this file
+if not os.path.exists("big-lama.pt"):
+    urllib.request.urlretrieve(URL, "big-lama.pt")
+md5 = hashlib.md5(open("big-lama.pt", "rb").read()).hexdigest()
+print("big-lama.pt md5", md5)
+assert md5 == MD5, "unexpected big-lama.pt checksum"
+
+class _Holder:
+    model = torch.jit.load("big-lama.pt", map_location="cpu").eval()
+
+model_manager = _Holder()
 
 # Fixed image/mask size
 # Flexible input shapes are not (currently) supported, for various reasons
