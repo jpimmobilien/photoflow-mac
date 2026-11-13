@@ -198,7 +198,7 @@ enum AIQA {
 
     static func t2i(out: String, steps: Int, repeatCheck: Bool) throws {
         let s = try settings("a cozy wooden cabin by a mountain lake at sunset, warm light in the windows", steps: steps)
-        print("t2i model=\(s.model.id) steps=\(steps) units=\(AIHardware.current.computeUnits(for: .current).rawValue)")
+        print("t2i model=\(s.model.id) steps=\(steps) plan=\(AIHardware.current.diffusionPlan(safe: false).signature) gpu=\(AIHardware.current.base.gpuName ?? "-")")
         let before = MemoryMonitor.footprintBytes()
         let t0 = Date()
         let img = try AIOperations.textToImage(s, aspect: .square, seed: 42, token: AICancelToken(), onStep: stepLogger("t2i"))

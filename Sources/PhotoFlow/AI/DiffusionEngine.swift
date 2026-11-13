@@ -48,7 +48,7 @@ final class DiffusionEngine: @unchecked Sendable {
     /// Measured seconds per step per model + compute configuration (for ETAs before the first step).
     private var stepTimes: [String: Double] = [:]
     private let stateLock = NSLock()
-    /// Models whose GPU run failed in this session – they continue on the CPU.
+    /// Models whose GPU run failed in this session – they continue in "safe" mode (CPU where possible).
     private var cpuFallback = Set<String>()
     /// Set when the last run had to switch to the CPU (shown to the user).
     private(set) var lastRunFellBackToCPU = false
@@ -112,9 +112,9 @@ final class DiffusionEngine: @unchecked Sendable {
     private func loadPipeline(_ model: AIModelDescriptor) throws -> StableDiffusionPipelineProtocol {
         let hw = AIHardware.current
         let profile = AIPerformanceProfile.current
-        let units: MLComputeUnits = cpuFallback.contains(model.id) ? .cpuOnly : hw.computeUnits(for: profile)
+        let plan = hw.diffusionPlan(safe: cpuFallback.contains(model.id))
         let reduce = hw.reduceMemory(for: model, profile: profile)
-        let key = "\(model.id)|\(units.rawValue)|\(reduce)"
+        let key = "\(model.id)|\(plan.signature)|\(reduce)"
         if let pipeline, loadedKey == key { return pipeline }
         unloadNow()
 
@@ -127,7 +127,8 @@ final class DiffusionEngine: @unchecked Sendable {
         }
 
         let config = MLModelConfiguration()
-        config.computeUnits = units
+        config.computeUnits = plan.base
+        ComponentConfiguration.set(plan.overrides)
         let p: StableDiffusionPipelineProtocol
         switch model.family {
         case .sdxl:
@@ -143,6 +144,16 @@ final class DiffusionEngine: @unchecked Sendable {
     }
 
     // MARK: Generation
+
+    /// Core ML errors are technical; explain what the user can do.
+    static func friendly(_ error: Error) -> Error {
+        if error is AIError { return error }
+        let hw = AIHardware.current
+        if hw.isIntel {
+            return AIError.failed(String(localized: "Core ML could not run the model on this Intel Mac's graphics processor. Restart PhotoFlow and try again; if it keeps failing, use the “Energy saving” profile or Stable Diffusion 2.1 Compact. (\(error.localizedDescription))"))
+        }
+        return AIError.failed(String(localized: "Core ML could not run the model. Restart PhotoFlow and try again, or remove and re-download the model. (\(error.localizedDescription))"))
+    }
 
     /// Generates one image. Call through `perform` (runs on the engine queue).
     func generateSync(_ job: DiffusionJob, token: AICancelToken, onStep: @escaping (StepReport) -> Void) throws -> CGImage {
@@ -204,12 +215,19 @@ final class DiffusionEngine: @unchecked Sendable {
             images = try attempt(p)
         } catch {
             // GPU drivers can fail (hangs, unsupported operations, virtual GPUs). Retry once on the CPU.
-            guard !token.isCancelled, !cpuFallback.contains(job.model.id), AIHardware.current.computeUnits(for: .current) != .cpuOnly else { throw error }
-            print("AI: GPU run failed (\(error.localizedDescription)) – retrying on the CPU")
+            let hw = AIHardware.current
+            guard !token.isCancelled, !cpuFallback.contains(job.model.id), hw.diffusionPlan(safe: true) != hw.diffusionPlan(safe: false) else {
+                throw Self.friendly(error)
+            }
+            print("AI: run failed (\(error.localizedDescription)) – retrying in safe mode (CPU where possible)")
             cpuFallback.insert(job.model.id)
             lastRunFellBackToCPU = true
             unloadNow()
-            images = try attempt(try loadPipeline(job.model))
+            do {
+                images = try attempt(try loadPipeline(job.model))
+            } catch {
+                throw Self.friendly(error)
+            }
         }
         if token.isCancelled { throw AIError.cancelled }
         if timed.count >= 2 {

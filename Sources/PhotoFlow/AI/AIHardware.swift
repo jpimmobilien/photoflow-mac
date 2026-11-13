@@ -1,6 +1,7 @@
 import Foundation
 import CoreML
 import Metal
+import StableDiffusion
 
 /// What the AI Studio can do on this Mac. Built on `HardwareProfile`, extended with the details that
 /// matter for local generative models (chip generation, Neural Engine, free disk space, OS features).
@@ -106,12 +107,23 @@ struct AIHardware: Sendable {
         }
     }
 
-    /// Compute units for diffusion models (the catalog ships "original" attention variants, which run
-    /// best on the GPU; without Metal everything runs on the CPU).
-    func computeUnits(for profile: AIPerformanceProfile) -> MLComputeUnits {
-        if !hasUsableGPU { return .cpuOnly }
-        if isIntel { return profile == .energySaving ? .cpuOnly : .cpuAndGPU }
-        return .cpuAndGPU
+    /// How the diffusion pipeline is spread over CPU and GPU.
+    struct DiffusionPlan: Equatable {
+        var base: MLComputeUnits
+        var overrides: [PipelineComponent: MLComputeUnits]
+        var signature: String { "\(base.rawValue)-" + overrides.map { "\($0.key.rawValue)=\($0.value.rawValue)" }.sorted().joined(separator: ",") }
+    }
+
+    /// The catalog ships "original" attention variants, which run best on the GPU. On Intel, Core ML cannot run
+    /// the float16 UNet on the CPU (measured on macOS 15), so the UNet always uses the GPU there; the text
+    /// encoder runs on the CPU. "Safe" mode (after a GPU error, or on virtual GPUs) moves everything except
+    /// the Intel UNet to the CPU.
+    func diffusionPlan(safe: Bool) -> DiffusionPlan {
+        if !base.hasMetal { return DiffusionPlan(base: .cpuOnly, overrides: [:]) }
+        if safe || !hasUsableGPU {
+            return isIntel ? DiffusionPlan(base: .cpuOnly, overrides: [.unet: .cpuAndGPU]) : DiffusionPlan(base: .cpuOnly, overrides: [:])
+        }
+        return isIntel ? DiffusionPlan(base: .cpuAndGPU, overrides: [.textEncoder: .cpuOnly]) : DiffusionPlan(base: .cpuAndGPU, overrides: [:])
     }
 
     /// Low-memory mode loads model parts one after another instead of keeping all of them resident.

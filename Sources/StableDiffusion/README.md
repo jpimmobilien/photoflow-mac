@@ -8,3 +8,5 @@ Changes for PhotoFlow:
 - `pipeline/LatentInpainting.swift` (new) plus an optional `inpainting:` parameter on `generateImages` of both
   pipelines (and the protocol): masked-latent inpainting / outpainting with the standard UNets. After every
   scheduler step the preserved region is replaced with the encoded original re-noised to the next timestep.
+- `pipeline/ComponentConfiguration.swift` (new): optional per-component compute units (text encoder, UNet, VAE),
+  used by the resource initialisers – e.g. UNet on the GPU and VAE on the CPU on Intel Macs.

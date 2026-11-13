@@ -280,7 +280,7 @@ final class AIStudioModel: ObservableObject {
                            width: image.width, height: image.height, sourceName: source?.name, sourcePhotoID: source?.photoID,
                            parentID: source?.creationID, duration: Date().timeIntervalSince(started), note: note, fileName: "")
         if DiffusionEngine.shared.lastRunFellBackToCPU {
-            notice = String(localized: "The graphics processor reported an error, so this image was computed on the CPU (slower). PhotoFlow keeps using the CPU for this model until the app is restarted.")
+            notice = String(localized: "The graphics processor reported an error, so PhotoFlow switched to a safer mode for this model (more work on the CPU, slower) until the app is restarted.")
         }
         do {
             let saved = try CreationStore.shared.add(image, c)

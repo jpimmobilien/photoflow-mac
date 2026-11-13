@@ -59,23 +59,23 @@ public extension StableDiffusionXLPipeline {
         let tokenizer = try BPETokenizer(mergesAt: urls.mergesURL, vocabularyAt: urls.vocabURL)
         let textEncoder: TextEncoderXL?
         if FileManager.default.fileExists(atPath: urls.textEncoderURL.path) {
-            textEncoder = TextEncoderXL(tokenizer: tokenizer, modelAt: urls.textEncoderURL, configuration: config)
+            textEncoder = TextEncoderXL(tokenizer: tokenizer, modelAt: urls.textEncoderURL, configuration: ComponentConfiguration.resolve(.textEncoder, config))
         } else {
             textEncoder = nil
         }
         
         // padToken is different in the second XL text encoder
         let tokenizer2 = try BPETokenizer(mergesAt: urls.mergesURL, vocabularyAt: urls.vocabURL, padToken: "!")
-        let textEncoder2 = TextEncoderXL(tokenizer: tokenizer2, modelAt: urls.textEncoder2URL, configuration: config)
+        let textEncoder2 = TextEncoderXL(tokenizer: tokenizer2, modelAt: urls.textEncoder2URL, configuration: ComponentConfiguration.resolve(.textEncoder, config))
 
         // Unet model
         let unet: Unet
         if FileManager.default.fileExists(atPath: urls.unetChunk1URL.path) &&
             FileManager.default.fileExists(atPath: urls.unetChunk2URL.path) {
             unet = Unet(chunksAt: [urls.unetChunk1URL, urls.unetChunk2URL],
-                        configuration: config)
+                        configuration: ComponentConfiguration.resolve(.unet, config))
         } else {
-            unet = Unet(modelAt: urls.unetURL, configuration: config)
+            unet = Unet(modelAt: urls.unetURL, configuration: ComponentConfiguration.resolve(.unet, config))
         }
 
         // Refiner Unet model
@@ -83,9 +83,9 @@ public extension StableDiffusionXLPipeline {
         if FileManager.default.fileExists(atPath: urls.unetRefinerChunk1URL.path) &&
             FileManager.default.fileExists(atPath: urls.unetRefinerChunk2URL.path) {
             unetRefiner = Unet(chunksAt: [urls.unetRefinerChunk1URL, urls.unetRefinerChunk2URL],
-                               configuration: config)
+                               configuration: ComponentConfiguration.resolve(.unet, config))
         } else if FileManager.default.fileExists(atPath: urls.unetRefinerURL.path) {
-            unetRefiner = Unet(modelAt: urls.unetRefinerURL, configuration: config)
+            unetRefiner = Unet(modelAt: urls.unetRefinerURL, configuration: ComponentConfiguration.resolve(.unet, config))
         } else {
             unetRefiner = nil
         }
@@ -95,12 +95,12 @@ public extension StableDiffusionXLPipeline {
         // FIXME: Hardcoding to .cpuAndGPU since ANE doesn't support FLOAT32
         let vaeConfig = config.copy() as! MLModelConfiguration
         vaeConfig.computeUnits = .cpuAndGPU
-        let decoder = Decoder(modelAt: urls.decoderURL, configuration: vaeConfig)
+        let decoder = Decoder(modelAt: urls.decoderURL, configuration: ComponentConfiguration.resolve(.vaeDecoder, vaeConfig))
 
         // Optional Image Encoder
         let encoder: Encoder?
         if FileManager.default.fileExists(atPath: urls.encoderURL.path) {
-            encoder = Encoder(modelAt: urls.encoderURL, configuration: vaeConfig)
+            encoder = Encoder(modelAt: urls.encoderURL, configuration: ComponentConfiguration.resolve(.vaeEncoder, vaeConfig))
         } else {
             encoder = nil
         }

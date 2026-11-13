@@ -80,11 +80,11 @@ public extension StableDiffusionPipeline {
             )
         } else {
             let tokenizer = try BPETokenizer(mergesAt: urls.mergesURL, vocabularyAt: urls.vocabURL)
-            textEncoder = TextEncoder(tokenizer: tokenizer, modelAt: urls.textEncoderURL, configuration: config)
+            textEncoder = TextEncoder(tokenizer: tokenizer, modelAt: urls.textEncoderURL, configuration: ComponentConfiguration.resolve(.textEncoder, config))
         }
 #else
         let tokenizer = try BPETokenizer(mergesAt: urls.mergesURL, vocabularyAt: urls.vocabURL)
-        textEncoder = TextEncoder(tokenizer: tokenizer, modelAt: urls.textEncoderURL, configuration: config)
+        textEncoder = TextEncoder(tokenizer: tokenizer, modelAt: urls.textEncoderURL, configuration: ComponentConfiguration.resolve(.textEncoder, config))
 #endif
 
         // ControlNet model
@@ -115,13 +115,13 @@ public extension StableDiffusionPipeline {
         if FileManager.default.fileExists(atPath: unetChunk1URL.path) &&
             FileManager.default.fileExists(atPath: unetChunk2URL.path) {
             unet = Unet(chunksAt: [unetChunk1URL, unetChunk2URL],
-                        configuration: config)
+                        configuration: ComponentConfiguration.resolve(.unet, config))
         } else {
-            unet = Unet(modelAt: unetURL, configuration: config)
+            unet = Unet(modelAt: unetURL, configuration: ComponentConfiguration.resolve(.unet, config))
         }
 
         // Image Decoder
-        let decoder = Decoder(modelAt: urls.decoderURL, configuration: config)
+        let decoder = Decoder(modelAt: urls.decoderURL, configuration: ComponentConfiguration.resolve(.vaeDecoder, config))
 
         // Optional safety checker
         var safetyChecker: SafetyChecker? = nil
@@ -133,7 +133,7 @@ public extension StableDiffusionPipeline {
         // Optional Image Encoder
         let encoder: Encoder?
         if FileManager.default.fileExists(atPath: urls.encoderURL.path) {
-            encoder = Encoder(modelAt: urls.encoderURL, configuration: config)
+            encoder = Encoder(modelAt: urls.encoderURL, configuration: ComponentConfiguration.resolve(.vaeEncoder, config))
         } else {
             encoder = nil
         }

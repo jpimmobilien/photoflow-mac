@@ -49,6 +49,7 @@
  "entry.count": "int",
  "entry.failed": "int",
  "entry.filename": "string",
+ "error.localizedDescription": "string",
  "est.0": "int",
  "est.1": "int",
  "est.2.formattedBytes": "string",

@@ -199,6 +199,8 @@
 "Copy Adjustments" = "Copy Adjustments";
 "Copy Here" = "Copy Here";
 "Copy to Folder…" = "Copy to Folder…";
+"Core ML could not run the model on this Intel Mac's graphics processor. Restart PhotoFlow and try again; if it keeps failing, use the “Energy saving” profile or Stable Diffusion 2.1 Compact. (%@)" = "Core ML could not run the model on this Intel Mac's graphics processor. Restart PhotoFlow and try again; if it keeps failing, use the “Energy saving” profile or Stable Diffusion 2.1 Compact. (%@)";
+"Core ML could not run the model. Restart PhotoFlow and try again, or remove and re-download the model. (%@)" = "Core ML could not run the model. Restart PhotoFlow and try again, or remove and re-download the model. (%@)";
 "Correct perspective" = "Correct perspective";
 "Corrected converging lines" = "Corrected converging lines";
 "Corrects converging lines of buildings and interiors" = "Corrects converging lines of buildings and interiors";
@@ -807,7 +809,7 @@
 "The file no longer exists at its original location." = "The file no longer exists at its original location.";
 "The file “%@” could not be read as an image." = "The file “%@” could not be read as an image.";
 "The files of %@ are missing or damaged. Remove the model in Model Management and download it again." = "The files of %@ are missing or damaged. Remove the model in Model Management and download it again.";
-"The graphics processor reported an error, so this image was computed on the CPU (slower). PhotoFlow keeps using the CPU for this model until the app is restarted." = "The graphics processor reported an error, so this image was computed on the CPU (slower). PhotoFlow keeps using the CPU for this model until the app is restarted.";
+"The graphics processor reported an error, so PhotoFlow switched to a safer mode for this model (more work on the CPU, slower) until the app is restarted." = "The graphics processor reported an error, so PhotoFlow switched to a safer mode for this model (more work on the CPU, slower) until the app is restarted.";
 "The horizon is already straight." = "The horizon is already straight.";
 "The image could not be read. Try another photo or export it as JPEG or PNG first." = "The image could not be read. Try another photo or export it as JPEG or PNG first.";
 "The image could not be saved." = "The image could not be saved.";
