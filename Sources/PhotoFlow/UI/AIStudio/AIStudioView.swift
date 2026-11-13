@@ -16,7 +16,7 @@ struct AIStudioView: View {
                     .id(studio.section)
                     .transition(.opacity.combined(with: .offset(y: 6)))
                 AIBanners()
-                    .padding(.top, 6)
+                    .padding(.top, 58)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }

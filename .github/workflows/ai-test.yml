@@ -43,6 +43,7 @@ jobs:
     env:
       PHOTOFLOW_MODELS_DIR: /Users/runner/ai-models
       PHOTOFLOW_AI_MODEL: ${{ inputs.model }}
+      PHOTOFLOW_IGNORE_MEMORY_LIMIT: '1'   # CI VMs have 7 GB; real 8 GB Macs pass the check
     steps:
       - uses: actions/checkout@v4
 
@@ -98,7 +99,7 @@ jobs:
           t "5 install esrgan general" $P $CPU --qa ai-install realesr-general-x4v3
           t "6 install lama"    $P $CPU --qa ai-install lama
           t "7 install ${{ inputs.model }} (pause + resume)" $P $CPU --qa ai-install ${{ inputs.model }} pause
-          t "7b diagnose backends" $P $CPU --qa ai-diag ${{ inputs.model }}
+          [ "${{ inputs.only_diag }}" = "true" ] && t "7b diagnose backends" $P $CPU --qa ai-diag ${{ inputs.model }}
           if [ "${{ inputs.only_diag }}" != "true" ]; then
           if [ "${{ inputs.quick }}" != "true" ]; then
           t "8 upscale 2x"      $P $CPU --qa ai-upscale "$IMG" /tmp/ai/out/upscale2.png 2

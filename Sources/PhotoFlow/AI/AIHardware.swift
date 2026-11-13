@@ -83,7 +83,7 @@ struct AIHardware: Sendable {
         if model.kind == .diffusion && !base.hasMetal {
             return String(localized: "Requires a Metal graphics processor – Core ML cannot run this model correctly on the CPU alone.")
         }
-        if memoryGB + 0.5 < model.minMemoryGB {
+        if memoryGB + 0.5 < model.minMemoryGB && ProcessInfo.processInfo.environment["PHOTOFLOW_IGNORE_MEMORY_LIMIT"] != "1" {
             return String(localized: "Requires at least \(Int(model.minMemoryGB)) GB memory (this Mac has \(Int(memoryGB.rounded())) GB).")
         }
         return nil
