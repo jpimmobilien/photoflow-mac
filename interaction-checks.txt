@@ -1,0 +1,22 @@
+UITOUR: screen 1024x768 window 1440x677
+UITOUR-CHECK: PASS mouse click on a photo tile selects it
+UITOUR-CHECK: PASS double click opens the photo viewer
+UITOUR-CHECK: PASS Esc closes the viewer
+UITOUR-CHECK: PASS Space opens the viewer
+UITOUR-CHECK: PASS Space closes the viewer
+UITOUR-CHECK: FAIL ⌘-click extends the selection
+UITOUR-CHECK: PASS ⌘Z undoes Auto Enhance in the editor
+UITOUR-CHECK: FAIL ⇧⌘Z redoes it
+UITOUR-CHECK: PASS Esc leaves the editor
+UITOUR-SUMMARY: 7/9 interaction checks passed
+UITOUR: screen 1024x768 window 1440x677
+UITOUR-CHECK: PASS mouse click on a photo tile selects it
+UITOUR-CHECK: PASS double click opens the photo viewer
+UITOUR-CHECK: PASS Esc closes the viewer
+UITOUR-CHECK: PASS Space opens the viewer
+UITOUR-CHECK: PASS Space closes the viewer
+UITOUR-CHECK: FAIL ⌘-click extends the selection
+UITOUR-CHECK: PASS ⌘Z undoes Auto Enhance in the editor
+UITOUR-CHECK: FAIL ⇧⌘Z redoes it
+UITOUR-CHECK: PASS Esc leaves the editor
+UITOUR-SUMMARY: 7/9 interaction checks passed
