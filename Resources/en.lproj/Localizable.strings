@@ -51,6 +51,7 @@
 "A file with the same name already exists." = "A file with the same name already exists.";
 "AI Studio" = "AI Studio";
 "AI Upscaling" = "AI Upscaling";
+"AI-edited" = "AI-edited";
 "AI-generated" = "AI-generated";
 "About PhotoFlow" = "About PhotoFlow";
 "Adapts to each photo, then applies the “%@” style" = "Adapts to each photo, then applies the “%@” style";
@@ -241,6 +242,7 @@
 "Download" = "Download";
 "Download %@" = "Download %@";
 "Downloading" = "Downloading";
+"Downloads" = "Downloads";
 "Draft" = "Draft";
 "Drag photos onto the album in the sidebar, or use “Move to Album” in the context menu." = "Drag photos onto the album in the sidebar, or use “Move to Album” in the context menu.";
 "Drag the edges of the image outwards first." = "Drag the edges of the image outwards first.";
@@ -455,6 +457,7 @@
 "More" = "More";
 "More creative" = "More creative";
 "More photorealistic" = "More photorealistic";
+"More saving options" = "More saving options";
 "More steps for finer detail. Takes longer." = "More steps for finer detail. Takes longer.";
 "More variants" = "More variants";
 "Mosaic" = "Mosaic";

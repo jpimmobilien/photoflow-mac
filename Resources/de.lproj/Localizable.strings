@@ -958,3 +958,6 @@
 "Core ML could not run the model on this Intel Mac's graphics processor. Restart PhotoFlow and try again; if it keeps failing, use the “Energy saving” profile or Stable Diffusion 2.1 Compact. (%@)" = "Core ML konnte das Modell auf dem Grafikprozessor dieses Intel-Macs nicht ausführen. Starte PhotoFlow neu und versuche es erneut; wenn es weiter fehlschlägt, nutze das Profil „Energiesparen“ oder Stable Diffusion 2.1 Compact. (%@)";
 "Core ML could not run the model. Restart PhotoFlow and try again, or remove and re-download the model. (%@)" = "Core ML konnte das Modell nicht ausführen. Starte PhotoFlow neu und versuche es erneut oder entferne das Modell und lade es neu. (%@)";
 "Requires a Metal graphics processor – the CPU of Intel Macs cannot run this model." = "Benötigt einen Metal-Grafikprozessor – die CPU von Intel-Macs kann dieses Modell nicht ausführen.";
+"AI-edited" = "KI-bearbeitet";
+"More saving options" = "Weitere Sicherungsoptionen";
+"Downloads" = "Downloads";

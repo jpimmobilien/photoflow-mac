@@ -222,8 +222,8 @@ struct BeforeAfterView: View {
         GeometryReader { g in
             let size = fitted(in: g.size)
             ZStack {
-                Image(decorative: before, scale: 1).resizable().interpolation(.high)
                 Image(decorative: after, scale: 1).resizable().interpolation(.high)
+                Image(decorative: before, scale: 1).resizable().interpolation(.high)
                     .mask(alignment: .leading) { Rectangle().frame(width: size.width * split) }
                 Rectangle().fill(.white).frame(width: 2).shadow(color: .black.opacity(0.35), radius: 3)
                     .position(x: size.width * split, y: size.height / 2)
@@ -308,8 +308,12 @@ struct AIResultActions: View {
             Spacer(minLength: DS.Space.s)
             Button { studio.export(result.creation) } label: { Label(String(localized: "Export"), systemImage: "square.and.arrow.up") }
                 .buttonStyle(GlassButtonStyle(kind: .secondary))
+            Button { studio.saveToLibrary(result.creation) } label: {
+                Label(result.creation.libraryPath == nil ? String(localized: "Save to Library") : String(localized: "In Library"),
+                      systemImage: result.creation.libraryPath == nil ? "photo.badge.plus" : "checkmark.circle")
+            }
+            .buttonStyle(GlassButtonStyle(kind: .primary))
             Menu {
-                Button(String(localized: "Save to Library")) { studio.saveToLibrary(result.creation) }
                 Button(String(localized: "Save and Open in Editor")) { studio.saveToLibrary(result.creation, thenEdit: true) }
                 if !app.albums.isEmpty {
                     Menu(String(localized: "Add to Album")) {
@@ -318,15 +322,12 @@ struct AIResultActions: View {
                 }
                 Button(String(localized: "New Album…")) { askNewAlbum = true }
             } label: {
-                Label(result.creation.libraryPath == nil ? String(localized: "Save to Library") : String(localized: "In Library"),
-                      systemImage: result.creation.libraryPath == nil ? "photo.badge.plus" : "checkmark.circle")
-            } primaryAction: {
-                studio.saveToLibrary(result.creation)
+                Image(systemName: "ellipsis.circle")
             }
-            .menuStyle(.borderlessButton).fixedSize()
-            .foregroundStyle(.white)
-            .padding(.horizontal, 12).padding(.vertical, 6)
-            .background(Capsule().fill(DS.Palette.brand))
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .help(String(localized: "More saving options"))
         }
         .font(DS.Font.body)
         .alert(String(localized: "New Album"), isPresented: $askNewAlbum) {
@@ -342,7 +343,8 @@ struct AIResultMeta: View {
     let creation: AICreation
     var body: some View {
         HStack(spacing: DS.Space.xs) {
-            Badge(text: String(localized: "AI-generated"), color: DS.Palette.iris, symbol: "sparkles")
+            Badge(text: creation.kind.isFullyGenerated ? String(localized: "AI-generated") : String(localized: "AI-edited"),
+                  color: DS.Palette.iris, symbol: "sparkles")
             Text([creation.modelName, creation.settingsSummary, String(format: "%.0f s", creation.duration)].joined(separator: " · "))
                 .font(DS.Font.caption).foregroundStyle(DS.Palette.textTertiary).lineLimit(1).truncationMode(.middle)
             if let note = creation.note {

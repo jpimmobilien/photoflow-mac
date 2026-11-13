@@ -16,6 +16,7 @@ struct AIModelsView: View {
                         .font(DS.Font.callout).foregroundStyle(DS.Palette.textSecondary)
                 }
                 hardwareCard
+                downloads
                 section(String(localized: "Image generation & editing"), AIModelCatalog.diffusionModels)
                 section(String(localized: "Upscaling & restoration"), AIModelCatalog.upscalers)
                 section(String(localized: "Object removal"), AIModelCatalog.all.filter { $0.kind == .inpainter })
@@ -26,6 +27,38 @@ struct AIModelsView: View {
             .padding(.bottom, DS.Space.xl)
             .frame(maxWidth: 1100, alignment: .leading)
             .frame(maxWidth: .infinity)
+        }
+    }
+
+    /// Running, queued and paused downloads at the top, so they stay visible while scrolling.
+    @ViewBuilder
+    private var downloads: some View {
+        let active = AIModelCatalog.all.filter { m in
+            switch store.state(m.id) {
+            case .queued, .downloading, .paused, .verifying, .installing: return true
+            default: return false
+            }
+        }
+        if !active.isEmpty {
+            VStack(alignment: .leading, spacing: DS.Space.s) {
+                GroupHeader(title: String(localized: "Downloads"), detail: nil)
+                VStack(spacing: DS.Space.s) {
+                    ForEach(active) { m in
+                        HStack(alignment: .center, spacing: DS.Space.m) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(m.name).font(DS.Font.headline).foregroundStyle(DS.Palette.textPrimary)
+                                Text(m.developer).font(DS.Font.caption).foregroundStyle(DS.Palette.textSecondary)
+                            }
+                            .frame(width: 240, alignment: .leading)
+                            AIModelDownloadControl(model: m)
+                            Spacer(minLength: 0)
+                        }
+                    }
+                }
+                .padding(DS.Space.m)
+                .glassCard(cornerRadius: DS.Radius.panel)
+            }
+            .transition(.opacity.combined(with: .move(edge: .top)))
         }
     }
 

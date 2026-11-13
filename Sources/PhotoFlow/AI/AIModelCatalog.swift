@@ -145,7 +145,7 @@ enum AIModelCatalog {
             kind: .diffusion, family: .sd21, license: openRAIL, capabilities: diffusionCaps, files: f2, isArchive: false,
             revision: r2, version: "2.1 base · 6-bit palettized",
             sourcePage: URL(string: "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized")!,
-            resolution: 512, scale: 1, minMemoryGB: 8, recommendedMemoryGB: 8, minMacOS: v14,
+            resolution: 512, scale: 1, minMemoryGB: 6, recommendedMemoryGB: 8, minMacOS: v14,
             requiresAppleSilicon: false,
             hardwareNote: String(localized: "Smallest download. Best for Apple Silicon Macs with 8 GB memory."),
             detail: String(localized: "Same model as Stable Diffusion 2.1 with compressed weights: less than half the download and memory.")))
@@ -199,7 +199,7 @@ enum AIModelCatalog {
                 files: e.files.map { AIModelFile(path: $0.path, url: URL(string: release + $0.path)!, size: $0.size, sha256: $0.sha256) },
                 isArchive: true, revision: e.revision, version: "Big-LaMa · Core ML 800 px",
                 sourcePage: URL(string: "https://github.com/advimman/lama")!,
-                resolution: 800, scale: 1, minMemoryGB: 8, recommendedMemoryGB: 8, minMacOS: v13,
+                resolution: 800, scale: 1, minMemoryGB: 4, recommendedMemoryGB: 8, minMacOS: v13,
                 requiresAppleSilicon: false,
                 hardwareNote: String(localized: "Runs on every supported Mac."),
                 detail: String(localized: "Specialised model that removes objects and fills the gap with matching surroundings.")))
