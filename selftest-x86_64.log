@@ -1,0 +1,22 @@
+PASS inscribed rect rotation 1.0°
+PASS inscribed rect rotation 3.0°
+PASS inscribed rect rotation 7.5°
+PASS inscribed rect rotation 15.0°
+PASS inscribed rect perspective
+PASS white balance mapping 30.0,0.0
+PASS white balance mapping -45.0,20.0
+PASS white balance mapping 10.0,-35.0
+PASS tone curve monotonic -100.0
+PASS tone curve monotonic 100.0
+PASS pHash stable under 50% resize (d=2)
+PASS tilt -4.0° detected as -4.12° conf 1.00
+PASS tilt 2.5° detected as 2.42° conf 1.00
+PASS tilt 6.0° detected as 6.00° conf 1.00
+PASS library insert
+PASS recipe round-trip
+PASS export never overwrites (Sample (2).jpg)
+PASS original untouched after export
+PASS export into original folder keeps original
+PASS move to Trash
+PASS restore from Trash (identical bytes)
+SELFTEST OK
