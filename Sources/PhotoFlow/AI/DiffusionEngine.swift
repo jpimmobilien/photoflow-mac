@@ -145,6 +145,15 @@ final class DiffusionEngine: @unchecked Sendable {
 
     // MARK: Generation
 
+    /// A uniform result means the computation went wrong (e.g. NaNs) – never show it as a result.
+    static func isFlat(_ image: CGImage) -> Bool {
+        guard let pb = PixelBuffer(cgImage: image, maxSide: 64) else { return false }
+        let l = pb.luma()
+        let mean = l.reduce(0, +) / Float(max(1, l.count))
+        let variance = l.reduce(0) { $0 + ($1 - mean) * ($1 - mean) } / Float(max(1, l.count))
+        return sqrt(variance) < 0.012
+    }
+
     /// Core ML errors are technical; explain what the user can do.
     static func friendly(_ error: Error) -> Error {
         if error is AIError { return error }
@@ -214,8 +223,7 @@ final class DiffusionEngine: @unchecked Sendable {
         do {
             images = try attempt(p)
         } catch {
-            // GPU drivers can fail (hangs, unsupported operations, virtual GPUs). Retry once with a freshly loaded
-            // pipeline in "safe" mode (on Apple Silicon: CPU; on Intel the GPU is required, so a clean reload).
+            // GPU drivers can fail (hangs, virtual GPUs). Retry once with a freshly loaded pipeline.
             guard !token.isCancelled, !cpuFallback.contains(job.model.id) else { throw Self.friendly(error) }
             print("AI: run failed (\(error.localizedDescription)) – retrying in safe mode")
             cpuFallback.insert(job.model.id)
@@ -235,6 +243,9 @@ final class DiffusionEngine: @unchecked Sendable {
         }
         guard let first = images.first, let image = first else {
             throw AIError.failed(String(localized: "The model returned no image. Try another prompt or seed."))
+        }
+        if Self.isFlat(image) {
+            throw AIError.failed(String(localized: "The model produced an empty image. The graphics processor could not run the model correctly – restart PhotoFlow and try again."))
         }
         return image
     }

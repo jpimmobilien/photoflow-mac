@@ -80,8 +80,8 @@ struct AIHardware: Sendable {
         if model.requiresAppleSilicon && base.architecture != .appleSilicon {
             return String(localized: "Requires a Mac with Apple Silicon.")
         }
-        if model.kind == .diffusion && isIntel && !base.hasMetal {
-            return String(localized: "Requires a Metal graphics processor – the CPU of Intel Macs cannot run this model.")
+        if model.kind == .diffusion && !base.hasMetal {
+            return String(localized: "Requires a Metal graphics processor – Core ML cannot run this model correctly on the CPU alone.")
         }
         if memoryGB + 0.5 < model.minMemoryGB {
             return String(localized: "Requires at least \(Int(model.minMemoryGB)) GB memory (this Mac has \(Int(memoryGB.rounded())) GB).")
@@ -117,15 +117,14 @@ struct AIHardware: Sendable {
         var signature: String { "\(base.rawValue)-" + overrides.map { "\($0.key.rawValue)=\($0.value.rawValue)" }.sorted().joined(separator: ",") }
     }
 
-    /// The catalog ships "original" attention variants, which run best on the GPU.
-    /// Measured on Intel (macOS 15, `--qa ai-diag`): Core ML cannot run the float16 UNet on an x86 CPU at all, and
-    /// the VAE runs but returns wrong values there – so on Intel the UNet and VAE always use the GPU (the text
-    /// encoder is correct on the CPU and runs there). On Apple Silicon the CPU computes float16 natively, so the
-    /// "safe" mode after a GPU error (or on virtual GPUs) runs everything on the CPU.
+    /// The catalog ships "original" attention variants, which Apple runs on the GPU (`.cpuAndGPU`).
+    /// Measured with `--qa ai-diag` / `ai-t2i` on macOS 15: Core ML's CPU path cannot run these float16 models
+    /// correctly (x86: the UNet fails, the VAE returns wrong values; Apple Silicon VM: noise instead of an image),
+    /// so diffusion never falls back to the CPU – it needs a Metal GPU. On Intel the text encoder (numerically
+    /// verified) runs on the CPU to leave GPU memory to the UNet.
     func diffusionPlan(safe: Bool) -> DiffusionPlan {
         if !base.hasMetal { return DiffusionPlan(base: .cpuOnly, overrides: [:]) }
         if isIntel { return DiffusionPlan(base: .cpuAndGPU, overrides: [.textEncoder: .cpuOnly]) }
-        if safe || !hasUsableGPU { return DiffusionPlan(base: .cpuOnly, overrides: [:]) }
         return DiffusionPlan(base: .cpuAndGPU, overrides: [:])
     }
 

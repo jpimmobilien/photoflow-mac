@@ -280,7 +280,7 @@ final class AIStudioModel: ObservableObject {
                            width: image.width, height: image.height, sourceName: source?.name, sourcePhotoID: source?.photoID,
                            parentID: source?.creationID, duration: Date().timeIntervalSince(started), note: note, fileName: "")
         if DiffusionEngine.shared.lastRunFellBackToCPU {
-            notice = String(localized: "The graphics processor reported an error. PhotoFlow reloaded the model in a safer mode (on Apple Silicon: on the CPU, slower) and keeps it until the app is restarted.")
+            notice = String(localized: "The graphics processor reported an error; PhotoFlow reloaded the model and finished the image.")
         }
         do {
             let saved = try CreationStore.shared.add(image, c)

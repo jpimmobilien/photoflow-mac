@@ -683,7 +683,7 @@
 "Requires" = "Requires";
 "Requires %@." = "Requires %@.";
 "Requires a Mac with Apple Silicon." = "Requires a Mac with Apple Silicon.";
-"Requires a Metal graphics processor – the CPU of Intel Macs cannot run this model." = "Requires a Metal graphics processor – the CPU of Intel Macs cannot run this model.";
+"Requires a Metal graphics processor – Core ML cannot run this model correctly on the CPU alone." = "Requires a Metal graphics processor – Core ML cannot run this model correctly on the CPU alone.";
 "Requires at least %lld GB memory (this Mac has %lld GB)." = "Requires at least %lld GB memory (this Mac has %lld GB).";
 "Reset" = "Reset";
 "Reset All" = "Reset All";
@@ -813,13 +813,14 @@
 "The file no longer exists at its original location." = "The file no longer exists at its original location.";
 "The file “%@” could not be read as an image." = "The file “%@” could not be read as an image.";
 "The files of %@ are missing or damaged. Remove the model in Model Management and download it again." = "The files of %@ are missing or damaged. Remove the model in Model Management and download it again.";
-"The graphics processor reported an error. PhotoFlow reloaded the model in a safer mode (on Apple Silicon: on the CPU, slower) and keeps it until the app is restarted." = "The graphics processor reported an error. PhotoFlow reloaded the model in a safer mode (on Apple Silicon: on the CPU, slower) and keeps it until the app is restarted.";
+"The graphics processor reported an error; PhotoFlow reloaded the model and finished the image." = "The graphics processor reported an error; PhotoFlow reloaded the model and finished the image.";
 "The horizon is already straight." = "The horizon is already straight.";
 "The image could not be read. Try another photo or export it as JPEG or PNG first." = "The image could not be read. Try another photo or export it as JPEG or PNG first.";
 "The image could not be saved." = "The image could not be saved.";
 "The library could not be loaded" = "The library could not be loaded";
 "The library could not be opened" = "The library could not be opened";
 "The model package could not be installed: %@" = "The model package could not be installed: %@";
+"The model produced an empty image. The graphics processor could not run the model correctly – restart PhotoFlow and try again." = "The model produced an empty image. The graphics processor could not run the model correctly – restart PhotoFlow and try again.";
 "The model returned no image. Try another prompt or seed." = "The model returned no image. Try another prompt or seed.";
 "The model server could not be reached. Try again later." = "The model server could not be reached. Try again later.";
 "The most compatible model: 512 × 512 pixels, works on macOS 13.1 and on Intel Macs." = "The most compatible model: 512 × 512 pixels, works on macOS 13.1 and on Intel Macs.";

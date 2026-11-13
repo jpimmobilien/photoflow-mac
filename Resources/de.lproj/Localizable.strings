@@ -954,10 +954,11 @@
 "· %@" = "· %@";
 "“%@” needs a local AI model. PhotoFlow does not include models in the app – you choose which ones to download from their official sources." = "„%@“ benötigt ein lokales KI-Modell. PhotoFlow liefert keine Modelle mit – du entscheidest, welche du von den offiziellen Quellen lädst.";
 "Image generation requires macOS 13.1 or later." = "Bildgenerierung benötigt macOS 13.1 oder neuer.";
-"The graphics processor reported an error. PhotoFlow reloaded the model in a safer mode (on Apple Silicon: on the CPU, slower) and keeps it until the app is restarted." = "Der Grafikprozessor meldete einen Fehler. PhotoFlow hat das Modell in einem sichereren Modus neu geladen (bei Apple Silicon auf der CPU, langsamer) und behält ihn bis zum Neustart bei.";
+"The graphics processor reported an error; PhotoFlow reloaded the model and finished the image." = "Der Grafikprozessor meldete einen Fehler; PhotoFlow hat das Modell neu geladen und das Bild fertiggestellt.";
 "Core ML could not run the model on this Intel Mac's graphics processor. Restart PhotoFlow and try again; if it keeps failing, use the “Energy saving” profile or Stable Diffusion 2.1 Compact. (%@)" = "Core ML konnte das Modell auf dem Grafikprozessor dieses Intel-Macs nicht ausführen. Starte PhotoFlow neu und versuche es erneut; wenn es weiter fehlschlägt, nutze das Profil „Energiesparen“ oder Stable Diffusion 2.1 Compact. (%@)";
 "Core ML could not run the model. Restart PhotoFlow and try again, or remove and re-download the model. (%@)" = "Core ML konnte das Modell nicht ausführen. Starte PhotoFlow neu und versuche es erneut oder entferne das Modell und lade es neu. (%@)";
-"Requires a Metal graphics processor – the CPU of Intel Macs cannot run this model." = "Benötigt einen Metal-Grafikprozessor – die CPU von Intel-Macs kann dieses Modell nicht ausführen.";
+"Requires a Metal graphics processor – Core ML cannot run this model correctly on the CPU alone." = "Benötigt einen Metal-Grafikprozessor – Core ML kann dieses Modell allein auf der CPU nicht korrekt ausführen.";
 "AI-edited" = "KI-bearbeitet";
 "More saving options" = "Weitere Sicherungsoptionen";
 "Downloads" = "Downloads";
+"The model produced an empty image. The graphics processor could not run the model correctly – restart PhotoFlow and try again." = "Das Modell hat ein leeres Bild erzeugt. Der Grafikprozessor konnte das Modell nicht korrekt ausführen – starte PhotoFlow neu und versuche es erneut.";
