@@ -96,14 +96,18 @@ struct GlassSurface: ViewModifier {
                     // refracted light: brighter at the top edge, like light passing through glass
                     shape.fill(LinearGradient(colors: [.white.opacity(dark ? 0.07 : 0.35), .clear], startPoint: .top, endPoint: .center))
                 }
+                // depth belongs to the glass body only – never to the text on it
+                .background {
+                    shape.fill(Color.black.opacity(0.001))
+                        .shadow(color: .black.opacity(dark ? (floating ? 0.42 : 0.25) : (floating ? 0.10 : 0.06)), radius: floating ? 22 : 8, y: floating ? 10 : 3)
+                        .shadow(color: .black.opacity(dark ? 0.3 : 0.04), radius: 1, y: 0.5)
+                }
             }
             .overlay(
                 shape.stroke(LinearGradient(colors: [DS.Palette.rim, Color.white.opacity(dark ? 0.03 : 0.2)], startPoint: .top, endPoint: .bottom),
                              lineWidth: 0.8)
                 .allowsHitTesting(false)
             )
-            .shadow(color: .black.opacity(dark ? (floating ? 0.42 : 0.25) : (floating ? 0.10 : 0.06)), radius: floating ? 22 : 8, y: floating ? 10 : 3)
-            .shadow(color: .black.opacity(dark ? 0.3 : 0.04), radius: 1, y: 0.5)
     }
 }
 

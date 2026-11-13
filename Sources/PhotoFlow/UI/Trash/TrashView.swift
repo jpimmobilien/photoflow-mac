@@ -36,7 +36,7 @@ struct TrashView: View {
                         ForEach(app.trashEntries) { e in
                             TrashCard(entry: e, selected: selection.contains(e.id)) {
                                 withAnimation(DS.Motion.snappy) {
-                                    if NSEvent.modifierFlags.contains(.command) || NSEvent.modifierFlags.contains(.shift) {
+                                    if let f = NSApp.currentEvent?.modifierFlags ?? Optional(NSEvent.modifierFlags), f.contains(.command) || f.contains(.shift) {
                                         if selection.contains(e.id) { selection.remove(e.id) } else { selection.insert(e.id) }
                                     } else {
                                         selection = selection == [e.id] ? [] : [e.id]

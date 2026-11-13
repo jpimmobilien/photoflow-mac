@@ -273,7 +273,8 @@ final class AppModel: ObservableObject {
     // MARK: - Selection (grid click handling)
 
     func click(_ id: Int64) {
-        let flags = NSEvent.modifierFlags
+        // flags of the event being handled (falls back to the global state outside event dispatch)
+        let flags = NSApp.currentEvent?.modifierFlags ?? NSEvent.modifierFlags
         if flags.contains(.command) {
             if selection.contains(id) { selection.remove(id) } else { selection.insert(id) }
             lastClicked = id

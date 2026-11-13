@@ -1,6 +1,7 @@
 import Foundation
 import AppKit
 import SwiftUI
+import ObjectiveC
 
 /// Automated visual review: launches the real UI, walks through every screen, performs real mouse and
 /// keyboard input (synthesized NSEvents posted to the app's event queue – the same path as hardware input)
@@ -60,7 +61,8 @@ enum UITour {
         var size = NSSize(width: 1440, height: 900)
         if let s = ProcessInfo.processInfo.environment["PHOTOFLOW_TOUR_SIZE"]?.split(separator: "x"), s.count == 2,
            let w = Double(s[0]), let h = Double(s[1]) { size = NSSize(width: w, height: h) }
-        // setFrame does not constrain to the screen, so sizes larger than the CI display work; capture is per window.
+        // The CI display is only 1024×768: allow windows larger than the screen for the review (tour only).
+        unconstrainWindows()
         window.setFrame(NSRect(x: screen.minX, y: screen.maxY - size.height, width: size.width, height: size.height), display: true)
         NSApp.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
@@ -120,6 +122,8 @@ enum UITour {
         await pause(1.2)
         check("mouse click on a photo tile selects it", app.selection.count == 1)
         shot("12-library-selection-inspector")
+        await pause(4)
+        shot("12-library-selection-inspector-after-4s")
         click(window, at: gridPoint, count: 2)
         await pause(1.5)
         check("double click opens the photo viewer", app.viewerPhotoID != nil)
@@ -211,6 +215,8 @@ enum UITour {
         app.batch.source = .allPhotos
         await pause(4)
         shot("27-batch-setup")
+        await pause(4)
+        shot("27-batch-setup-after-4s")
         for (i, wf) in BatchWorkflow.predefined.enumerated() {
             app.batch.workflow = wf
             await pause(3)
@@ -313,6 +319,14 @@ enum UITour {
         print("UITOUR: done → \(outDir.path)")
     }
 
+    /// NSWindow keeps windows inside the visible screen; the CI display (1024×768) is smaller than the window
+    /// sizes we must review, so the constraint is lifted for the tour process only.
+    private static func unconstrainWindows() {
+        guard let a = class_getInstanceMethod(NSWindow.self, #selector(NSWindow.constrainFrameRect(_:to:))),
+              let b = class_getInstanceMethod(NSWindow.self, #selector(NSWindow.pf_tourConstrainFrameRect(_:to:))) else { return }
+        method_exchangeImplementations(a, b)
+    }
+
     // MARK: - Synthesized input (posted to the event queue like hardware events)
 
     /// `point` is in window coordinates with the origin at the top-left.
@@ -336,7 +350,7 @@ enum UITour {
         case 53: chars = "\u{1b}"
         case 124: chars = String(Character(UnicodeScalar(NSRightArrowFunctionKey)!))
         case 123: chars = String(Character(UnicodeScalar(NSLeftArrowFunctionKey)!))
-        case 6: chars = "z"
+        case 6: chars = flags.contains(.shift) ? "Z" : "z"
         default: chars = ""
         }
         for type in [NSEvent.EventType.keyDown, .keyUp] {
@@ -389,4 +403,8 @@ enum UITour {
     private static func isBlank(_ img: CGImage) -> Bool {
         img.width < 10 || img.height < 10
     }
+}
+
+extension NSWindow {
+    @objc func pf_tourConstrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect { frameRect }
 }
