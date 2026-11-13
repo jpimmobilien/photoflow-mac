@@ -16,6 +16,10 @@ on:
         description: 'Run Core ML on the CPU only'
         type: boolean
         default: false
+      quick:
+        description: 'Skip upscaling / enhancement / removal tests'
+        type: boolean
+        default: false
       compile_only:
         description: 'Only build (fast compile check)'
         type: boolean
@@ -90,12 +94,15 @@ jobs:
           t "5 install esrgan general" $P $CPU --qa ai-install realesr-general-x4v3
           t "6 install lama"    $P $CPU --qa ai-install lama
           t "7 install ${{ inputs.model }} (pause + resume)" $P $CPU --qa ai-install ${{ inputs.model }} pause
+          t "7b diagnose backends" $P $CPU --qa ai-diag ${{ inputs.model }}
+          if [ "${{ inputs.quick }}" != "true" ]; then
           t "8 upscale 2x"      $P $CPU --qa ai-upscale "$IMG" /tmp/ai/out/upscale2.png 2
           t "9 upscale 4x"      $P $CPU --qa ai-upscale "$IMG" /tmp/ai/out/upscale4.png 4
           t "10 enhance denoise" $P $CPU --qa ai-enhance "$IMG" /tmp/ai/out/denoise.png denoise
           t "11 enhance detail" $P $CPU --qa ai-enhance "$IMG" /tmp/ai/out/detail.png restoreDetail
           t "12 subject (Vision)" $P $CPU --qa ai-subject /tmp/ai/in/kodim04.png /tmp/ai/out/subject.png
           t "13 object removal (LaMa)" $P $CPU --qa ai-remove "$IMG" /tmp/ai/out/remove.png
+          fi
           t "14 text-to-image (OFFLINE, network denied)" sandbox-exec -p '(version 1)(allow default)(deny network*)' $P $CPU --qa ai-t2i /tmp/ai/out/t2i.png $S repeat
           t "15 image-to-image" $P $CPU --qa ai-i2i "$IMG" /tmp/ai/out/i2i.png $S
           t "16 inpainting"     $P $CPU --qa ai-inpaint "$IMG" /tmp/ai/out/inpaint.png $S

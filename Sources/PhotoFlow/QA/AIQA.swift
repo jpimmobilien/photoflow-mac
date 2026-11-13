@@ -1,6 +1,7 @@
 import Foundation
 import CoreGraphics
 import ImageIO
+import CoreML
 
 /// Headless tests for AI Studio (real downloads, real inference – no mocks).
 ///
@@ -40,6 +41,7 @@ enum AIQA {
         case "ai-memory": try memoryTest(runs: Int(a.first ?? "3") ?? 3)
         case "ai-metadata": try metadataTest(out: try arg(0))
         case "ai-subject": try subject(input: try arg(0), out: try arg(1))
+        case "ai-diag": try diagnose(try arg(0))
         default: return false
         }
         return true
@@ -315,6 +317,38 @@ enum AIQA {
         guard let d = AIImage.pngData(m) else { throw Failure(description: "encode") }
         try d.write(to: URL(fileURLWithPath: out))
         print("subject OK")
+    }
+
+    /// Loads every sub-model of a diffusion model with each compute-unit setting and runs one prediction
+    /// with neutral inputs – shows which backend works on this Mac.
+    static func diagnose(_ id: String) throws {
+        let dir = ModelStore.directory(for: id)
+        let parts = (try FileManager.default.contentsOfDirectory(atPath: dir.path)).filter { $0.hasSuffix(".mlmodelc") }.sorted()
+        let unitSets: [(String, MLComputeUnits)] = [("cpuOnly", .cpuOnly), ("cpuAndGPU", .cpuAndGPU), ("all", .all)]
+        for p in parts {
+            for (name, units) in unitSets {
+                let cfg = MLModelConfiguration()
+                cfg.computeUnits = units
+                let t0 = Date()
+                do {
+                    let m = try MLModel(contentsOf: dir.appendingPathComponent(p), configuration: cfg)
+                    var dict: [String: MLFeatureValue] = [:]
+                    for (k, d) in m.modelDescription.inputDescriptionsByName {
+                        if let c = d.multiArrayConstraint {
+                            let a = try MLMultiArray(shape: c.shape, dataType: c.dataType == .float16 ? .float16 : .float32)
+                            for i in 0..<a.count { a[i] = 0.01 }
+                            dict[k] = MLFeatureValue(multiArray: a)
+                        }
+                    }
+                    let tl = Date().timeIntervalSince(t0)
+                    let t1 = Date()
+                    _ = try m.prediction(from: MLDictionaryFeatureProvider(dictionary: dict))
+                    print(String(format: "diag %@ %@: OK load %.1fs predict %.2fs", p, name, tl, Date().timeIntervalSince(t1)))
+                } catch {
+                    print("diag \(p) \(name): FAIL \(String(describing: error).prefix(160))")
+                }
+            }
+        }
     }
 
     static func cancelTest() throws {
