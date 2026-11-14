@@ -208,7 +208,7 @@ enum AIQA {
         print(String(format: "t2i done in %.1fs (incl. model load) footprint %@ → %@", Date().timeIntervalSince(t0),
                      Int64(before).formattedBytes, Int64(MemoryMonitor.footprintBytes()).formattedBytes))
         print("t2i pipeline: \(PipelineDiagnostics.summary)")
-        print("t2i placement: \(AIComputePlanInfo.unetSummary(for: s.model))")
+        print("t2i placement: \(AIComputePlanInfo.unetSummary(for: s.model)) · \(DiffusionEngine.shared.lastVAEInfo)")
         try checkPlausible(img, "t2i")
         guard img.width == s.model.resolution else { throw Failure(description: "unexpected size \(img.width)") }
         try save(img, out, kind: .textToImage, prompt: s.prompt, model: s.model.id, seed: 42)

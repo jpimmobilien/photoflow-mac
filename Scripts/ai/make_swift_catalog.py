@@ -9,6 +9,7 @@ Usage: make_swift_catalog.py files.json manifest.json lama-manifest.json release
 import hashlib, json, os, sys
 
 files_json, esrgan_json, lama_json, release_dir, out = sys.argv[1:6]
+extra_manifests = sys.argv[6:]   # e.g. vae-manifest.json
 
 
 def sha(p):
@@ -26,6 +27,8 @@ for mid, e in json.load(open(files_json)).items():
 
 manifests = json.load(open(esrgan_json))
 manifests.update(json.load(open(lama_json)))
+for extra in extra_manifests:
+    manifests.update(json.load(open(extra)))
 for mid, m in manifests.items():
     local = os.path.join(release_dir, m["file"])
     size, digest = os.path.getsize(local), sha(local)

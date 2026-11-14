@@ -98,6 +98,7 @@ jobs:
           t "4 install esrgan x2" $P $CPU --qa ai-install realesrgan-x2plus
           t "5 install esrgan general" $P $CPU --qa ai-install realesr-general-x4v3
           t "6 install lama"    $P $CPU --qa ai-install lama
+          t "6b install float32 VAE" $P $CPU --qa ai-install sd-vae-fp32
           t "7 install ${{ inputs.model }} (pause + resume)" $P $CPU --qa ai-install ${{ inputs.model }} pause
           [ "${{ inputs.only_diag }}" = "true" ] && t "7b diagnose backends" $P $CPU --qa ai-diag ${{ inputs.model }}
           if [ "${{ inputs.only_diag }}" != "true" ]; then

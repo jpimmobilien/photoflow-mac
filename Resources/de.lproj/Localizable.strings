@@ -995,3 +995,7 @@
 "The most widely used Stable Diffusion model: 512 × 512 pixels, robust for photos of people, objects and interiors." = "Das am weitesten verbreitete Stable-Diffusion-Modell: 512 × 512 Pixel, robust für Fotos von Menschen, Objekten und Innenräumen.";
 "Works on this Mac" = "Funktioniert auf diesem Mac";
 "Works on this Mac · %@ s per step" = "Funktioniert auf diesem Mac · %@ s pro Schritt";
+"Image decoding" = "Bilddekodierung";
+"Precise image decoder (VAE, float32)" = "Präziser Bilddecoder (VAE, float32)";
+"Runs on every supported Mac. Installed automatically with Stable Diffusion 1.5 / 2.1." = "Läuft auf jedem unterstützten Mac. Wird mit Stable Diffusion 1.5 / 2.1 automatisch installiert.";
+"Turns the generated latent image into pixels in full precision. Apple's float16 decoder computes wrong values on the CPU (measured) – this one is correct on CPU, GPU and Neural Engine, and on Intel it keeps the decoder off the GPU." = "Wandelt das erzeugte latente Bild in voller Genauigkeit in Pixel um. Apples float16-Decoder rechnet auf der CPU falsch (gemessen) – dieser rechnet auf CPU, GPU und Neural Engine korrekt und entlastet auf Intel-Macs die GPU.";

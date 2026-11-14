@@ -125,9 +125,19 @@ final class DiffusionEngine: @unchecked Sendable {
     private func loadPipeline(_ model: AIModelDescriptor) throws -> StableDiffusionPipelineProtocol {
         let hw = AIHardware.current
         let profile = AIPerformanceProfile.current
-        let plan = hw.diffusionPlan(for: model)
+        var plan = hw.diffusionPlan(for: model)
         let reduce = hw.reduceMemory(for: model, profile: profile)
-        let key = "\(model.id)|\(plan.signature)|\(reduce)"
+        // Float32 VAE for SD 1.x / 2.x (correct on every compute unit). On Intel and on virtual GPUs it runs on the
+        // CPU – keeps the long decoder kernels off the GPU.
+        let vaeDir = ModelStore.directory(for: "sd-vae-fp32")
+        let useFP32VAE = (model.family == .sd15 || model.family == .sd21) && ModelStoreSnapshot.current.installedIDs.contains("sd-vae-fp32")
+            && FileManager.default.fileExists(atPath: vaeDir.appendingPathComponent("VAEDecoder.mlmodelc").path)
+        if useFP32VAE {
+            let units: MLComputeUnits = (hw.isIntel || !hw.hasUsableGPU) ? .cpuOnly : .cpuAndGPU
+            plan.overrides[.vaeDecoder] = units
+            plan.overrides[.vaeEncoder] = units
+        }
+        let key = "\(model.id)|\(plan.signature)|\(reduce)|vae32=\(useFP32VAE)"
         if let pipeline, loadedKey == key { return pipeline }
         unloadNow()
 
@@ -142,6 +152,9 @@ final class DiffusionEngine: @unchecked Sendable {
         let config = MLModelConfiguration()
         config.computeUnits = plan.base
         ComponentConfiguration.set(plan.overrides)
+        ComponentConfiguration.setVAE(decoder: useFP32VAE ? vaeDir.appendingPathComponent("VAEDecoder.mlmodelc") : nil,
+                                      encoder: useFP32VAE ? vaeDir.appendingPathComponent("VAEEncoder.mlmodelc") : nil)
+        stateLock.lock(); lastVAEInfo = useFP32VAE ? "float32 VAE (\(plan.overrides[.vaeDecoder] == .cpuOnly ? "CPU" : "GPU"))" : "model VAE (float16)"; stateLock.unlock()
         let p: StableDiffusionPipelineProtocol
         switch model.family {
         case .sdxl:
@@ -192,6 +205,9 @@ final class DiffusionEngine: @unchecked Sendable {
             return image
         }
     }
+
+    /// Which VAE the loaded pipeline uses (for reports).
+    private(set) var lastVAEInfo = "–"
 
     /// Model used instead of the requested one in the last run (after an invalid result).
     private(set) var lastFailover: AIModelDescriptor?

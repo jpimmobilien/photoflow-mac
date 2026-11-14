@@ -226,7 +226,7 @@ final class ModelStore: ObservableObject {
         switch m.kind {
         case .diffusion: defaultDiffusionModelID = m.id
         case .upscaler: defaultUpscalerID = m.id
-        case .inpainter: break
+        case .inpainter, .vae: break
         }
     }
 
@@ -275,6 +275,10 @@ final class ModelStore: ObservableObject {
                     store.installed[m.id] = rec
                     store.states[m.id] = .installed
                     if m.kind == .diffusion, !store.isInstalled(store.defaultDiffusionModelID) { store.defaultDiffusionModelID = m.id }
+                    // SD 1.x / 2.x: also fetch the float32 VAE (small) – it decodes correctly on every compute unit.
+                    if m.family == .sd15 || m.family == .sd21, let vae = AIModelCatalog.model("sd-vae-fp32"), !store.isInstalled(vae.id) {
+                        store.download(vae)
+                    }
                 case .failure(let error):
                     if control.cancelRequested {
                         try? FileManager.default.removeItem(at: Self.partialDirectory(for: m.id))
@@ -408,12 +412,18 @@ struct ModelInstaller {
             try? fm.removeItem(at: extract)
             try fm.createDirectory(at: extract, withIntermediateDirectories: true)
             try Self.unzip(zip, to: extract)
-            guard let pkg = try fm.contentsOfDirectory(at: extract, includingPropertiesForKeys: nil).first(where: { $0.pathExtension == "mlpackage" }) else {
+            let packages = try fm.contentsOfDirectory(at: extract, includingPropertiesForKeys: nil)
+                .filter { $0.pathExtension == "mlpackage" }.sorted { $0.lastPathComponent < $1.lastPathComponent }
+            guard !packages.isEmpty else {
                 throw ModelStoreError.archiveInvalid(String(localized: "no Core ML package inside"))
             }
             try Self.rejectSymlinks(in: extract)
-            let compiled = try await Self.compile(pkg)
-            try fm.moveItem(at: compiled, to: staging.appendingPathComponent("model.mlmodelc"))
+            for pkg in packages {
+                let compiled = try await Self.compile(pkg)
+                // One package → model.mlmodelc; several (e.g. VAE decoder + encoder) → <name>.mlmodelc
+                let name = packages.count == 1 ? "model.mlmodelc" : pkg.deletingPathExtension().lastPathComponent + ".mlmodelc"
+                try fm.moveItem(at: compiled, to: staging.appendingPathComponent(name))
+            }
             try? fm.removeItem(at: extract)
         } else {
             for f in model.files {

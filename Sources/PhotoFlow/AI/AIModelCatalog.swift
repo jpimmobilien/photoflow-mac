@@ -11,6 +11,7 @@ enum AIModelKind: String, Codable, Sendable {
     case diffusion      // text-to-image, image-to-image, inpainting, outpainting
     case upscaler       // Real-ESRGAN
     case inpainter      // LaMa (object removal)
+    case vae            // float32 autoencoder for SD 1.x / 2.x
 }
 
 enum DiffusionFamily: String, Codable, Sendable {
@@ -258,6 +259,21 @@ enum AIModelCatalog {
                 requiresAppleSilicon: false,
                 hardwareNote: String(localized: "Runs on every supported Mac."),
                 detail: String(localized: "Specialised model that removes objects and fills the gap with matching surroundings.")))
+        }
+        if let e = data["sd-vae-fp32"] {
+            let mit = AILicense(name: "MIT", url: URL(string: "https://huggingface.co/stabilityai/sd-vae-ft-mse")!, privateUse: true, commercialUse: true,
+                                summary: String(localized: "Permissive licence: private and commercial use allowed."),
+                                restrictions: String(localized: "Keep the copyright notice when redistributing the model."))
+            list.append(AIModelDescriptor(
+                id: "sd-vae-fp32", name: String(localized: "Precise image decoder (VAE, float32)"), developer: "Stability AI (sd-vae-ft-mse) · Core ML conversion by PhotoFlow",
+                kind: .vae, family: nil, license: mit, capabilities: [],
+                files: e.files.map { AIModelFile(path: $0.path, url: URL(string: release + $0.path)!, size: $0.size, sha256: $0.sha256) },
+                isArchive: true, revision: e.revision, version: "sd-vae-ft-mse · float32",
+                sourcePage: URL(string: "https://huggingface.co/stabilityai/sd-vae-ft-mse")!,
+                resolution: 512, scale: 1, minMemoryGB: 4, recommendedMemoryGB: 8, minMacOS: v13,
+                requiresAppleSilicon: false,
+                hardwareNote: String(localized: "Runs on every supported Mac. Installed automatically with Stable Diffusion 1.5 / 2.1."),
+                detail: String(localized: "Turns the generated latent image into pixels in full precision. Apple's float16 decoder computes wrong values on the CPU (measured) – this one is correct on CPU, GPU and Neural Engine, and on Intel it keeps the decoder off the GPU.")))
         }
         return list.filter { !$0.files.isEmpty }
     }()

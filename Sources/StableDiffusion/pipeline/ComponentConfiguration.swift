@@ -17,6 +17,17 @@ public enum ComponentConfiguration {
         lock.lock(); overrides = map; lock.unlock()
     }
 
+    nonisolated(unsafe) private static var vaeOverride: (decoder: URL, encoder: URL?)?
+
+    /// Use these VAE models instead of the ones in the resource folder (Stable Diffusion 1.x / 2.x only),
+    /// e.g. float32 conversions that compute correctly on the CPU. nil = use the model's own VAE.
+    public static func setVAE(decoder: URL?, encoder: URL?) {
+        lock.lock(); vaeOverride = decoder.map { ($0, encoder) }; lock.unlock()
+    }
+
+    static var vaeDecoderOverride: URL? { lock.lock(); defer { lock.unlock() }; return vaeOverride?.decoder }
+    static var vaeEncoderOverride: URL? { lock.lock(); defer { lock.unlock() }; return vaeOverride?.encoder }
+
     static func resolve(_ component: PipelineComponent, _ base: MLModelConfiguration) -> MLModelConfiguration {
         lock.lock(); let units = overrides[component]; lock.unlock()
         guard let units, units != base.computeUnits, let copy = base.copy() as? MLModelConfiguration else { return base }

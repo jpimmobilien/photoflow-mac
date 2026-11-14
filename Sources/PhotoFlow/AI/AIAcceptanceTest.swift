@@ -124,7 +124,9 @@ final class AIAcceptanceTest: @unchecked Sendable {
         }
         for m in models {
             add(Entry(section: "System", name: "Ausführung \(m.name)", passed: true, seconds: 0,
-                      detail: AIHardware.current.diffusionPlan(for: m).title + " – " + AIComputePlanInfo.unetSummary(for: m), model: m.id))
+                      detail: AIHardware.current.diffusionPlan(for: m).title + " – " + AIComputePlanInfo.unetSummary(for: m)
+                        + ((m.family == .sd15 || m.family == .sd21) && ModelStoreSnapshot.current.installedIDs.contains("sd-vae-fp32") ? " – VAE: float32" : " – VAE: Modell (float16)"),
+                      model: m.id))
         }
         let total = Double(options.consecutive + (options.extended ? 12 + max(0, models.count - 1) * 3 : 0) + (options.includeEditing ? 6 : 0))
         var done = 0.0

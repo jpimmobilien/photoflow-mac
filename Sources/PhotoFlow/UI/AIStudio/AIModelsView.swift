@@ -21,6 +21,7 @@ struct AIModelsView: View {
                 section(String(localized: "Image generation & editing"), AIModelCatalog.diffusionModels)
                 section(String(localized: "Upscaling & restoration"), AIModelCatalog.upscalers)
                 section(String(localized: "Object removal"), AIModelCatalog.all.filter { $0.kind == .inpainter })
+                section(String(localized: "Image decoding"), AIModelCatalog.all.filter { $0.kind == .vae })
                 builtInCard
                 Text("Models are downloaded only from their official publishers (Hugging Face repositories of Apple and Stability AI) or from PhotoFlow's public GitHub release of Core ML conversions. Every file is pinned to an exact version and checked with SHA-256 before it is used. Models contain no executable code.")
                     .font(DS.Font.caption).foregroundStyle(DS.Palette.textTertiary).fixedSize(horizontal: false, vertical: true)
@@ -154,7 +155,7 @@ struct AIModelCard: View {
         switch model.kind {
         case .diffusion: return store.defaultDiffusionModelID == model.id
         case .upscaler: return store.defaultUpscalerID == model.id
-        case .inpainter: return false
+        case .inpainter, .vae: return false
         }
     }
 

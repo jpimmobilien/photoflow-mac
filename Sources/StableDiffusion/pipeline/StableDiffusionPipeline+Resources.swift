@@ -121,7 +121,7 @@ public extension StableDiffusionPipeline {
         }
 
         // Image Decoder
-        let decoder = Decoder(modelAt: urls.decoderURL, configuration: ComponentConfiguration.resolve(.vaeDecoder, config))
+        let decoder = Decoder(modelAt: ComponentConfiguration.vaeDecoderOverride ?? urls.decoderURL, configuration: ComponentConfiguration.resolve(.vaeDecoder, config))
 
         // Optional safety checker
         var safetyChecker: SafetyChecker? = nil
@@ -132,7 +132,9 @@ public extension StableDiffusionPipeline {
         
         // Optional Image Encoder
         let encoder: Encoder?
-        if FileManager.default.fileExists(atPath: urls.encoderURL.path) {
+        if let override = ComponentConfiguration.vaeEncoderOverride, FileManager.default.fileExists(atPath: override.path) {
+            encoder = Encoder(modelAt: override, configuration: ComponentConfiguration.resolve(.vaeEncoder, config))
+        } else if FileManager.default.fileExists(atPath: urls.encoderURL.path) {
             encoder = Encoder(modelAt: urls.encoderURL, configuration: ComponentConfiguration.resolve(.vaeEncoder, config))
         } else {
             encoder = nil
