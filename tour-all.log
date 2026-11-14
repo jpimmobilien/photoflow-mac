@@ -1,0 +1,402 @@
+UITOUR: screen 1024x768 window 1440x900
+UITOUR: light-01-overview-empty.png 1440x900
+UITOUR: light-02-library-empty.png 1440x900
+UITOUR: light-03-batch-empty-samples.png 1440x900
+UITOUR: light-03-batch-empty-portrait.png 1440x900
+UITOUR: light-03-batch-empty-straighten.png 1440x900
+UITOUR: light-04-duplicates-empty.png 1440x900
+UITOUR: light-05-albums-empty.png 1440x900
+UITOUR: light-06-trash-empty.png 1440x900
+UITOUR: light-07-export-history-empty.png 1440x900
+UITOUR: light-08-import-drop-target.png 1440x900
+UITOUR: light-09-importing.png 1440x900
+UITOUR: light-10-overview.png 1440x900
+UITOUR: light-11-all-photos-mosaic.png 1440x900
+UITOUR-CHECK: PASS mouse click on a photo tile selects it
+UITOUR: light-12-library-selection-inspector.png 1440x900
+UITOUR: light-12-library-selection-inspector-after-4s.png 1440x900
+UITOUR-CHECK: PASS double click opens the photo viewer
+UITOUR: light-13-viewer.png 1440x900
+UITOUR: light-14-viewer-next.png 1440x900
+UITOUR-CHECK: PASS Esc closes the viewer
+UITOUR-CHECK: PASS Space opens the viewer
+UITOUR-CHECK: PASS Space closes the viewer
+UITOUR-CHECK: PASS ⌘-click extends the selection
+UITOUR: light-15-library-multiselect.png 1440x900
+UITOUR: light-16-all-photos-grid.png 1440x900
+UITOUR: light-16b-all-photos-compact.png 1440x900
+UITOUR: light-17-all-photos-list.png 1440x900
+UITOUR: light-18-recent-imports.png 1440x900
+UITOUR: light-19-favorites.png 1440x900
+UITOUR: light-20-albums.png 1440x900
+UITOUR: light-21-album.png 1440x900
+UITOUR: light-22-editor-original.png 1440x900
+UITOUR: light-23-editor-enhanced.png 1440x900
+UITOUR-CHECK: PASS ⌘Z undoes Auto Enhance in the editor
+UITOUR-CHECK: FAIL ⇧⌘Z redoes it
+UITOUR: light-24-editor-split.png 1440x900
+UITOUR: light-25-editor-1-color.png 1440x900
+UITOUR: light-25-editor-2-geometry.png 1440x900
+UITOUR: light-25-editor-3-crop.png 1440x900
+UITOUR: light-25-editor-4-effects.png 1440x900
+UITOUR-CHECK: PASS Esc leaves the editor
+UITOUR: light-26-recently-edited.png 1440x900
+UITOUR: light-27-batch-setup.png 1440x900
+UITOUR: light-27-batch-setup-after-4s.png 1440x900
+UITOUR: light-28-batch-workflow-1-auto-everything.png 1440x900
+UITOUR: light-28-batch-workflow-2-natural.png 1440x900
+UITOUR: light-28-batch-workflow-3-bright-clean.png 1440x900
+UITOUR: light-28-batch-workflow-4-landscape.png 1440x900
+UITOUR: light-28-batch-workflow-5-portrait.png 1440x900
+UITOUR: light-28-batch-workflow-6-straighten.png 1440x900
+UITOUR: light-28-batch-workflow-7-web.png 1440x900
+UITOUR: light-29-batch-running.png 1440x900
+UITOUR: light-30-batch-finished.png 1440x900
+UITOUR: light-31-duplicates-start.png 1440x900
+UITOUR: light-32-duplicates-scanning.png 1440x900
+UITOUR: light-33-duplicates-results.png 1440x900
+UITOUR: light-34-duplicates-marked.png 1440x900
+UITOUR: light-35-similar-results.png 1440x900
+UITOUR: light-36-export-history.png 1440x900
+UITOUR: light-37-trash.png 1440x900
+UITOUR: light-38-export-dialog-sheet.png 600x687
+UITOUR: light-38-export-dialog.png 1440x900
+UITOUR: light-39-library-with-sidebar.png 1440x900
+UITOUR: light-41-ai-generate.png 1440x900
+UITOUR-CHECK: PASS AI Studio opens
+UITOUR: light-42-ai-generate-prompt.png 1440x900
+UITOUR: light-45-ai-prompt-assistant.png 1440x900
+UITOUR: light-46-ai-models.png 1440x900
+UITOUR: light-47-ai-model-downloading.png 1440x900
+UITOUR-CHECK: PASS Model download + verification
+UITOUR: light-47b-ai-model-installed.png 1440x900
+UITOUR: light-48-ai-fill-mask.png 1440x900
+UITOUR: light-49-ai-remove.png 1440x900
+UITOUR: light-50-ai-remove-result.png 1440x900
+UITOUR-CHECK: PASS Object removal produced a result
+UITOUR: light-51-ai-background-subject.png 1440x900
+UITOUR: light-52-ai-expand.png 1440x900
+UITOUR: light-53-ai-enhance.png 1440x900
+UITOUR: light-54-ai-enhance-result.png 1440x900
+UITOUR: light-55-ai-upscale.png 1440x900
+UITOUR: light-56-ai-edit.png 1440x900
+UITOUR: light-57-ai-creations.png 1440x900
+UITOUR: done → /tmp/shots
+UITOUR-SUMMARY: 11/12 interaction checks passed
+2026-11-14 09:33:10.057 PhotoFlow[13915:42957] WARNING: Application performed a reentrant operation in its NSTableView delegate. This warning will become an assert in the future.
+UITOUR: screen 1024x768 window 1440x900
+UITOUR: dark-01-overview-empty.png 1440x900
+UITOUR: dark-02-library-empty.png 1440x900
+UITOUR: dark-03-batch-empty-samples.png 1440x900
+UITOUR: dark-03-batch-empty-portrait.png 1440x900
+UITOUR: dark-03-batch-empty-straighten.png 1440x900
+UITOUR: dark-04-duplicates-empty.png 1440x900
+UITOUR: dark-05-albums-empty.png 1440x900
+UITOUR: dark-06-trash-empty.png 1440x900
+UITOUR: dark-07-export-history-empty.png 1440x900
+UITOUR: dark-08-import-drop-target.png 1440x900
+UITOUR: dark-09-importing.png 1440x900
+UITOUR: dark-10-overview.png 1440x900
+UITOUR: dark-11-all-photos-mosaic.png 1440x900
+UITOUR-CHECK: PASS mouse click on a photo tile selects it
+UITOUR: dark-12-library-selection-inspector.png 1440x900
+UITOUR: dark-12-library-selection-inspector-after-4s.png 1440x900
+UITOUR-CHECK: PASS double click opens the photo viewer
+UITOUR: dark-13-viewer.png 1440x900
+UITOUR: dark-14-viewer-next.png 1440x900
+UITOUR-CHECK: PASS Esc closes the viewer
+UITOUR-CHECK: PASS Space opens the viewer
+UITOUR-CHECK: PASS Space closes the viewer
+UITOUR-CHECK: PASS ⌘-click extends the selection
+UITOUR: dark-15-library-multiselect.png 1440x900
+UITOUR: dark-16-all-photos-grid.png 1440x900
+UITOUR: dark-16b-all-photos-compact.png 1440x900
+UITOUR: dark-17-all-photos-list.png 1440x900
+UITOUR: dark-18-recent-imports.png 1440x900
+UITOUR: dark-19-favorites.png 1440x900
+UITOUR: dark-20-albums.png 1440x900
+UITOUR: dark-21-album.png 1440x900
+UITOUR: dark-22-editor-original.png 1440x900
+UITOUR: dark-23-editor-enhanced.png 1440x900
+UITOUR-CHECK: PASS ⌘Z undoes Auto Enhance in the editor
+UITOUR-CHECK: FAIL ⇧⌘Z redoes it
+UITOUR: dark-24-editor-split.png 1440x900
+UITOUR: dark-25-editor-1-color.png 1440x900
+UITOUR: dark-25-editor-2-geometry.png 1440x900
+UITOUR: dark-25-editor-3-crop.png 1440x900
+UITOUR: dark-25-editor-4-effects.png 1440x900
+UITOUR-CHECK: PASS Esc leaves the editor
+UITOUR: dark-26-recently-edited.png 1440x900
+UITOUR: dark-27-batch-setup.png 1440x900
+UITOUR: dark-27-batch-setup-after-4s.png 1440x900
+UITOUR: dark-28-batch-workflow-1-auto-everything.png 1440x900
+UITOUR: dark-28-batch-workflow-2-natural.png 1440x900
+UITOUR: dark-28-batch-workflow-3-bright-clean.png 1440x900
+UITOUR: dark-28-batch-workflow-4-landscape.png 1440x900
+UITOUR: dark-28-batch-workflow-5-portrait.png 1440x900
+UITOUR: dark-28-batch-workflow-6-straighten.png 1440x900
+UITOUR: dark-28-batch-workflow-7-web.png 1440x900
+UITOUR: dark-29-batch-running.png 1440x900
+UITOUR: dark-30-batch-finished.png 1440x900
+UITOUR: dark-31-duplicates-start.png 1440x900
+UITOUR: dark-32-duplicates-scanning.png 1440x900
+UITOUR: dark-33-duplicates-results.png 1440x900
+UITOUR: dark-34-duplicates-marked.png 1440x900
+UITOUR: dark-35-similar-results.png 1440x900
+UITOUR: dark-36-export-history.png 1440x900
+UITOUR: dark-37-trash.png 1440x900
+UITOUR: dark-38-export-dialog-sheet.png 600x687
+UITOUR: dark-38-export-dialog.png 1440x900
+UITOUR: dark-39-library-with-sidebar.png 1440x900
+UITOUR: dark-41-ai-generate.png 1440x900
+UITOUR-CHECK: PASS AI Studio opens
+UITOUR: dark-42-ai-generate-prompt.png 1440x900
+UITOUR: dark-45-ai-prompt-assistant.png 1440x900
+UITOUR: dark-46-ai-models.png 1440x900
+UITOUR: dark-48-ai-fill-mask.png 1440x900
+UITOUR: dark-49-ai-remove.png 1440x900
+UITOUR: dark-50-ai-remove-result.png 1440x900
+UITOUR-CHECK: PASS Object removal produced a result
+UITOUR: dark-51-ai-background-subject.png 1440x900
+UITOUR: dark-52-ai-expand.png 1440x900
+UITOUR: dark-53-ai-enhance.png 1440x900
+UITOUR: dark-54-ai-enhance-result.png 1440x900
+UITOUR: dark-55-ai-upscale.png 1440x900
+UITOUR: dark-56-ai-edit.png 1440x900
+UITOUR: dark-57-ai-creations.png 1440x900
+UITOUR: done → /tmp/shots
+UITOUR-SUMMARY: 10/11 interaction checks passed
+2026-11-14 09:37:03.926 PhotoFlow[19605:56305] WARNING: Application performed a reentrant operation in its NSTableView delegate. This warning will become an assert in the future.
+UITOUR: screen 1024x768 window 1440x900
+UITOUR: light-de-01-overview-empty.png 1440x900
+UITOUR: light-de-02-library-empty.png 1440x900
+UITOUR: light-de-03-batch-empty-samples.png 1440x900
+UITOUR: light-de-03-batch-empty-portrait.png 1440x900
+UITOUR: light-de-03-batch-empty-straighten.png 1440x900
+UITOUR: light-de-04-duplicates-empty.png 1440x900
+UITOUR: light-de-05-albums-empty.png 1440x900
+UITOUR: light-de-06-trash-empty.png 1440x900
+UITOUR: light-de-07-export-history-empty.png 1440x900
+UITOUR: light-de-08-import-drop-target.png 1440x900
+UITOUR: light-de-09-importing.png 1440x900
+UITOUR: light-de-10-overview.png 1440x900
+UITOUR: light-de-11-all-photos-mosaic.png 1440x900
+UITOUR-CHECK: PASS mouse click on a photo tile selects it
+UITOUR: light-de-12-library-selection-inspector.png 1440x900
+UITOUR: light-de-12-library-selection-inspector-after-4s.png 1440x900
+UITOUR-CHECK: PASS double click opens the photo viewer
+UITOUR: light-de-13-viewer.png 1440x900
+UITOUR: light-de-14-viewer-next.png 1440x900
+UITOUR-CHECK: PASS Esc closes the viewer
+UITOUR-CHECK: PASS Space opens the viewer
+UITOUR-CHECK: PASS Space closes the viewer
+UITOUR-CHECK: PASS ⌘-click extends the selection
+UITOUR: light-de-15-library-multiselect.png 1440x900
+UITOUR: light-de-16-all-photos-grid.png 1440x900
+UITOUR: light-de-16b-all-photos-compact.png 1440x900
+UITOUR: light-de-17-all-photos-list.png 1440x900
+UITOUR: light-de-18-recent-imports.png 1440x900
+UITOUR: light-de-19-favorites.png 1440x900
+UITOUR: light-de-20-albums.png 1440x900
+UITOUR: light-de-21-album.png 1440x900
+UITOUR: light-de-22-editor-original.png 1440x900
+UITOUR: light-de-23-editor-enhanced.png 1440x900
+UITOUR-CHECK: PASS ⌘Z undoes Auto Enhance in the editor
+UITOUR-CHECK: FAIL ⇧⌘Z redoes it
+UITOUR: light-de-24-editor-split.png 1440x900
+UITOUR: light-de-25-editor-1-color.png 1440x900
+UITOUR: light-de-25-editor-2-geometry.png 1440x900
+UITOUR: light-de-25-editor-3-crop.png 1440x900
+UITOUR: light-de-25-editor-4-effects.png 1440x900
+UITOUR-CHECK: PASS Esc leaves the editor
+UITOUR: light-de-26-recently-edited.png 1440x900
+UITOUR: light-de-27-batch-setup.png 1440x900
+UITOUR: light-de-27-batch-setup-after-4s.png 1440x900
+UITOUR: light-de-28-batch-workflow-1-auto-everything.png 1440x900
+UITOUR: light-de-28-batch-workflow-2-natural.png 1440x900
+UITOUR: light-de-28-batch-workflow-3-bright-clean.png 1440x900
+UITOUR: light-de-28-batch-workflow-4-landscape.png 1440x900
+UITOUR: light-de-28-batch-workflow-5-portrait.png 1440x900
+UITOUR: light-de-28-batch-workflow-6-straighten.png 1440x900
+UITOUR: light-de-28-batch-workflow-7-web.png 1440x900
+UITOUR: light-de-29-batch-running.png 1440x900
+UITOUR: light-de-30-batch-finished.png 1440x900
+UITOUR: light-de-31-duplicates-start.png 1440x900
+UITOUR: light-de-32-duplicates-scanning.png 1440x900
+UITOUR: light-de-33-duplicates-results.png 1440x900
+UITOUR: light-de-34-duplicates-marked.png 1440x900
+UITOUR: light-de-35-similar-results.png 1440x900
+UITOUR: light-de-36-export-history.png 1440x900
+UITOUR: light-de-37-trash.png 1440x900
+UITOUR: light-de-38-export-dialog-sheet.png 600x687
+UITOUR: light-de-38-export-dialog.png 1440x900
+UITOUR: light-de-39-library-with-sidebar.png 1440x900
+UITOUR: light-de-41-ai-generate.png 1440x900
+UITOUR-CHECK: PASS AI Studio opens
+UITOUR: light-de-42-ai-generate-prompt.png 1440x900
+UITOUR: light-de-45-ai-prompt-assistant.png 1440x900
+UITOUR: light-de-46-ai-models.png 1440x900
+UITOUR: light-de-48-ai-fill-mask.png 1440x900
+UITOUR: light-de-49-ai-remove.png 1440x900
+UITOUR: light-de-50-ai-remove-result.png 1440x900
+UITOUR-CHECK: PASS Object removal produced a result
+UITOUR: light-de-51-ai-background-subject.png 1440x900
+UITOUR: light-de-52-ai-expand.png 1440x900
+UITOUR: light-de-53-ai-enhance.png 1440x900
+UITOUR: light-de-54-ai-enhance-result.png 1440x900
+UITOUR: light-de-55-ai-upscale.png 1440x900
+UITOUR: light-de-56-ai-edit.png 1440x900
+UITOUR: light-de-57-ai-creations.png 1440x900
+UITOUR: done → /tmp/shots
+UITOUR-SUMMARY: 10/11 interaction checks passed
+UITOUR: screen 1024x768 window 1440x900
+UITOUR: dark-de-01-overview-empty.png 1440x900
+UITOUR: dark-de-02-library-empty.png 1440x900
+UITOUR: dark-de-03-batch-empty-samples.png 1440x900
+UITOUR: dark-de-03-batch-empty-portrait.png 1440x900
+UITOUR: dark-de-03-batch-empty-straighten.png 1440x900
+UITOUR: dark-de-04-duplicates-empty.png 1440x900
+UITOUR: dark-de-05-albums-empty.png 1440x900
+UITOUR: dark-de-06-trash-empty.png 1440x900
+UITOUR: dark-de-07-export-history-empty.png 1440x900
+UITOUR: dark-de-08-import-drop-target.png 1440x900
+UITOUR: dark-de-09-importing.png 1440x900
+UITOUR: dark-de-10-overview.png 1440x900
+UITOUR: dark-de-11-all-photos-mosaic.png 1440x900
+UITOUR-CHECK: PASS mouse click on a photo tile selects it
+UITOUR: dark-de-12-library-selection-inspector.png 1440x900
+UITOUR: dark-de-12-library-selection-inspector-after-4s.png 1440x900
+UITOUR-CHECK: PASS double click opens the photo viewer
+UITOUR: dark-de-13-viewer.png 1440x900
+UITOUR: dark-de-14-viewer-next.png 1440x900
+UITOUR-CHECK: PASS Esc closes the viewer
+UITOUR-CHECK: PASS Space opens the viewer
+UITOUR-CHECK: PASS Space closes the viewer
+UITOUR-CHECK: PASS ⌘-click extends the selection
+UITOUR: dark-de-15-library-multiselect.png 1440x900
+UITOUR: dark-de-16-all-photos-grid.png 1440x900
+UITOUR: dark-de-16b-all-photos-compact.png 1440x900
+UITOUR: dark-de-17-all-photos-list.png 1440x900
+UITOUR: dark-de-18-recent-imports.png 1440x900
+UITOUR: dark-de-19-favorites.png 1440x900
+UITOUR: dark-de-20-albums.png 1440x900
+UITOUR: dark-de-21-album.png 1440x900
+UITOUR: dark-de-22-editor-original.png 1440x900
+UITOUR: dark-de-23-editor-enhanced.png 1440x900
+UITOUR-CHECK: PASS ⌘Z undoes Auto Enhance in the editor
+UITOUR-CHECK: FAIL ⇧⌘Z redoes it
+UITOUR: dark-de-24-editor-split.png 1440x900
+UITOUR: dark-de-25-editor-1-color.png 1440x900
+UITOUR: dark-de-25-editor-2-geometry.png 1440x900
+UITOUR: dark-de-25-editor-3-crop.png 1440x900
+UITOUR: dark-de-25-editor-4-effects.png 1440x900
+UITOUR-CHECK: PASS Esc leaves the editor
+UITOUR: dark-de-26-recently-edited.png 1440x900
+UITOUR: dark-de-27-batch-setup.png 1440x900
+UITOUR: dark-de-27-batch-setup-after-4s.png 1440x900
+UITOUR: dark-de-28-batch-workflow-1-auto-everything.png 1440x900
+UITOUR: dark-de-28-batch-workflow-2-natural.png 1440x900
+UITOUR: dark-de-28-batch-workflow-3-bright-clean.png 1440x900
+UITOUR: dark-de-28-batch-workflow-4-landscape.png 1440x900
+UITOUR: dark-de-28-batch-workflow-5-portrait.png 1440x900
+UITOUR: dark-de-28-batch-workflow-6-straighten.png 1440x900
+UITOUR: dark-de-28-batch-workflow-7-web.png 1440x900
+UITOUR: dark-de-29-batch-running.png 1440x900
+UITOUR: dark-de-30-batch-finished.png 1440x900
+UITOUR: dark-de-31-duplicates-start.png 1440x900
+UITOUR: dark-de-32-duplicates-scanning.png 1440x900
+UITOUR: dark-de-33-duplicates-results.png 1440x900
+UITOUR: dark-de-34-duplicates-marked.png 1440x900
+UITOUR: dark-de-35-similar-results.png 1440x900
+UITOUR: dark-de-36-export-history.png 1440x900
+UITOUR: dark-de-37-trash.png 1440x900
+UITOUR: dark-de-38-export-dialog-sheet.png 600x687
+UITOUR: dark-de-38-export-dialog.png 1440x900
+UITOUR: dark-de-39-library-with-sidebar.png 1440x900
+UITOUR: dark-de-41-ai-generate.png 1440x900
+UITOUR-CHECK: PASS AI Studio opens
+UITOUR: dark-de-42-ai-generate-prompt.png 1440x900
+UITOUR: dark-de-45-ai-prompt-assistant.png 1440x900
+UITOUR: dark-de-46-ai-models.png 1440x900
+UITOUR: dark-de-48-ai-fill-mask.png 1440x900
+UITOUR: dark-de-49-ai-remove.png 1440x900
+UITOUR: dark-de-50-ai-remove-result.png 1440x900
+UITOUR-CHECK: PASS Object removal produced a result
+UITOUR: dark-de-51-ai-background-subject.png 1440x900
+UITOUR: dark-de-52-ai-expand.png 1440x900
+UITOUR: dark-de-53-ai-enhance.png 1440x900
+UITOUR: dark-de-54-ai-enhance-result.png 1440x900
+UITOUR: dark-de-55-ai-upscale.png 1440x900
+UITOUR: dark-de-56-ai-edit.png 1440x900
+UITOUR: dark-de-57-ai-creations.png 1440x900
+UITOUR: done → /tmp/shots
+UITOUR-SUMMARY: 10/11 interaction checks passed
+UITOUR: screen 1024x768 window 1280x800
+UITOUR: light-1280x800-01-overview-empty.png 1280x800
+UITOUR: light-1280x800-10-overview.png 1280x800
+UITOUR: light-1280x800-11-all-photos-mosaic.png 1280x800
+UITOUR: light-1280x800-12-library-selection-inspector.png 1280x800
+UITOUR: light-1280x800-13-viewer.png 1280x800
+UITOUR: light-1280x800-22-editor-original.png 1280x800
+UITOUR: light-1280x800-27-batch-setup.png 1280x800
+UITOUR: light-1280x800-33-duplicates-results.png 1280x800
+UITOUR: light-1280x800-41-ai-generate.png 1280x800
+UITOUR-CHECK: PASS AI Studio opens
+UITOUR: light-1280x800-42-ai-generate-prompt.png 1280x800
+UITOUR: light-1280x800-46-ai-models.png 1280x800
+UITOUR: light-1280x800-48-ai-fill-mask.png 1280x800
+UITOUR: light-1280x800-49-ai-remove.png 1280x800
+UITOUR: light-1280x800-51-ai-background-subject.png 1280x800
+UITOUR: light-1280x800-52-ai-expand.png 1280x800
+UITOUR: light-1280x800-53-ai-enhance.png 1280x800
+UITOUR: light-1280x800-55-ai-upscale.png 1280x800
+UITOUR: light-1280x800-56-ai-edit.png 1280x800
+UITOUR: light-1280x800-57-ai-creations.png 1280x800
+UITOUR: done → /tmp/shots
+UITOUR-SUMMARY: 1/1 interaction checks passed
+UITOUR: screen 1024x768 window 1920x1080
+UITOUR: light-1920x1080-01-overview-empty.png 1920x1080
+UITOUR: light-1920x1080-10-overview.png 1920x1080
+UITOUR: light-1920x1080-11-all-photos-mosaic.png 1920x1080
+UITOUR: light-1920x1080-12-library-selection-inspector.png 1920x1080
+UITOUR: light-1920x1080-13-viewer.png 1920x1080
+UITOUR: light-1920x1080-22-editor-original.png 1920x1080
+UITOUR: light-1920x1080-27-batch-setup.png 1920x1080
+UITOUR: light-1920x1080-33-duplicates-results.png 1920x1080
+UITOUR: light-1920x1080-41-ai-generate.png 1920x1080
+UITOUR-CHECK: PASS AI Studio opens
+UITOUR: light-1920x1080-42-ai-generate-prompt.png 1920x1080
+UITOUR: light-1920x1080-46-ai-models.png 1920x1080
+UITOUR: light-1920x1080-48-ai-fill-mask.png 1920x1080
+UITOUR: light-1920x1080-49-ai-remove.png 1920x1080
+UITOUR: light-1920x1080-51-ai-background-subject.png 1920x1080
+UITOUR: light-1920x1080-52-ai-expand.png 1920x1080
+UITOUR: light-1920x1080-53-ai-enhance.png 1920x1080
+UITOUR: light-1920x1080-55-ai-upscale.png 1920x1080
+UITOUR: light-1920x1080-56-ai-edit.png 1920x1080
+UITOUR: light-1920x1080-57-ai-creations.png 1920x1080
+UITOUR: done → /tmp/shots
+UITOUR-SUMMARY: 1/1 interaction checks passed
+UITOUR: screen 1024x768 window 1920x1080
+UITOUR: dark-de-1920x1080-01-overview-empty.png 1920x1080
+UITOUR: dark-de-1920x1080-10-overview.png 1920x1080
+UITOUR: dark-de-1920x1080-11-all-photos-mosaic.png 1920x1080
+UITOUR: dark-de-1920x1080-12-library-selection-inspector.png 1920x1080
+UITOUR: dark-de-1920x1080-13-viewer.png 1920x1080
+UITOUR: dark-de-1920x1080-22-editor-original.png 1920x1080
+UITOUR: dark-de-1920x1080-27-batch-setup.png 1920x1080
+UITOUR: dark-de-1920x1080-33-duplicates-results.png 1920x1080
+UITOUR: dark-de-1920x1080-41-ai-generate.png 1920x1080
+UITOUR-CHECK: PASS AI Studio opens
+UITOUR: dark-de-1920x1080-42-ai-generate-prompt.png 1920x1080
+UITOUR: dark-de-1920x1080-46-ai-models.png 1920x1080
+UITOUR: dark-de-1920x1080-48-ai-fill-mask.png 1920x1080
+UITOUR: dark-de-1920x1080-49-ai-remove.png 1920x1080
+UITOUR: dark-de-1920x1080-51-ai-background-subject.png 1920x1080
+UITOUR: dark-de-1920x1080-52-ai-expand.png 1920x1080
+UITOUR: dark-de-1920x1080-53-ai-enhance.png 1920x1080
+UITOUR: dark-de-1920x1080-55-ai-upscale.png 1920x1080
+UITOUR: dark-de-1920x1080-56-ai-edit.png 1920x1080
+UITOUR: dark-de-1920x1080-57-ai-creations.png 1920x1080
+UITOUR: done → /tmp/shots
+UITOUR-SUMMARY: 1/1 interaction checks passed

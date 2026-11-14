@@ -1,0 +1,27 @@
+▸ Toolchain
+swift-driver version: 1.127.15 Apple Swift version 6.2.4 (swiftlang-6.2.4.1.4 clang-1700.6.4.2)
+Target: arm64-apple-macosx15.0
+  macOS SDK 26.2
+▸ Compiling for arm64 (release)
+Building for production...
+[0/5] Write sources
+[2/5] Write swift-version-1977FEB4D2752686.txt
+[4/6] Compiling StableDiffusion CGImage+vImage.swift
+[5/7] Compiling PhotoFlow AIAcceptanceTest.swift
+/Users/runner/work/photoflow-mac/photoflow-mac/Sources/PhotoFlow/QA/AIQA.swift:334:13: warning: variable 'rng' was never mutated; consider changing to 'let' constant
+332 |         let parts = (try FileManager.default.contentsOfDirectory(atPath: dir.path)).filter { $0.hasSuffix(".mlmodelc") }.sorted()
+333 |         let unitSets: [(String, MLComputeUnits)] = [("cpuAndGPU", .cpuAndGPU), ("cpuOnly", .cpuOnly), ("all", .all)]
+334 |         var rng = SystemRandomNumberGenerator()
+    |             `- warning: variable 'rng' was never mutated; consider changing to 'let' constant
+335 |         _ = rng
+336 |         for p in parts {
+[5/7] Write Objects.LinkFileList
+[6/7] Linking PhotoFlow
+Build complete! (145.09s)
+▸ Assembling PhotoFlow.app
+▸ Architectures: arm64
+▸ Signing
+/Users/runner/work/photoflow-mac/photoflow-mac/build/PhotoFlow.app: replacing existing signature
+/Users/runner/work/photoflow-mac/photoflow-mac/build/PhotoFlow.app: valid on disk
+/Users/runner/work/photoflow-mac/photoflow-mac/build/PhotoFlow.app: satisfies its Designated Requirement
+✓ Done: /Users/runner/work/photoflow-mac/photoflow-mac/build/PhotoFlow.app

@@ -1,0 +1,23 @@
+UITOUR: screen 1024x768 window 1920x1080
+UITOUR: dark-de-1920x1080-01-overview-empty.png 1920x1080
+UITOUR: dark-de-1920x1080-10-overview.png 1920x1080
+UITOUR: dark-de-1920x1080-11-all-photos-mosaic.png 1920x1080
+UITOUR: dark-de-1920x1080-12-library-selection-inspector.png 1920x1080
+UITOUR: dark-de-1920x1080-13-viewer.png 1920x1080
+UITOUR: dark-de-1920x1080-22-editor-original.png 1920x1080
+UITOUR: dark-de-1920x1080-27-batch-setup.png 1920x1080
+UITOUR: dark-de-1920x1080-33-duplicates-results.png 1920x1080
+UITOUR: dark-de-1920x1080-41-ai-generate.png 1920x1080
+UITOUR-CHECK: PASS AI Studio opens
+UITOUR: dark-de-1920x1080-42-ai-generate-prompt.png 1920x1080
+UITOUR: dark-de-1920x1080-46-ai-models.png 1920x1080
+UITOUR: dark-de-1920x1080-48-ai-fill-mask.png 1920x1080
+UITOUR: dark-de-1920x1080-49-ai-remove.png 1920x1080
+UITOUR: dark-de-1920x1080-51-ai-background-subject.png 1920x1080
+UITOUR: dark-de-1920x1080-52-ai-expand.png 1920x1080
+UITOUR: dark-de-1920x1080-53-ai-enhance.png 1920x1080
+UITOUR: dark-de-1920x1080-55-ai-upscale.png 1920x1080
+UITOUR: dark-de-1920x1080-56-ai-edit.png 1920x1080
+UITOUR: dark-de-1920x1080-57-ai-creations.png 1920x1080
+UITOUR: done → /tmp/shots
+UITOUR-SUMMARY: 1/1 interaction checks passed

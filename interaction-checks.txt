@@ -1,0 +1,62 @@
+UITOUR: screen 1024x768 window 1440x900
+UITOUR-CHECK: PASS mouse click on a photo tile selects it
+UITOUR-CHECK: PASS double click opens the photo viewer
+UITOUR-CHECK: PASS Esc closes the viewer
+UITOUR-CHECK: PASS Space opens the viewer
+UITOUR-CHECK: PASS Space closes the viewer
+UITOUR-CHECK: PASS ⌘-click extends the selection
+UITOUR-CHECK: PASS ⌘Z undoes Auto Enhance in the editor
+UITOUR-CHECK: FAIL ⇧⌘Z redoes it
+UITOUR-CHECK: PASS Esc leaves the editor
+UITOUR-CHECK: PASS AI Studio opens
+UITOUR-CHECK: PASS Model download + verification
+UITOUR-CHECK: PASS Object removal produced a result
+UITOUR-SUMMARY: 11/12 interaction checks passed
+UITOUR: screen 1024x768 window 1440x900
+UITOUR-CHECK: PASS mouse click on a photo tile selects it
+UITOUR-CHECK: PASS double click opens the photo viewer
+UITOUR-CHECK: PASS Esc closes the viewer
+UITOUR-CHECK: PASS Space opens the viewer
+UITOUR-CHECK: PASS Space closes the viewer
+UITOUR-CHECK: PASS ⌘-click extends the selection
+UITOUR-CHECK: PASS ⌘Z undoes Auto Enhance in the editor
+UITOUR-CHECK: FAIL ⇧⌘Z redoes it
+UITOUR-CHECK: PASS Esc leaves the editor
+UITOUR-CHECK: PASS AI Studio opens
+UITOUR-CHECK: PASS Object removal produced a result
+UITOUR-SUMMARY: 10/11 interaction checks passed
+UITOUR: screen 1024x768 window 1440x900
+UITOUR-CHECK: PASS mouse click on a photo tile selects it
+UITOUR-CHECK: PASS double click opens the photo viewer
+UITOUR-CHECK: PASS Esc closes the viewer
+UITOUR-CHECK: PASS Space opens the viewer
+UITOUR-CHECK: PASS Space closes the viewer
+UITOUR-CHECK: PASS ⌘-click extends the selection
+UITOUR-CHECK: PASS ⌘Z undoes Auto Enhance in the editor
+UITOUR-CHECK: FAIL ⇧⌘Z redoes it
+UITOUR-CHECK: PASS Esc leaves the editor
+UITOUR-CHECK: PASS AI Studio opens
+UITOUR-CHECK: PASS Object removal produced a result
+UITOUR-SUMMARY: 10/11 interaction checks passed
+UITOUR: screen 1024x768 window 1440x900
+UITOUR-CHECK: PASS mouse click on a photo tile selects it
+UITOUR-CHECK: PASS double click opens the photo viewer
+UITOUR-CHECK: PASS Esc closes the viewer
+UITOUR-CHECK: PASS Space opens the viewer
+UITOUR-CHECK: PASS Space closes the viewer
+UITOUR-CHECK: PASS ⌘-click extends the selection
+UITOUR-CHECK: PASS ⌘Z undoes Auto Enhance in the editor
+UITOUR-CHECK: FAIL ⇧⌘Z redoes it
+UITOUR-CHECK: PASS Esc leaves the editor
+UITOUR-CHECK: PASS AI Studio opens
+UITOUR-CHECK: PASS Object removal produced a result
+UITOUR-SUMMARY: 10/11 interaction checks passed
+UITOUR: screen 1024x768 window 1280x800
+UITOUR-CHECK: PASS AI Studio opens
+UITOUR-SUMMARY: 1/1 interaction checks passed
+UITOUR: screen 1024x768 window 1920x1080
+UITOUR-CHECK: PASS AI Studio opens
+UITOUR-SUMMARY: 1/1 interaction checks passed
+UITOUR: screen 1024x768 window 1920x1080
+UITOUR-CHECK: PASS AI Studio opens
+UITOUR-SUMMARY: 1/1 interaction checks passed
