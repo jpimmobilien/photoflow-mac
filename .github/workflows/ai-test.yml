@@ -24,6 +24,10 @@ on:
         description: 'Stop after the backend diagnostics'
         type: boolean
         default: false
+      universal:
+        description: 'Build arm64 + x86_64 (test DMG for any Mac)'
+        type: boolean
+        default: false
       compile_only:
         description: 'Only build (fast compile check)'
         type: boolean
@@ -58,21 +62,24 @@ jobs:
         run: |
           set +e
           chmod +x Scripts/*.sh
-          ARCHS=$(uname -m) NO_DMG=1 ./Scripts/build_app.sh > build.log 2>&1; rc=$?
+          A=$(uname -m); [ "${{ inputs.universal }}" = "true" ] && A="arm64 x86_64"
+          ARCHS="$A" NO_DMG=1 ./Scripts/build_app.sh > build.log 2>&1; rc=$?
           cat build.log | tail -n 260
           exit $rc
 
       - name: Package test DMG
         run: |
           set +e
-          ./Scripts/make_dmg.sh build/PhotoFlow.app build/PhotoFlow-test-$(uname -m).dmg && ls -la build/*.dmg
+          N=$(uname -m); [ "${{ inputs.universal }}" = "true" ] && N=universal
+          ./Scripts/make_dmg.sh build/PhotoFlow.app build/PhotoFlow-test-$N.dmg && ls -la build/*.dmg
 
-      - name: Upload test DMG
-        uses: actions/upload-artifact@v4
-        with:
-          name: PhotoFlow-test-${{ inputs.runner }}
-          path: build/PhotoFlow-test-*.dmg
-          if-no-files-found: warn
+      - name: Publish test DMG (release test-builds)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          gh release view test-builds >/dev/null 2>&1 || gh release create test-builds --title "PhotoFlow test builds" --notes "Builds for hardware testing – not a release." --prerelease
+          gh release upload test-builds build/PhotoFlow-test-*.dmg --clobber
 
       - name: Restore model cache
         if: ${{ !inputs.compile_only }}
