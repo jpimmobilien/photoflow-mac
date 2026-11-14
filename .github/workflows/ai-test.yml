@@ -62,6 +62,18 @@ jobs:
           cat build.log | tail -n 260
           exit $rc
 
+      - name: Package test DMG
+        run: |
+          set +e
+          ./Scripts/make_dmg.sh build/PhotoFlow.app build/PhotoFlow-test-$(uname -m).dmg && ls -la build/*.dmg
+
+      - name: Upload test DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoFlow-test-${{ inputs.runner }}
+          path: build/PhotoFlow-test-*.dmg
+          if-no-files-found: warn
+
       - name: Restore model cache
         if: ${{ !inputs.compile_only }}
         uses: actions/cache@v4

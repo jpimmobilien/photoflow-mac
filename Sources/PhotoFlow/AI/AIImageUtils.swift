@@ -133,7 +133,20 @@ enum AIImage {
                 } }
             }
         }
-        return out
+        // Soft transition one latent cell further out: blends generated and original latents at the border
+        // instead of switching hard (visible seams).
+        var soft = out
+        for y in 0..<side {
+            for x in 0..<side where out[y * side + x] < 0.85 {
+                var sum: Float = 0, n: Float = 0
+                for dy in -1...1 { for dx in -1...1 {
+                    let nx = x + dx, ny = y + dy
+                    if nx >= 0, ny >= 0, nx < side, ny < side { sum += out[ny * side + nx]; n += 1 }
+                } }
+                soft[y * side + x] = max(out[y * side + x], 0.6 * sum / max(1, n))
+            }
+        }
+        return soft
     }
 
     /// Bounding box (top-left coordinates) of the painted area, nil if empty.

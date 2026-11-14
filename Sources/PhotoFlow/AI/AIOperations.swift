@@ -265,33 +265,59 @@ enum AIOperations {
                   ctx.draw(blurred, in: canvasRect)
                   ctx.draw(source, in: CGRect(x: e.left, y: e.bottom, width: source.width, height: source.height))
               }) else { throw AIError.imageUnreadable }
-        // Generation mask: new areas plus a narrow band of the original so the seam is redrawn.
-        let band = Double(max(W, H)) * 0.015
-        let genMask = AIImage.grayMask(width: W, height: H) { ctx in
+        // The new strips are generated tile by tile: each tile is a square that contains part of a new strip plus
+        // real image content next to it, so the model sees the scene at a useful resolution and continues it.
+        // Tiles are processed one after another, later tiles see the earlier results.
+        let band = max(6.0, Double(max(W, H)) * 0.015)      // seam band inside the original that is redrawn
+        let maxSquare = min(W, H)
+        var current = canvas
+        var tiles: [(CGRect, CGRect)] = []                   // (tile, strip) in top-left coordinates
+        func addTiles(strip: CGRect, horizontalStrip: Bool) {
+            let thickness = Int(horizontalStrip ? strip.height : strip.width)
+            guard thickness > 0 else { return }
+            let t = min(maxSquare, max(Int(Double(thickness) * 2.6), min(maxSquare, 384)))
+            let length = Int(horizontalStrip ? strip.width : strip.height)
+            let stepLen = max(1, Int(Double(t) * 0.7))
+            var pos = 0
+            while true {
+                let p = min(pos, max(0, length - t))
+                var tile: CGRect
+                if horizontalStrip {
+                    let y = strip.minY < CGFloat(e.top) + 1 ? 0 : CGFloat(H - t)        // top or bottom edge
+                    tile = CGRect(x: strip.minX + CGFloat(p), y: y, width: CGFloat(t), height: CGFloat(t))
+                } else {
+                    let x = strip.minX < 1 ? 0 : CGFloat(W - t)                         // left or right edge
+                    tile = CGRect(x: x, y: strip.minY + CGFloat(p), width: CGFloat(t), height: CGFloat(t))
+                }
+                tile = tile.intersection(canvasRect)
+                tiles.append((tile, strip))
+                if p + t >= length { break }
+                pos += stepLen
+            }
+        }
+        if e.left > 0 { addTiles(strip: CGRect(x: 0, y: e.top, width: e.left, height: source.height), horizontalStrip: false) }
+        if e.right > 0 { addTiles(strip: CGRect(x: W - e.right, y: e.top, width: e.right, height: source.height), horizontalStrip: false) }
+        if e.top > 0 { addTiles(strip: CGRect(x: 0, y: 0, width: W, height: e.top), horizontalStrip: true) }
+        if e.bottom > 0 { addTiles(strip: CGRect(x: 0, y: H - e.bottom, width: W, height: e.bottom), horizontalStrip: true) }
+
+        for (i, (tile, strip)) in tiles.enumerated() {
+            if token.isCancelled { throw AIError.cancelled }
+            // Mask: the part of the strip inside this tile, widened by the seam band towards the image.
+            let maskRect = strip.insetBy(dx: -CGFloat(band), dy: -CGFloat(band)).intersection(tile)
+            guard let mask = AIImage.grayMask(width: W, height: H, { ctx in
+                ctx.setFillColor(gray: 1, alpha: 1)
+                ctx.fill(CGRect(x: maskRect.minX, y: CGFloat(H) - maskRect.maxY, width: maskRect.width, height: maskRect.height))
+            }) else { throw AIError.imageUnreadable }
+            current = try fillRegion(current, mask: mask, region: tile, settings: s, strength: 1, feather: band * 0.8,
+                                     seed: seed &+ UInt32(i), token: token, onStep: onStep)
+        }
+        // Original pixels (away from the seam band) are restored exactly.
+        guard let keep = AIImage.grayMask(width: W, height: H, { ctx in
             ctx.setFillColor(gray: 1, alpha: 1)
             ctx.fill(canvasRect)
             ctx.setFillColor(gray: 0, alpha: 1)
-            ctx.fill(CGRect(x: inner.minX, y: CGFloat(H) - inner.maxY, width: inner.width, height: inner.height)
-                .insetBy(dx: CGFloat(band), dy: CGFloat(band)))
-        }
-        let keepMask = AIImage.grayMask(width: W, height: H) { ctx in
-            ctx.setFillColor(gray: 1, alpha: 1)
-            ctx.fill(canvasRect)
-            ctx.setFillColor(gray: 0, alpha: 1)
-            ctx.fill(CGRect(x: inner.minX, y: CGFloat(H) - inner.maxY, width: inner.width, height: inner.height)
-                .insetBy(dx: CGFloat(band * 0.6), dy: CGFloat(band * 0.6)))
-        }
-        guard let genMask, let keepMask else { throw AIError.imageUnreadable }
-        let side = s.model.resolution
-        guard let fit = AIImage.fitSquare(canvas, side: side), let squareMask = fitMask(genMask, side: side, rect: fit.rect) else {
-            throw AIError.imageUnreadable
-        }
-        let square = fit.image, rect = fit.rect
-        let generated = try DiffusionEngine.shared.generateSync(s.job(seed: seed, start: square, strength: 1, mask: squareMask),
-                                                                token: token, onStep: onStep)
-        guard let content = AIImage.crop(generated, rect) else { throw AIError.imageUnreadable }
-        let resized = try enlarge(content, toWidth: W, height: H, token: token)
-        guard let out = AIImage.composite(resized, over: canvas, mask: keepMask, feather: band) else { throw AIError.imageUnreadable }
+            ctx.fill(CGRect(x: inner.minX, y: CGFloat(H) - inner.maxY, width: inner.width, height: inner.height).insetBy(dx: CGFloat(band), dy: CGFloat(band)))
+        }), let out = AIImage.composite(current, over: canvas, mask: keep, feather: band * 0.5) else { throw AIError.imageUnreadable }
         return out
     }
 
