@@ -259,7 +259,7 @@ enum AIQA {
     static func outpaint(input: String, out: String, steps: Int) throws {
         let src = try load(input, maxPixel: 1024)
         let e = AIOperations.Expansion(left: src.width / 4, top: 0, right: src.width / 4, bottom: src.height / 8)
-        let s = try settings("seamless natural continuation of the scene", steps: steps)
+        let s = try settings("", steps: steps)
         let img = try AIOperations.expand(src, by: e, s, seed: 5, token: AICancelToken(), onStep: stepLogger("outpaint"))
         print("outpaint \(src.width)x\(src.height) → \(img.width)x\(img.height)")
         guard img.width == src.width + e.left + e.right, img.height == src.height + e.top + e.bottom else { throw Failure(description: "wrong size") }

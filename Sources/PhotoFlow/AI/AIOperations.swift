@@ -255,23 +255,27 @@ enum AIOperations {
         let W = source.width + e.left + e.right, H = source.height + e.top + e.bottom
         guard W <= 12_000, H <= 12_000 else { throw AIError.unsupported(String(localized: "The expanded image would be too large.")) }
         let inner = CGRect(x: e.left, y: e.top, width: source.width, height: source.height)
-        // Prefill new areas with stretched, blurred edges – a neutral starting point for the model.
-        let prefillCI = CIImage(cgImage: source).clampedToExtent()
-            .transformed(by: CGAffineTransform(translationX: CGFloat(e.left), y: CGFloat(e.bottom)))
-        let blurredCI = prefillCI.applyingGaussianBlur(sigma: Double(max(W, H)) / 40)
+        // Prefill: the image mirrored at its edges, softened. Generation then starts from this prefill (strength < 1),
+        // so colours, light and layout continue across the border instead of the model inventing an unrelated scene.
         let canvasRect = CGRect(x: 0, y: 0, width: W, height: H)
-        guard let blurred = CIContextProvider.cpu.createCGImage(blurredCI.cropped(to: canvasRect), from: canvasRect, format: .RGBA8, colorSpace: AIImage.sRGB),
-              let canvas = AIImage.draw(width: W, height: H, { ctx in
-                  ctx.draw(blurred, in: canvasRect)
-                  ctx.draw(source, in: CGRect(x: e.left, y: e.bottom, width: source.width, height: source.height))
-              }) else { throw AIError.imageUnreadable }
+        guard let mirrored = mirrorExtend(source, e), let canvas = AIImage.draw(width: W, height: H, { ctx in
+            let soft = CIImage(cgImage: mirrored).clampedToExtent()
+                .applyingGaussianBlur(sigma: Double(max(e.left, e.right, e.top, e.bottom)) / 14).cropped(to: canvasRect)
+            if let b = CIContextProvider.cpu.createCGImage(soft, from: canvasRect, format: .RGBA8, colorSpace: AIImage.sRGB) {
+                ctx.draw(b, in: canvasRect)
+            }
+            ctx.draw(source, in: CGRect(x: e.left, y: e.bottom, width: source.width, height: source.height))
+        }) else { throw AIError.imageUnreadable }
+        // Without a prompt, describe the photo with Apple's on-device classifier so the continuation matches it.
+        var s = s
+        if s.prompt.trimmingCharacters(in: .whitespaces).isEmpty { s.prompt = describe(source) }
         // The new strips are generated tile by tile: each tile is a square that contains part of a new strip plus
         // real image content next to it, so the model sees the scene at a useful resolution and continues it.
         // Tiles are processed one after another, later tiles see the earlier results.
         let band = max(6.0, Double(max(W, H)) * 0.015)      // seam band inside the original that is redrawn
         let maxSquare = min(W, H)
         var current = canvas
-        var tiles: [(CGRect, CGRect)] = []                   // (tile, strip) in top-left coordinates
+        var tiles: [(CGRect, CGRect, Bool)] = []             // (tile, strip, horizontal) in top-left coordinates
         func addTiles(strip: CGRect, horizontalStrip: Bool) {
             let thickness = Int(horizontalStrip ? strip.height : strip.width)
             guard thickness > 0 else { return }
@@ -290,7 +294,7 @@ enum AIOperations {
                     tile = CGRect(x: x, y: strip.minY + CGFloat(p), width: CGFloat(t), height: CGFloat(t))
                 }
                 tile = tile.intersection(canvasRect)
-                tiles.append((tile, strip))
+                tiles.append((tile, strip, horizontalStrip))
                 if p + t >= length { break }
                 pos += stepLen
             }
@@ -300,15 +304,25 @@ enum AIOperations {
         if e.top > 0 { addTiles(strip: CGRect(x: 0, y: 0, width: W, height: e.top), horizontalStrip: true) }
         if e.bottom > 0 { addTiles(strip: CGRect(x: 0, y: H - e.bottom, width: W, height: e.bottom), horizontalStrip: true) }
 
-        for (i, (tile, strip)) in tiles.enumerated() {
+        for (i, (tile, strip, horizontal)) in tiles.enumerated() {
             if token.isCancelled { throw AIError.cancelled }
-            // Mask: the part of the strip inside this tile, widened by the seam band towards the image.
-            let maskRect = strip.insetBy(dx: -CGFloat(band), dy: -CGFloat(band)).intersection(tile)
+            // Mask: the part of the strip inside this tile, widened by the seam band towards the image. Along the strip,
+            // tile edges inside the canvas are kept out of the mask so neighbouring tiles blend softly (no seams).
+            var maskRect = strip.insetBy(dx: -CGFloat(band), dy: -CGFloat(band)).intersection(tile)
+            let inset = CGFloat(min(band * 2, Double(min(tile.width, tile.height)) * 0.12))
+            // Only tile edges strictly inside the strip are pulled in; the strip's own ends stay covered.
+            if horizontal {
+                if tile.minX > strip.minX + 0.5 { maskRect.origin.x += inset; maskRect.size.width -= inset }
+                if tile.maxX < strip.maxX - 0.5 { maskRect.size.width -= inset }
+            } else {
+                if tile.minY > strip.minY + 0.5 { maskRect.origin.y += inset; maskRect.size.height -= inset }
+                if tile.maxY < strip.maxY - 0.5 { maskRect.size.height -= inset }
+            }
             guard let mask = AIImage.grayMask(width: W, height: H, { ctx in
                 ctx.setFillColor(gray: 1, alpha: 1)
                 ctx.fill(CGRect(x: maskRect.minX, y: CGFloat(H) - maskRect.maxY, width: maskRect.width, height: maskRect.height))
             }) else { throw AIError.imageUnreadable }
-            current = try fillRegion(current, mask: mask, region: tile, settings: s, strength: 1, feather: band * 0.8,
+            current = try fillRegion(current, mask: mask, region: tile, settings: s, strength: outpaintStrength, feather: band * 1.5,
                                      seed: seed &+ UInt32(i), token: token, onStep: onStep)
         }
         // Original pixels (away from the seam band) are restored exactly.
@@ -319,6 +333,38 @@ enum AIOperations {
             ctx.fill(CGRect(x: inner.minX, y: CGFloat(H) - inner.maxY, width: inner.width, height: inner.height).insetBy(dx: CGFloat(band), dy: CGFloat(band)))
         }), let out = AIImage.composite(current, over: canvas, mask: keep, feather: band * 0.5) else { throw AIError.imageUnreadable }
         return out
+    }
+
+    /// How much the model may deviate from the mirrored prefill when expanding (1 = ignore it).
+    static let outpaintStrength: Float = 0.82
+
+    /// Canvas of the expanded size with the source in place and mirrored copies in the new areas.
+    static func mirrorExtend(_ source: CGImage, _ e: Expansion) -> CGImage? {
+        let w = source.width, h = source.height
+        let W = w + e.left + e.right, H = h + e.top + e.bottom
+        return AIImage.draw(width: W, height: H) { ctx in
+            // CoreGraphics origin is bottom-left: the source sits at (left, bottom).
+            func put(_ flipX: Bool, _ flipY: Bool, dx: Int, dy: Int) {
+                ctx.saveGState()
+                ctx.translateBy(x: CGFloat(dx + (flipX ? w : 0)), y: CGFloat(dy + (flipY ? h : 0)))
+                ctx.scaleBy(x: flipX ? -1 : 1, y: flipY ? -1 : 1)
+                ctx.draw(source, in: CGRect(x: 0, y: 0, width: w, height: h))
+                ctx.restoreGState()
+            }
+            let x0 = e.left, y0 = e.bottom
+            for (fx, ox) in [(false, 0), (true, -w), (true, w)] {
+                for (fy, oy) in [(false, 0), (true, -h), (true, h)] {
+                    put(fx, fy, dx: x0 + ox, dy: y0 + oy)
+                }
+            }
+        }
+    }
+
+    /// Short English description of a photo from Vision's classifier ("a photo of macaw, bird, …").
+    static func describe(_ image: CGImage) -> String {
+        let labels = AIImageValidator.labels(image, limit: 6).filter { $0.1 > 0.15 }.map { $0.0.replacingOccurrences(of: "_", with: " ") }
+        return labels.isEmpty ? "a photo, seamless continuation of the scene, same light and colours"
+            : "a photo of " + labels.joined(separator: ", ") + ", seamless continuation of the scene, same light and colours"
     }
 
     // MARK: Object removal

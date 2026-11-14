@@ -325,7 +325,7 @@ final class AIAcceptanceTest: @unchecked Sendable {
         do {
             let t0 = Date()
             let e = AIOperations.Expansion(left: src.width / 4, top: 0, right: src.width / 4, bottom: 0)
-            let img = try AIOperations.expand(src, by: e, s("seamless natural continuation of the scene"), seed: 5, token: token) { _ in }
+            let img = try AIOperations.expand(src, by: e, s(""), seed: 5, token: token) { _ in }
             let band = Double(max(img.width, img.height)) * 0.015 * 1.6
             let inner = AIImage.crop(img, CGRect(x: e.left, y: 0, width: src.width, height: src.height))
             let d = inner.map { AIQA.diff(src, $0, inside: CGRect(x: band, y: band, width: Double(src.width) - 2 * band, height: Double(src.height) - 2 * band)).inside } ?? 1

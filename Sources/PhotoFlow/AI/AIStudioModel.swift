@@ -479,7 +479,7 @@ final class AIStudioModel: ObservableObject {
         guard !isBusy, let src = source else { return }
         guard !expansion.isEmpty else { errorMessage = String(localized: "Drag the edges of the image outwards first."); return }
         let s: GenerationSettings
-        do { s = try settings(prompt: prompt.isEmpty ? "seamless natural continuation of the scene" : prompt) } catch {
+        do { s = try settings(prompt: prompt) } catch {
             errorMessage = (error as? LocalizedError)?.errorDescription; return
         }
         let e = expansion, seed = nextSeed()
