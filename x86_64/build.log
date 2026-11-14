@@ -1,0 +1,19 @@
+▸ Toolchain
+swift-driver version: 1.127.15 Apple Swift version 6.2.4 (swiftlang-6.2.4.1.4 clang-1700.6.4.2)
+Target: x86_64-apple-macosx15.0
+  macOS SDK 26.2
+▸ Compiling for x86_64 (release)
+Building for production...
+[0/5] Write sources
+[2/5] Write swift-version-1977FEB4D2752686.txt
+[4/6] Compiling StableDiffusion CGImage+vImage.swift
+[5/7] Compiling PhotoFlow AIHardware.swift
+[5/7] Write Objects.LinkFileList
+[6/7] Linking PhotoFlow
+Build complete! (382.55s)
+▸ Assembling PhotoFlow.app
+▸ Architectures: x86_64
+▸ Signing
+/Users/runner/work/photoflow-mac/photoflow-mac/build/PhotoFlow.app: valid on disk
+/Users/runner/work/photoflow-mac/photoflow-mac/build/PhotoFlow.app: satisfies its Designated Requirement
+✓ Done: /Users/runner/work/photoflow-mac/photoflow-mac/build/PhotoFlow.app

@@ -1,0 +1,157 @@
+Intel(R) Core(TM) i7-8700B CPU @ 3.20GHz
+15032385536
+=== 1 info ===
+ai hardware: Intel(R) Core(TM) i7-8700B CPU @ 3.20GHz · 14 GB · Metal (Metal) · macOS 15.7
+ai tier: intel backends: Core ML (CPU), Core ML (GPU) maxVariants: 2 free disk: 117.16 GB
+ai recommended diffusion model: sd15-fp16
+ai prompt assistant (Apple Intelligence): false
+ai models dir: /Users/runner/ai-models
+  sd15-fp16: 2.14 GB, 22 files, licence CreativeML Open RAIL-M, installed=false, compatible=ok
+  sd15-ane: 957.3 MB, 22 files, licence CreativeML Open RAIL-M, installed=false, compatible=Requires a Mac with Apple Silicon.
+  sd21-ane: 1.14 GB, 22 files, licence CreativeML Open RAIL++-M, installed=false, compatible=Requires a Mac with Apple Silicon.
+  sd21-fp16: 2.58 GB, 22 files, licence CreativeML Open RAIL++-M, installed=false, compatible=ok
+  sd21-palettized: 1.14 GB, 22 files, licence CreativeML Open RAIL++-M, installed=false, compatible=ok
+  sdxl-mbp: 3.36 GB, 27 files, licence CreativeML Open RAIL++-M, installed=false, compatible=Requires a Mac with Apple Silicon.
+  sdxl-fp16: 7.04 GB, 27 files, licence CreativeML Open RAIL++-M, installed=false, compatible=Requires a Mac with Apple Silicon.
+  realesrgan-x4plus: 31 MB, 1 files, licence BSD 3-Clause, installed=false, compatible=ok
+  realesrgan-x2plus: 31.1 MB, 1 files, licence BSD 3-Clause, installed=false, compatible=ok
+  realesr-general-x4v3: 2.3 MB, 1 files, licence BSD 3-Clause, installed=false, compatible=ok
+  lama: 189.9 MB, 1 files, licence Apache 2.0, installed=false, compatible=ok
+  sd-vae-fp32: 310.5 MB, 1 files, licence MIT, installed=false, compatible=ok
+--- 1 info rc=0 0s
+=== 2 metadata ===
+metadata DigitalSourceType: http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia
+metadata OK
+--- 2 metadata rc=0 0s
+=== 3 install esrgan x4 ===
+  0.0 % Zero KB / 31 MB speed=- eta=- file 1/1
+  verifying realesrgan-x4plus.mlpackage.zip
+  installing
+installed realesrgan-x4plus rev ai-models-v1 size 34.2 MB in 1 s
+--- 3 install esrgan x4 rc=0 2s
+=== 4 install esrgan x2 ===
+  0.0 % Zero KB / 31.1 MB speed=- eta=- file 1/1
+  verifying realesrgan-x2plus.mlpackage.zip
+  installing
+installed realesrgan-x2plus rev ai-models-v1 size 34.2 MB in 1 s
+--- 4 install esrgan x2 rc=0 1s
+=== 5 install esrgan general ===
+  0.0 % Zero KB / 2.3 MB speed=- eta=- file 1/1
+  verifying realesr-general-x4v3.mlpackage.zip
+  installing
+installed realesr-general-x4v3 rev ai-models-v1 size 2.5 MB in 1 s
+--- 5 install esrgan general rc=0 2s
+=== 6 install lama ===
+  0.0 % Zero KB / 189.9 MB speed=- eta=- file 1/1
+  verifying lama.mlpackage.zip
+  installing
+installed lama rev ai-models-v1 size 205.5 MB in 3 s
+--- 6 install lama rc=0 4s
+=== 6b install float32 VAE ===
+  0.0 % Zero KB / 310.5 MB speed=- eta=- file 1/1
+  verifying sd-vae-fp32.mlpackage.zip
+  installing
+installed sd-vae-fp32 rev ai-models-v1 size 335 MB in 5 s
+--- 6b install float32 VAE rc=0 5s
+=== 7 install sd21-fp16 (pause + resume) ===
+  0.0 % Zero KB / 2.58 GB speed=- eta=- file 1/22
+  verifying coremldata.bin
+  verifying coremldata.bin
+  verifying metadata.json
+  verifying model.mil
+  5.6 % 145.8 MB / 2.58 GB speed=33.1 MB/s eta=73s file 5/22
+  → pause requested
+  paused: CancellationError
+  partial bytes kept: 337 KB
+  → resume
+  13.9 % 358.7 MB / 2.58 GB speed=41.7 MB/s eta=53s file 5/22
+  23.4 % 604.1 MB / 2.58 GB speed=47.3 MB/s eta=41s file 5/22
+  verifying weight.bin
+  verifying coremldata.bin
+  verifying coremldata.bin
+  verifying metadata.json
+  verifying model.mil
+  27.4 % 706.7 MB / 2.58 GB speed=30.5 MB/s eta=61s file 10/22
+  36.8 % 950 MB / 2.58 GB speed=40.4 MB/s eta=40s file 10/22
+  46.8 % 1.21 GB / 2.58 GB speed=47.9 MB/s eta=28s file 10/22
+  54.9 % 1.42 GB / 2.58 GB speed=44.1 MB/s eta=26s file 10/22
+  64.1 % 1.66 GB / 2.58 GB speed=42.4 MB/s eta=21s file 10/22
+  73.0 % 1.89 GB / 2.58 GB speed=47.1 MB/s eta=14s file 10/22
+  82.7 % 2.14 GB / 2.58 GB speed=48.5 MB/s eta=9s file 10/22
+  92.0 % 2.38 GB / 2.58 GB speed=47.4 MB/s eta=4s file 10/22
+  verifying weight.bin
+  93.5 % 2.41 GB / 2.58 GB speed=41 MB/s eta=4s file 11/22
+  verifying coremldata.bin
+  verifying coremldata.bin
+  verifying metadata.json
+  verifying model.mil
+  verifying weight.bin
+  verifying coremldata.bin
+  verifying coremldata.bin
+  verifying metadata.json
+  verifying model.mil
+  97.6 % 2.52 GB / 2.58 GB speed=22.7 MB/s eta=2s file 20/22
+  verifying weight.bin
+  verifying merges.txt
+  verifying vocab.json
+  installing
+installed sd21-fp16 rev 3ec13022f07a size 2.58 GB in 70 s
+checksum ok: Unet.mlmodelc/weights/weight.bin
+corrupted copy rejected: true
+--- 7 install sd21-fp16 (pause + resume) rc=0 76s
+=== 14 text-to-image (OFFLINE, network denied) ===
+t2i model=sd21-fp16 steps=12 plan=GPU (text encoder on CPU) gpu=Apple Paravirtual device
+  [t2i] step 1/12  128.4s  sec/step=-  footprint=6.17 GB
+  [t2i] step 4/12  413.6s  sec/step=95.07  footprint=6.17 GB
+  [t2i] step 8/12  520.5s  sec/step=56.03  footprint=6.17 GB
+  [t2i] step 12/12  679.0s  sec/step=50.06  footprint=6.17 GB
+t2i done in 708.6s (incl. model load) footprint 2.5 MB → 48.7 MB
+t2i pipeline: steps 1–12: latent std 1.001 → 0.883, noise std 1.006 → 0.747, all values finite
+t2i placement: UNet: GPU 0 %, Neural Engine 0 %, CPU 100 % of 1841 ops · float32 VAE (CPU)
+  t2i: 512x512 mean=0.338 std=0.202 black=0.000
+t2i 16:9 → 512x288
+t2i reproducibility (same seed): mean diff 0.00000
+t2i different seed: mean diff 0.2359
+t2i OK
+--- 14 text-to-image (OFFLINE, network denied) rc=0 2351s
+=== 15 image-to-image ===
+  [i2i] step 1/6  172.5s  sec/step=-  footprint=6.06 GB
+  [i2i] step 4/6  271.6s  sec/step=33.05  footprint=6.06 GB
+  [i2i] step 6/6  344.0s  sec/step=34.30  footprint=6.06 GB
+  i2i: 512x341 mean=0.416 std=0.180 black=0.000
+i2i aspect source 1.500 result 1.501
+i2i OK
+--- 15 image-to-image rc=0 380s
+=== 16 inpainting ===
+  [inpaint] step 1/12  152.4s  sec/step=-  footprint=5.99 GB
+  [inpaint] step 4/12  265.9s  sec/step=37.85  footprint=5.98 GB
+  [inpaint] step 8/12  376.5s  sec/step=32.02  footprint=5.99 GB
+  [inpaint] step 12/12  499.0s  sec/step=31.51  footprint=5.99 GB
+inpaint: changed inside 0.3360, outside (excluding 24 px band) 0.00000
+  inpaint filled area: 240x154 mean=0.315 std=0.205 black=0.032
+inpaint OK
+--- 16 inpainting rc=0 529s
+=== 17 outpainting ===
+  [outpaint] step 1/12  175.3s  sec/step=-  footprint=6 GB
+  [outpaint] step 4/12  278.2s  sec/step=34.28  footprint=6 GB
+  [outpaint] step 8/12  458.6s  sec/step=40.47  footprint=6.01 GB
+  [outpaint] step 12/12  586.4s  sec/step=37.37  footprint=6.01 GB
+outpaint 768x512 → 1152x576
+outpaint original area diff 0.00006
+  outpaint new area: 192x576 mean=0.299 std=0.253 black=0.004
+outpaint OK
+--- 17 outpainting rc=0 692s
+=== 18 cancel ===
+cancel: stopped after step 2, 0.00s after the request (total 232.2s)
+  after cancel: 512x512 mean=0.295 std=0.164 black=0.000
+cancel OK
+--- 18 cancel rc=0 537s
+=== 19 memory (3 runs) ===
+memory: start 1.9 MB (physical 15.03 GB)
+memory: run 1 peak 5.97 GB after 46.6 MB
+memory: run 2 peak 6.03 GB after 57.1 MB
+memory: run 3 peak 6 GB after 63.7 MB
+memory: after unload 57.6 MB
+memory: growth between run 2 and run 3: -23 MB
+memory OK
+--- 19 memory (3 runs) rc=0 793s
