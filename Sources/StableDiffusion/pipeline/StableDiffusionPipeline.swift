@@ -250,6 +250,8 @@ public struct StableDiffusionPipeline: StableDiffusionPipelineProtocol {
         // Generate random latent samples from specified seed
         var latents: [MLShapedArray<Float32>] = try generateLatentSamples(configuration: config, scheduler: scheduler[0])
 
+        PipelineDiagnostics.reset()
+
         // PhotoFlow: masked-latent inpainting
         var inpaintState: InpaintState? = nil
         if let inpainting {
@@ -350,6 +352,8 @@ public struct StableDiffusionPipeline: StableDiffusionPipelineProtocol {
 
                 denoisedLatents[i] = scheduler[i].modelOutputs.last ?? latents[i]
             }
+
+            PipelineDiagnostics.record(step: step, noise: noise, latents: latents)
 
             if let inpaintState {
                 let next: Int? = step + 1 < timeSteps.count ? timeSteps[step + 1] : nil

@@ -10,3 +10,5 @@ Changes for PhotoFlow:
   scheduler step the preserved region is replaced with the encoded original re-noised to the next timestep.
 - `pipeline/ComponentConfiguration.swift` (new): optional per-component compute units (text encoder, UNet, VAE),
   used by the resource initialisers – e.g. UNet on the GPU and VAE on the CPU on Intel Macs.
+- `pipeline/PipelineDiagnostics.swift` (new): per-step statistics of the sampling loop (spread of latents and noise
+  prediction, non-finite values) for diagnosing numerical failures.

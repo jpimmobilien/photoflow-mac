@@ -1,6 +1,7 @@
 import Foundation
 import CoreGraphics
 import AppKit
+import StableDiffusion
 
 /// Hardware acceptance test for AI Studio – runs the real models on this Mac and decides from the pictures
 /// themselves whether generation works. Used by Model Management ("Hardware test") and by
@@ -121,6 +122,10 @@ final class AIAcceptanceTest: @unchecked Sendable {
             add(Entry(section: "Setup", name: "Diffusion model installed", passed: false, seconds: 0, detail: "No compatible diffusion model is installed."))
             finish(); return
         }
+        for m in models {
+            add(Entry(section: "System", name: "Ausführung \(m.name)", passed: true, seconds: 0,
+                      detail: AIHardware.current.diffusionPlan(for: m).title + " – " + AIComputePlanInfo.unetSummary(for: m), model: m.id))
+        }
         let total = Double(options.consecutive + (options.extended ? 12 + max(0, models.count - 1) * 3 : 0) + (options.includeEditing ? 6 : 0))
         var done = 0.0
         func step(_ text: String) { done += 1; progress(text, min(1, done / total)) }
@@ -157,7 +162,8 @@ final class AIAcceptanceTest: @unchecked Sendable {
                 if !c.ok { failures += 1 }
                 times.append(sec)
                 footprints.append(footprintMB)
-                add(Entry(section: "Serie", name: "Bild \(i + 1): \(prompt)", passed: c.ok, seconds: sec, detail: c.detail + " (Seed \(seed))",
+                add(Entry(section: "Serie", name: "Bild \(i + 1): \(prompt)", passed: c.ok, seconds: sec,
+                          detail: c.detail + " (Seed \(seed))" + (c.ok ? "" : " – " + PipelineDiagnostics.summary),
                           image: c.file, model: first.id, secondsPerStep: sps, footprintMB: footprintMB, labels: c.labels))
             } catch { failures += 1; fail("Serie", "Bild \(i + 1)", error, first) }
             if (i + 1 == 10 || i + 1 == options.consecutive) && options.consecutive >= 5 {

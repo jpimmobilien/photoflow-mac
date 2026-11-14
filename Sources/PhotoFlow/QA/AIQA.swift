@@ -2,6 +2,7 @@ import Foundation
 import CoreGraphics
 import ImageIO
 import CoreML
+import StableDiffusion
 
 /// Headless tests for AI Studio (real downloads, real inference – no mocks).
 ///
@@ -206,6 +207,8 @@ enum AIQA {
         let img = try AIOperations.textToImage(s, aspect: .square, seed: 42, token: AICancelToken(), onStep: stepLogger("t2i"))
         print(String(format: "t2i done in %.1fs (incl. model load) footprint %@ → %@", Date().timeIntervalSince(t0),
                      Int64(before).formattedBytes, Int64(MemoryMonitor.footprintBytes()).formattedBytes))
+        print("t2i pipeline: \(PipelineDiagnostics.summary)")
+        print("t2i placement: \(AIComputePlanInfo.unetSummary(for: s.model))")
         try checkPlausible(img, "t2i")
         guard img.width == s.model.resolution else { throw Failure(description: "unexpected size \(img.width)") }
         try save(img, out, kind: .textToImage, prompt: s.prompt, model: s.model.id, seed: 42)
@@ -382,6 +385,7 @@ enum AIQA {
                         }
                     }
                     if reference == nil { reference = outs }
+                    if let u = AIComputePlanInfo.usage(modelAt: dir.appendingPathComponent(p), units: units) { line += " | placement: \(u)" }
                     print(line)
                 } catch {
                     print("diag \(p) \(name): FAIL \(String(describing: error).prefix(160))")

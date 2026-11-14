@@ -292,8 +292,10 @@ final class DiffusionEngine: @unchecked Sendable {
         let sps = timed.count >= 2 ? timed.reduce(0, +) / Double(timed.count) : nil
         guard verdict.valid else {
             let reason = verdict.reason ?? "invalid"
+            let diag = PipelineDiagnostics.summary
+            print("AI: invalid output – \(diag)")
             ModelValidation.store(job.model.id, passed: false, secondsPerStep: sps,
-                                  detail: String(format: "%@ (spread %.3f, noise ratio %.2f)", reason, verdict.metrics.spread, verdict.metrics.detailRatio))
+                                  detail: String(format: "%@ (spread %.3f, noise ratio %.2f; %@)", reason, verdict.metrics.spread, verdict.metrics.detailRatio, diag))
             throw AIError.invalidOutput(job.model.name, reason)
         }
         ModelValidation.store(job.model.id, passed: true, secondsPerStep: sps,
