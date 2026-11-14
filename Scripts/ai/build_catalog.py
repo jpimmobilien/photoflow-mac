@@ -9,6 +9,10 @@ HF = {
     "sdxl-fp16": ("apple/coreml-stable-diffusion-xl-base", "compiled/", []),
     "sd21-palettized": ("apple/coreml-stable-diffusion-2-1-base-palettized", "original/compiled/", []),
     "sd21-fp16": ("apple/coreml-stable-diffusion-2-1-base", "original/compiled/", ["UnetChunk1.mlmodelc", "UnetChunk2.mlmodelc"]),
+    # Neural Engine variants (split_einsum attention) – Apple Silicon only
+    "sd21-ane": ("apple/coreml-stable-diffusion-2-1-base-palettized", "split_einsum_v2/compiled/", []),
+    "sd15-ane": ("apple/coreml-stable-diffusion-v1-5-palettized", "split_einsum_v2/compiled/", ["SafetyChecker.mlmodelc"]),
+    "sd15-fp16": ("apple/coreml-stable-diffusion-v1-5", "original/compiled/", ["UnetChunk1.mlmodelc", "UnetChunk2.mlmodelc", "SafetyChecker.mlmodelc"]),
 }
 AGENT = {"User-Agent": "model-catalog-builder"}
 
