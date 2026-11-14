@@ -16,6 +16,7 @@ struct AIModelsView: View {
                         .font(DS.Font.callout).foregroundStyle(DS.Palette.textSecondary)
                 }
                 hardwareCard
+                AIHardwareTestCard()
                 downloads
                 section(String(localized: "Image generation & editing"), AIModelCatalog.diffusionModels)
                 section(String(localized: "Upscaling & restoration"), AIModelCatalog.upscalers)
@@ -185,6 +186,7 @@ struct AIModelCard: View {
                 Text("\(model.downloadSize.formattedBytes) · \(model.macOSRequirementText) · \(model.license.name)")
                     .font(DS.Font.caption).foregroundStyle(DS.Palette.textTertiary)
             }
+            if model.kind == .diffusion && store.isInstalled(model.id) { AIModelValidationRow(model: model) }
             licence
             if let reason = hw.incompatibility(of: model) {
                 Label(reason, systemImage: "xmark.octagon").font(DS.Font.caption).foregroundStyle(DS.Palette.danger)
@@ -327,3 +329,95 @@ struct AIModelDownloadControl: View {
     }
 }
 
+
+/// Whether this model produced valid images on this Mac – with a button to check it.
+struct AIModelValidationRow: View {
+    let model: AIModelDescriptor
+    @ObservedObject private var test = AIHardwareTestModel.shared
+    @ObservedObject private var store = ModelStore.shared
+
+    var body: some View {
+        let rec = ModelValidation.record(model.id)
+        HStack(alignment: .top, spacing: DS.Space.xs) {
+            Group {
+                if let rec, rec.passed {
+                    Label(rec.secondsPerStep.map { String(localized: "Works on this Mac · \(String(format: "%.2f", $0)) s per step") } ?? String(localized: "Works on this Mac"),
+                          systemImage: "checkmark.seal.fill").foregroundStyle(DS.Palette.success)
+                } else if let rec, !rec.passed {
+                    Label(String(localized: "No valid images on this Mac: \(rec.detail)"), systemImage: "xmark.seal.fill").foregroundStyle(DS.Palette.danger)
+                } else {
+                    Label(String(localized: "Not yet checked on this Mac"), systemImage: "questionmark.circle").foregroundStyle(DS.Palette.textSecondary)
+                }
+            }
+            .font(DS.Font.caption)
+            .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: DS.Space.xs)
+            if test.running == .check && test.runningModel == model.name {
+                ProgressView().controlSize(.small)
+            } else {
+                Button(String(localized: "Check on this Mac")) { test.start(.check, model: model) }
+                    .buttonStyle(GlassButtonStyle(kind: .secondary))
+                    .disabled(test.isRunning || AIStudioModel.shared.isBusy || AIHardware.current.incompatibility(of: model) != nil)
+                    .help(String(localized: "Generates two test images and checks them (about 1–3 minutes, longer on the first start of a Neural Engine model)."))
+            }
+        }
+        .padding(DS.Space.s)
+        .background(RoundedRectangle(cornerRadius: DS.Radius.control, style: .continuous).fill(DS.Palette.hover))
+    }
+}
+
+/// Hardware acceptance test: real generations on this Mac, checked image by image; report as HTML/Markdown.
+struct AIHardwareTestCard: View {
+    @ObservedObject private var test = AIHardwareTestModel.shared
+    @ObservedObject private var store = ModelStore.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DS.Space.s) {
+            HStack(spacing: DS.Space.s) {
+                Image(systemName: "checklist").font(.system(size: 18, weight: .semibold)).foregroundStyle(DS.Palette.brand)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Hardware test").font(DS.Font.title3).foregroundStyle(DS.Palette.textPrimary)
+                    Text("Generates real images with the installed models, saves them, opens them again and checks every one (not empty, not noise, content recognised by Apple's classifier). Measures time and memory and writes a report.")
+                        .font(DS.Font.caption).foregroundStyle(DS.Palette.textSecondary).fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            if let mode = test.running {
+                VStack(alignment: .leading, spacing: 4) {
+                    ProgressView(value: test.fraction).tint(DS.Palette.blue)
+                    HStack {
+                        Text("\(mode.title) · \(test.runningModel ?? "") · \(test.phase)").font(DS.Font.caption).foregroundStyle(DS.Palette.textSecondary)
+                        Spacer()
+                        Button(String(localized: "Cancel")) { test.cancel() }.buttonStyle(GlassButtonStyle(kind: .plain))
+                    }
+                }
+            } else if store.installedDiffusionModels.isEmpty {
+                Text("Install an image generation model first.").font(DS.Font.caption).foregroundStyle(DS.Palette.textTertiary)
+            } else {
+                HStack(spacing: DS.Space.xs) {
+                    Button { test.start(.quick) } label: { Label(String(localized: "Quick test (10 images)"), systemImage: "bolt") }
+                        .buttonStyle(GlassButtonStyle(kind: .secondary))
+                    Button { test.start(.full) } label: { Label(String(localized: "Full test (20 images + editing)"), systemImage: "checklist") }
+                        .buttonStyle(GlassButtonStyle(kind: .primary))
+                    if test.restartPending != nil {
+                        Button { test.runRestartCheck() } label: { Label(String(localized: "Check after restart"), systemImage: "arrow.clockwise") }
+                            .buttonStyle(GlassButtonStyle(kind: .secondary))
+                            .help(String(localized: "Quit and reopen PhotoFlow after the full test, then click here: one more generation is added to the report."))
+                    }
+                }
+                .disabled(AIStudioModel.shared.isBusy)
+            }
+            if let r = test.lastResult, test.running == nil {
+                HStack(spacing: DS.Space.xs) {
+                    Label(r.passed ? String(localized: "Passed: \(r.passedCount) of \(r.total) checks") : String(localized: "Not passed: \(r.passedCount) of \(r.total) checks"),
+                          systemImage: r.passed ? "checkmark.circle.fill" : "xmark.octagon.fill")
+                        .font(DS.Font.headline).foregroundStyle(r.passed ? DS.Palette.success : DS.Palette.danger)
+                    Spacer()
+                    Button(String(localized: "Open Report")) { test.openReport(r.folder) }.buttonStyle(GlassButtonStyle(kind: .secondary))
+                    Button(String(localized: "Show in Finder")) { test.revealReport(r.folder) }.buttonStyle(GlassButtonStyle(kind: .plain))
+                }
+            }
+        }
+        .padding(DS.Space.m)
+        .glassCard(cornerRadius: DS.Radius.panel)
+    }
+}

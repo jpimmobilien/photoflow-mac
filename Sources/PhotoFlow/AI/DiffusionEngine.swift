@@ -53,7 +53,10 @@ final class DiffusionEngine: @unchecked Sendable {
     /// Set when the last run had to switch to the CPU (shown to the user).
     private(set) var lastRunFellBackToCPU = false
 
+    private let queueKey = DispatchSpecificKey<Bool>()
+
     private init() {
+        queue.setSpecific(key: queueKey, value: true)
         let src = DispatchSource.makeMemoryPressureSource(eventMask: [.warning, .critical], queue: queue)
         src.setEventHandler { [weak self] in self?.unloadNow() }
         src.resume()
@@ -86,6 +89,16 @@ final class DiffusionEngine: @unchecked Sendable {
 
     func unload() { queue.async { [weak self] in self?.unloadNow() } }
 
+    /// Unloads all AI models now (also when called from a job running on the engine queue).
+    func unloadSync() {
+        let work = {
+            self.unloadNow()
+            Upscaler.shared.unload()
+            LaMaRemover.shared.unload()
+        }
+        if DispatchQueue.getSpecific(key: queueKey) == true { work() } else { queue.sync(execute: work) }
+    }
+
     @available(macOS 13.1, *)
     private var pipeline: StableDiffusionPipelineProtocol? {
         get { pipelineStorage as? StableDiffusionPipelineProtocol }
@@ -112,7 +125,7 @@ final class DiffusionEngine: @unchecked Sendable {
     private func loadPipeline(_ model: AIModelDescriptor) throws -> StableDiffusionPipelineProtocol {
         let hw = AIHardware.current
         let profile = AIPerformanceProfile.current
-        let plan = hw.diffusionPlan(safe: cpuFallback.contains(model.id))
+        let plan = hw.diffusionPlan(for: model)
         let reduce = hw.reduceMemory(for: model, profile: profile)
         let key = "\(model.id)|\(plan.signature)|\(reduce)"
         if let pipeline, loadedKey == key { return pipeline }
@@ -145,13 +158,8 @@ final class DiffusionEngine: @unchecked Sendable {
 
     // MARK: Generation
 
-    /// A uniform result means the computation went wrong (e.g. NaNs) – never show it as a result.
-    static func isFlat(_ image: CGImage) -> Bool {
-        guard let pb = PixelBuffer(cgImage: image, maxSide: 64) else { return false }
-        let l = pb.luma()
-        let mean = l.reduce(0, +) / Float(max(1, l.count))
-        let variance = l.reduce(0) { $0 + ($1 - mean) * ($1 - mean) } / Float(max(1, l.count))
-        return sqrt(variance) < 0.012
+    private func hwPlanTitle(_ model: AIModelDescriptor) -> String {
+        AIHardware.current.diffusionPlan(for: model).title
     }
 
     /// Core ML errors are technical; explain what the user can do.
@@ -169,7 +177,33 @@ final class DiffusionEngine: @unchecked Sendable {
         guard #available(macOS 13.1, *) else {
             throw AIError.unsupported(String(localized: "Image generation requires macOS 13.1 or later."))
         }
-        return try run(job, token: token, onStep: onStep)
+        lastFailover = nil
+        do {
+            return try run(job, token: token, onStep: onStep)
+        } catch AIError.invalidOutput(let name, let reason) {
+            // The model computed garbage on this Mac. Use another installed model with a different backend
+            // (e.g. Neural Engine instead of GPU) that has not failed here – never show an invalid image.
+            guard !token.isCancelled, let alt = Self.alternative(to: job.model) else { throw AIError.invalidOutput(name, reason) }
+            print("AI: \(name) produced an invalid image (\(reason)) – switching to \(alt.name)")
+            var j = job
+            j.model = alt
+            let image = try run(j, token: token, onStep: onStep)
+            lastFailover = alt
+            return image
+        }
+    }
+
+    /// Model used instead of the requested one in the last run (after an invalid result).
+    private(set) var lastFailover: AIModelDescriptor?
+
+    /// Installed, compatible model with a different compute backend and the same input size.
+    static func alternative(to model: AIModelDescriptor) -> AIModelDescriptor? {
+        let snap = ModelStoreSnapshot.current
+        let hw = AIHardware.current
+        return AIModelCatalog.diffusionModels.filter {
+            $0.id != model.id && snap.installedIDs.contains($0.id) && hw.incompatibility(of: $0) == nil
+                && $0.resolution == model.resolution && $0.backend != model.backend && ModelValidation.record($0.id)?.passed != false
+        }.sorted { ($0.family == model.family ? 0 : 1) < ($1.family == model.family ? 0 : 1) }.first
     }
 
     @available(macOS 13.1, *)
@@ -241,12 +275,29 @@ final class DiffusionEngine: @unchecked Sendable {
             stateLock.lock(); stepTimes[job.model.id] = avg; stateLock.unlock()
             UserDefaults.standard.set(avg, forKey: "aiStepTime.\(job.model.id)")
         }
-        guard let first = images.first, let image = first else {
+        guard let first = images.first, var image = first else {
             throw AIError.failed(String(localized: "The model returned no image. Try another prompt or seed."))
         }
-        if Self.isFlat(image) {
-            throw AIError.failed(String(localized: "The model produced an empty image. The graphics processor could not run the model correctly – restart PhotoFlow and try again."))
+        var verdict = AIImageValidator.check(image)
+        if !verdict.valid && !token.isCancelled {
+            // One clean retry with a freshly loaded pipeline (transient GPU state).
+            print("AI: invalid output from \(job.model.id) (\(verdict.reason ?? "")) – reloading and retrying once")
+            unloadNow()
+            if let again = try attempt(try loadPipeline(job.model)).first ?? nil {
+                image = again
+                verdict = AIImageValidator.check(image)
+            }
         }
+        if token.isCancelled { throw AIError.cancelled }
+        let sps = timed.count >= 2 ? timed.reduce(0, +) / Double(timed.count) : nil
+        guard verdict.valid else {
+            let reason = verdict.reason ?? "invalid"
+            ModelValidation.store(job.model.id, passed: false, secondsPerStep: sps,
+                                  detail: String(format: "%@ (spread %.3f, noise ratio %.2f)", reason, verdict.metrics.spread, verdict.metrics.detailRatio))
+            throw AIError.invalidOutput(job.model.name, reason)
+        }
+        ModelValidation.store(job.model.id, passed: true, secondsPerStep: sps,
+                              detail: hwPlanTitle(job.model))
         return image
     }
 }

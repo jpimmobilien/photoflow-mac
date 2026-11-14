@@ -43,6 +43,8 @@ sed -e "s/__VERSION__/$VERSION/" -e "s/__BUILD__/$BUILD/" "$ROOT/Packaging/Info.
 printf "APPL????" > "$APP/Contents/PkgInfo"
 cp "$ROOT/Packaging/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 cp "$ROOT/Resources/BrandMark.png" "$APP/Contents/Resources/BrandMark.png"
+cp "$ROOT/Scripts/ai_hardware_test.sh" "$APP/Contents/Resources/ai_hardware_test.sh"
+chmod +x "$APP/Contents/Resources/ai_hardware_test.sh"
 for lproj in "$ROOT"/Resources/*.lproj; do
     name="$(basename "$lproj")"
     mkdir -p "$APP/Contents/Resources/$name"

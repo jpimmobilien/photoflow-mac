@@ -14,6 +14,7 @@ enum AIModelKind: String, Codable, Sendable {
 }
 
 enum DiffusionFamily: String, Codable, Sendable {
+    case sd15           // Stable Diffusion 1.5, 512 px
     case sd21           // Stable Diffusion 2.1 base, 512 px
     case sdxl           // Stable Diffusion XL base, 1024 px
 }
@@ -30,6 +31,21 @@ enum AICapability: String, Codable, CaseIterable, Sendable {
         case .objectRemoval: return String(localized: "Object removal")
         case .upscaling: return String(localized: "Upscaling")
         case .denoise: return String(localized: "Noise reduction")
+        }
+    }
+}
+
+/// Which processor a model variant is built for.
+enum AIComputeBackend: String, Codable, Sendable {
+    case gpu            // "original" attention, Core ML on the GPU (Metal)
+    case neuralEngine   // "split_einsum" attention, Core ML on the Apple Neural Engine
+    case any            // small CNNs (Real-ESRGAN, LaMa): CPU, GPU or Neural Engine
+
+    var title: String {
+        switch self {
+        case .gpu: return String(localized: "Graphics processor (Metal)")
+        case .neuralEngine: return String(localized: "Neural Engine")
+        case .any: return String(localized: "CPU / GPU / Neural Engine")
         }
     }
 }
@@ -57,6 +73,7 @@ struct AIModelDescriptor: Identifiable, Hashable, Sendable {
     let developer: String
     let kind: AIModelKind
     let family: DiffusionFamily?
+    var backend: AIComputeBackend = .any
     let license: AILicense
     let capabilities: [AICapability]
     let files: [AIModelFile]
@@ -128,11 +145,49 @@ enum AIModelCatalog {
         let diffusionCaps: [AICapability] = [.textToImage, .imageToImage, .inpainting, .outpainting]
         var list: [AIModelDescriptor] = []
 
+        let openRAILv1 = AILicense(
+            name: "CreativeML Open RAIL-M",
+            url: URL(string: "https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/blob/main/LICENSE.md")!,
+            privateUse: true, commercialUse: true, summary: openRAIL.summary, restrictions: openRAIL.restrictions)
+
+        let (r0, f0) = files("sd15-fp16")
+        list.append(AIModelDescriptor(
+            id: "sd15-fp16", name: "Stable Diffusion 1.5", developer: "Runway / Stability AI · Core ML by Apple",
+            kind: .diffusion, family: .sd15, backend: .gpu, license: openRAILv1, capabilities: diffusionCaps, files: f0, isArchive: false,
+            revision: r0, version: "1.5 · float16 · GPU",
+            sourcePage: URL(string: "https://huggingface.co/apple/coreml-stable-diffusion-v1-5")!,
+            resolution: 512, scale: 1, minMemoryGB: 8, recommendedMemoryGB: 16, minMacOS: v13_1,
+            requiresAppleSilicon: false,
+            hardwareNote: String(localized: "Runs on the graphics processor of Apple Silicon and Intel Macs."),
+            detail: String(localized: "The most widely used Stable Diffusion model: 512 × 512 pixels, robust for photos of people, objects and interiors.")))
+
+        let (r0a, f0a) = files("sd15-ane")
+        list.append(AIModelDescriptor(
+            id: "sd15-ane", name: "Stable Diffusion 1.5 · Neural Engine", developer: "Runway / Stability AI · Core ML by Apple",
+            kind: .diffusion, family: .sd15, backend: .neuralEngine, license: openRAILv1, capabilities: diffusionCaps, files: f0a, isArchive: false,
+            revision: r0a, version: "1.5 · 6-bit palettized · Neural Engine",
+            sourcePage: URL(string: "https://huggingface.co/apple/coreml-stable-diffusion-v1-5-palettized")!,
+            resolution: 512, scale: 1, minMemoryGB: 6, recommendedMemoryGB: 8, minMacOS: v14,
+            requiresAppleSilicon: true,
+            hardwareNote: String(localized: "Apple Silicon only. Uses the Neural Engine – fast and energy-efficient, leaves the GPU free. The first start compiles the model for the Neural Engine (a few minutes, once)."),
+            detail: String(localized: "Stable Diffusion 1.5 built for Apple's Neural Engine.")))
+
+        let (r1a, f1a) = files("sd21-ane")
+        list.append(AIModelDescriptor(
+            id: "sd21-ane", name: "Stable Diffusion 2.1 · Neural Engine", developer: "Stability AI · Core ML by Apple",
+            kind: .diffusion, family: .sd21, backend: .neuralEngine, license: openRAIL, capabilities: diffusionCaps, files: f1a, isArchive: false,
+            revision: r1a, version: "2.1 base · 6-bit palettized · Neural Engine",
+            sourcePage: URL(string: "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized")!,
+            resolution: 512, scale: 1, minMemoryGB: 6, recommendedMemoryGB: 8, minMacOS: v14,
+            requiresAppleSilicon: true,
+            hardwareNote: String(localized: "Apple Silicon only. Uses the Neural Engine – fast and energy-efficient, leaves the GPU free. The first start compiles the model for the Neural Engine (a few minutes, once)."),
+            detail: String(localized: "Stable Diffusion 2.1 built for Apple's Neural Engine.")))
+
         let (r1, f1) = files("sd21-fp16")
         list.append(AIModelDescriptor(
             id: "sd21-fp16", name: "Stable Diffusion 2.1", developer: "Stability AI · Core ML by Apple",
-            kind: .diffusion, family: .sd21, license: openRAIL, capabilities: diffusionCaps, files: f1, isArchive: false,
-            revision: r1, version: "2.1 base · float16",
+            kind: .diffusion, family: .sd21, backend: .gpu, license: openRAIL, capabilities: diffusionCaps, files: f1, isArchive: false,
+            revision: r1, version: "2.1 base · float16 · GPU",
             sourcePage: URL(string: "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base")!,
             resolution: 512, scale: 1, minMemoryGB: 8, recommendedMemoryGB: 16, minMacOS: v13_1,
             requiresAppleSilicon: false,
@@ -142,8 +197,8 @@ enum AIModelCatalog {
         let (r2, f2) = files("sd21-palettized")
         list.append(AIModelDescriptor(
             id: "sd21-palettized", name: "Stable Diffusion 2.1 Compact", developer: "Stability AI · Core ML by Apple",
-            kind: .diffusion, family: .sd21, license: openRAIL, capabilities: diffusionCaps, files: f2, isArchive: false,
-            revision: r2, version: "2.1 base · 6-bit palettized",
+            kind: .diffusion, family: .sd21, backend: .gpu, license: openRAIL, capabilities: diffusionCaps, files: f2, isArchive: false,
+            revision: r2, version: "2.1 base · 6-bit palettized · GPU",
             sourcePage: URL(string: "https://huggingface.co/apple/coreml-stable-diffusion-2-1-base-palettized")!,
             resolution: 512, scale: 1, minMemoryGB: 6, recommendedMemoryGB: 8, minMacOS: v14,
             requiresAppleSilicon: false,
@@ -153,7 +208,7 @@ enum AIModelCatalog {
         let (r3, f3) = files("sdxl-mbp")
         list.append(AIModelDescriptor(
             id: "sdxl-mbp", name: "Stable Diffusion XL", developer: "Stability AI · Core ML by Apple",
-            kind: .diffusion, family: .sdxl, license: openRAILXL, capabilities: diffusionCaps, files: f3, isArchive: false,
+            kind: .diffusion, family: .sdxl, backend: .gpu, license: openRAILXL, capabilities: diffusionCaps, files: f3, isArchive: false,
             revision: r3, version: "1.0 base · 4.5-bit mixed palettization",
             sourcePage: URL(string: "https://huggingface.co/apple/coreml-stable-diffusion-mixed-bit-palettization")!,
             resolution: 1024, scale: 1, minMemoryGB: 16, recommendedMemoryGB: 16, minMacOS: v14,
@@ -164,7 +219,7 @@ enum AIModelCatalog {
         let (r4, f4) = files("sdxl-fp16")
         list.append(AIModelDescriptor(
             id: "sdxl-fp16", name: "Stable Diffusion XL (full precision)", developer: "Stability AI · Core ML by Apple",
-            kind: .diffusion, family: .sdxl, license: openRAILXL, capabilities: diffusionCaps, files: f4, isArchive: false,
+            kind: .diffusion, family: .sdxl, backend: .gpu, license: openRAILXL, capabilities: diffusionCaps, files: f4, isArchive: false,
             revision: r4, version: "1.0 base · float16",
             sourcePage: URL(string: "https://huggingface.co/apple/coreml-stable-diffusion-xl-base")!,
             resolution: 1024, scale: 1, minMemoryGB: 24, recommendedMemoryGB: 32, minMacOS: v14,

@@ -240,6 +240,7 @@ enum AIError: LocalizedError {
     case emptyMask
     case emptyPrompt
     case cancelled
+    case invalidOutput(String, String)
     case outOfMemory
     case unsupported(String)
     case failed(String)
@@ -254,6 +255,8 @@ enum AIError: LocalizedError {
         case .emptyMask: return String(localized: "Paint over the area you want to change first.")
         case .emptyPrompt: return String(localized: "Describe what you want to see.")
         case .cancelled: return String(localized: "Cancelled.")
+        case .invalidOutput(let modelName, let reason):
+            return String(localized: "\(modelName) did not produce a valid image on this Mac (\(reason)). PhotoFlow does not show such results. Install a model for the other processor in Model Management (e.g. a Neural Engine variant) – PhotoFlow then switches automatically.")
         case .outOfMemory:
             return String(localized: "Not enough memory for this model. Close other apps, choose the “Energy saving” profile or a smaller model, and try again.")
         case .unsupported(let m): return m

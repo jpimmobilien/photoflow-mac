@@ -80,7 +80,7 @@ struct AIHardware: Sendable {
         if model.requiresAppleSilicon && base.architecture != .appleSilicon {
             return String(localized: "Requires a Mac with Apple Silicon.")
         }
-        if model.kind == .diffusion && !base.hasMetal {
+        if model.kind == .diffusion && model.backend == .gpu && !base.hasMetal {
             return String(localized: "Requires a Metal graphics processor – Core ML cannot run this model correctly on the CPU alone.")
         }
         if memoryGB + 0.5 < model.minMemoryGB && ProcessInfo.processInfo.environment["PHOTOFLOW_IGNORE_MEMORY_LIMIT"] != "1" {
@@ -101,28 +101,42 @@ struct AIHardware: Sendable {
         return nil
     }
 
-    /// The diffusion model recommended for this Mac.
+    /// The diffusion model recommended for this Mac (Apple's own guidance for the Core ML models: Neural Engine
+    /// variants on base M-chips, GPU variants on Macs with large GPUs). A model that failed the on-device check is
+    /// never recommended.
     var recommendedDiffusionModelID: String {
+        let candidates: [String]
         switch tier {
-        case .intel: return "sd21-fp16"
-        case .appleSiliconBase: return osAtLeast(14) ? "sd21-palettized" : "sd21-fp16"
-        case .appleSiliconPro: return supportsSDXL ? "sdxl-mbp" : (osAtLeast(14) ? "sd21-palettized" : "sd21-fp16")
+        case .intel: candidates = ["sd15-fp16", "sd21-fp16"]
+        case .appleSiliconBase: candidates = osAtLeast(14) ? ["sd21-ane", "sd15-ane", "sd21-palettized"] : ["sd15-fp16", "sd21-fp16"]
+        case .appleSiliconPro: candidates = supportsSDXL ? ["sdxl-mbp", "sd21-ane", "sd21-palettized"] : (osAtLeast(14) ? ["sd21-ane", "sd21-palettized"] : ["sd21-fp16"])
         }
+        return candidates.first { ModelValidation.record($0)?.passed != false } ?? candidates[0]
     }
 
-    /// How the diffusion pipeline is spread over CPU and GPU.
+    /// How the diffusion pipeline is spread over CPU, GPU and Neural Engine.
     struct DiffusionPlan: Equatable {
         var base: MLComputeUnits
         var overrides: [PipelineComponent: MLComputeUnits]
         var signature: String { "\(base.rawValue)-" + overrides.map { "\($0.key.rawValue)=\($0.value.rawValue)" }.sorted().joined(separator: ",") }
+        var title: String {
+            switch base {
+            case .cpuAndNeuralEngine: return "CPU + Neural Engine"
+            case .cpuAndGPU: return overrides[.textEncoder] == .cpuOnly ? "GPU (text encoder on CPU)" : "CPU + GPU"
+            case .cpuOnly: return "CPU"
+            default: return "all"
+            }
+        }
     }
 
-    /// The catalog ships "original" attention variants, which Apple runs on the GPU (`.cpuAndGPU`).
-    /// Measured with `--qa ai-diag` / `ai-t2i` on macOS 15: Core ML's CPU path cannot run these float16 models
-    /// correctly (x86: the UNet fails, the VAE returns wrong values; Apple Silicon VM: noise instead of an image),
-    /// so diffusion never falls back to the CPU – it needs a Metal GPU. On Intel the text encoder (numerically
-    /// verified) runs on the CPU to leave GPU memory to the UNet.
-    func diffusionPlan(safe: Bool) -> DiffusionPlan {
+    /// Compute units per model variant:
+    /// - "split_einsum" variants run on the Neural Engine (`.cpuAndNeuralEngine`, Apple Silicon only).
+    /// - "original" variants run on the GPU (`.cpuAndGPU`), as Apple recommends for them.
+    /// Measured with `--qa ai-diag` on macOS 15: Core ML's CPU path cannot run these float16 models correctly
+    /// (x86: the UNet fails, the VAE returns wrong values), so diffusion never falls back to the CPU alone. On Intel
+    /// the text encoder (numerically identical on CPU and GPU) runs on the CPU to leave GPU memory to the UNet.
+    func diffusionPlan(for model: AIModelDescriptor) -> DiffusionPlan {
+        if model.backend == .neuralEngine { return DiffusionPlan(base: .cpuAndNeuralEngine, overrides: [:]) }
         if !base.hasMetal { return DiffusionPlan(base: .cpuOnly, overrides: [:]) }
         if isIntel { return DiffusionPlan(base: .cpuAndGPU, overrides: [.textEncoder: .cpuOnly]) }
         return DiffusionPlan(base: .cpuAndGPU, overrides: [:])
@@ -130,6 +144,8 @@ struct AIHardware: Sendable {
 
     /// Low-memory mode loads model parts one after another instead of keeping all of them resident.
     func reduceMemory(for model: AIModelDescriptor, profile: AIPerformanceProfile) -> Bool {
+        // Palettized Neural Engine variants need ~1.5 GB – keep them loaded (reloading means re-preparing the ANE).
+        if model.backend == .neuralEngine { return memoryGB < 7.5 }
         if profile == .energySaving { return true }
         if profile == .maximumSpeed && memoryGB >= model.recommendedMemoryGB * 1.5 { return false }
         return memoryGB < model.recommendedMemoryGB * 1.5

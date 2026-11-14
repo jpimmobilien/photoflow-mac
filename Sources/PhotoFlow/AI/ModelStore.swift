@@ -111,7 +111,12 @@ final class ModelStore: ObservableObject {
         defaultDiffusionModelID = UserDefaults.standard.string(forKey: "aiDefaultDiffusionModel") ?? hw.recommendedDiffusionModelID
         defaultUpscalerID = UserDefaults.standard.string(forKey: "aiDefaultUpscaler") ?? "realesrgan-x4plus"
         reload()
+        validationObserver = NotificationCenter.default.addObserver(forName: .aiModelValidationChanged, object: nil, queue: .main) { _ in
+            Task { @MainActor in ModelStore.shared.objectWillChange.send() }
+        }
     }
+
+    private var validationObserver: NSObjectProtocol?
 
     // MARK: State
 
@@ -149,8 +154,10 @@ final class ModelStore: ObservableObject {
 
     /// The diffusion model to use: the default if installed, otherwise any installed compatible one.
     var activeDiffusionModel: AIModelDescriptor? {
-        let list = installedDiffusionModels
-        return list.first { $0.id == defaultDiffusionModelID } ?? list.first
+        // Models that failed the on-device check come last; the default wins among the rest.
+        let list = installedDiffusionModels.sorted { (ModelValidation.record($0.id)?.passed == false ? 1 : 0) < (ModelValidation.record($1.id)?.passed == false ? 1 : 0) }
+        if let d = list.first(where: { $0.id == defaultDiffusionModelID }), ModelValidation.record(d.id)?.passed != false { return d }
+        return list.first
     }
 
     func installedUpscaler(scale: Int? = nil, denoise: Bool = false) -> AIModelDescriptor? {
@@ -210,6 +217,7 @@ final class ModelStore: ObservableObject {
         LaMaRemover.shared.unload()
         try? FileManager.default.removeItem(at: Self.directory(for: id))
         try? FileManager.default.removeItem(at: Self.partialDirectory(for: id))
+        ModelValidation.clear(id)
         installed[id] = nil
         states[id] = .notInstalled
     }

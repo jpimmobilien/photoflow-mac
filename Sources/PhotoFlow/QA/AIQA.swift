@@ -42,6 +42,8 @@ enum AIQA {
         case "ai-metadata": try metadataTest(out: try arg(0))
         case "ai-subject": try subject(input: try arg(0), out: try arg(1))
         case "ai-diag": try diagnose(try arg(0))
+        case "ai-acceptance": try acceptance(a)
+        case "ai-restart-check": try restartCheck(a)
         default: return false
         }
         return true
@@ -198,7 +200,7 @@ enum AIQA {
 
     static func t2i(out: String, steps: Int, repeatCheck: Bool) throws {
         let s = try settings("a cozy wooden cabin by a mountain lake at sunset, warm light in the windows", steps: steps)
-        print("t2i model=\(s.model.id) steps=\(steps) plan=\(AIHardware.current.diffusionPlan(safe: false).signature) gpu=\(AIHardware.current.base.gpuName ?? "-")")
+        print("t2i model=\(s.model.id) steps=\(steps) plan=\(AIHardware.current.diffusionPlan(for: s.model).title) gpu=\(AIHardware.current.base.gpuName ?? "-")")
         let before = MemoryMonitor.footprintBytes()
         let t0 = Date()
         let img = try AIOperations.textToImage(s, aspect: .square, seed: 42, token: AICancelToken(), onStep: stepLogger("t2i"))
@@ -386,6 +388,50 @@ enum AIQA {
                 }
             }
         }
+    }
+
+    /// PhotoFlow --qa ai-acceptance [check|quick|full] [--models id,id] [--out dir] [--source photo] [--steps n]
+    static func acceptance(_ a: [String]) throws {
+        func value(_ flag: String) -> String? { a.firstIndex(of: flag).flatMap { $0 + 1 < a.count ? a[$0 + 1] : nil } }
+        let mode = a.first { ["check", "quick", "full"].contains($0) } ?? "full"
+        let snap = ModelStoreSnapshot.current
+        var models: [AIModelDescriptor]
+        if let ids = value("--models") {
+            models = ids.split(separator: ",").compactMap { AIModelCatalog.model(String($0)) }
+        } else {
+            models = AIModelCatalog.diffusionModels.filter { snap.installedIDs.contains($0.id) && AIHardware.current.incompatibility(of: $0) == nil }
+            let rec = AIHardware.current.recommendedDiffusionModelID
+            models.sort { ($0.id == rec ? 0 : 1) < ($1.id == rec ? 0 : 1) }
+            models = Array(models.prefix(2))
+        }
+        let out = value("--out").map { URL(fileURLWithPath: ($0 as NSString).expandingTildeInPath) } ?? AIAcceptanceTest.defaultOutputDir()
+        var o = AIAcceptanceTest.Options(models: models, outDir: out)
+        if let st = value("--steps"), let n = Int(st) { o.steps = n }
+        o.sourcePhoto = value("--source").map { URL(fileURLWithPath: ($0 as NSString).expandingTildeInPath) }
+        switch mode {
+        case "check": o.consecutive = 2; o.extended = false; o.includeEditing = false
+        case "quick": o.consecutive = 10; o.includeEditing = false
+        default: break
+        }
+        print("acceptance \(mode): models \(models.map(\.id)) → \(out.path)")
+        let t = AIAcceptanceTest(options: o)
+        t.progress = { text, f in print(String(format: "  … %3.0f %% %@", f * 100, text)) }
+        t.run()
+        let r = t.report
+        print("ACCEPTANCE RESULT: \(r.passed ? "PASSED" : "FAILED") – \(r.entries.filter(\.passed).count)/\(r.entries.count) checks · report: \(out.appendingPathComponent("report.md").path)")
+        guard r.passed else { throw Failure(description: "acceptance test failed") }
+    }
+
+    /// PhotoFlow --qa ai-restart-check <report dir> [model id]
+    static func restartCheck(_ a: [String]) throws {
+        guard let dir = a.first.map({ URL(fileURLWithPath: ($0 as NSString).expandingTildeInPath) }) else { throw Failure(description: "missing report dir") }
+        let snap = ModelStoreSnapshot.current
+        let model = (a.count > 1 ? AIModelCatalog.model(a[1]) : nil)
+            ?? AIModelCatalog.diffusionModels.first { snap.installedIDs.contains($0.id) && AIHardware.current.incompatibility(of: $0) == nil }
+        guard let model else { throw Failure(description: "no diffusion model installed") }
+        let ok = AIAcceptanceTest.restartCheck(reportDir: dir, model: model)
+        print("RESTART CHECK: \(ok ? "PASSED" : "FAILED")")
+        guard ok else { throw Failure(description: "restart check failed") }
     }
 
     static func cancelTest() throws {

@@ -148,12 +148,13 @@ final class AIStudioModel: ObservableObject {
 
     private var token: AICancelToken?
 
-    var isBusy: Bool { job != nil }
+    var isBusy: Bool { job != nil || AIHardwareTestModel.shared.isRunning }
     var selectedResult: AIResult? { results.first { $0.id == selectedResultID } ?? results.first }
 
     var activeModel: AIModelDescriptor? {
         let store = ModelStore.shared
-        if let modelID, store.isInstalled(modelID), let m = AIModelCatalog.model(modelID), AIHardware.current.incompatibility(of: m) == nil { return m }
+        if let modelID, store.isInstalled(modelID), let m = AIModelCatalog.model(modelID), AIHardware.current.incompatibility(of: m) == nil,
+           ModelValidation.record(m.id)?.passed != false { return m }
         return store.activeDiffusionModel
     }
 
@@ -272,14 +273,18 @@ final class AIStudioModel: ObservableObject {
 
     private func record(_ image: CGImage, kind: AIOperationKind, settings s: GenerationSettings?, seed: UInt32?, strength: Double? = nil,
                         before: CGImage?, started: Date, note: String? = nil, modelOverride: AIModelDescriptor? = nil) {
-        let model = modelOverride ?? s?.model
+        let failover = s != nil ? DiffusionEngine.shared.lastFailover : nil
+        let model = modelOverride ?? failover ?? s?.model
         let c = AICreation(kind: kind, prompt: s?.prompt ?? "", negativePrompt: s?.negativePrompt ?? "", styleID: s?.style.id,
                            modelID: model?.id ?? "photoflow", modelName: model?.name ?? "PhotoFlow",
                            seed: seed, steps: s?.steps, guidance: s.map { Double($0.guidance) }, strength: strength,
                            quality: kind == .textToImage ? quality.rawValue : nil, aspect: kind == .textToImage ? aspect.rawValue : nil,
                            width: image.width, height: image.height, sourceName: source?.name, sourcePhotoID: source?.photoID,
                            parentID: source?.creationID, duration: Date().timeIntervalSince(started), note: note, fileName: "")
-        if DiffusionEngine.shared.lastRunFellBackToCPU {
+        if let failover, let requested = s?.model, failover.id != requested.id {
+            notice = String(localized: "\(requested.name) did not produce a valid image on this Mac, so PhotoFlow used \(failover.name) instead.")
+            modelID = failover.id
+        } else if DiffusionEngine.shared.lastRunFellBackToCPU {
             notice = String(localized: "The graphics processor reported an error; PhotoFlow reloaded the model and finished the image.")
         }
         do {

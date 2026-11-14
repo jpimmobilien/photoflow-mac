@@ -197,7 +197,11 @@ struct AIJobIndicator: View {
     private var detail: String {
         switch job.phase {
         case .loading:
-            return DiffusionEngine.shared.isLoaded ? String(localized: "Preparing…") : String(localized: "Loading model into memory…")
+            if DiffusionEngine.shared.isLoaded { return String(localized: "Preparing…") }
+            if let m = AIStudioModel.shared.activeModel, m.backend == .neuralEngine, ModelValidation.record(m.id) == nil {
+                return String(localized: "First start: macOS optimises the model for the Neural Engine – this can take a few minutes, once.")
+            }
+            return String(localized: "Loading model into memory…")
         case .steps(let s, let n, _):
             var t = String(localized: "Step \(s) of \(n)")
             if let r = job.remainingSeconds, r >= 1 { t += " · " + String(localized: "about \(r.formattedDuration) left") }
