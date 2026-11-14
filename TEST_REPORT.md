@@ -111,35 +111,81 @@ Memory stays flat from 100 to 1,000 photos (no growth/leak). Source photos 2400�
 - **macOS 13/14 and macOS 26**: tested on macOS 15.8 only.
 - WebP export is not available on the runner's macOS (ImageIO cannot encode WebP there); the option is hidden automatically.
 
-## 3. AI Studio (GitHub Actions, `ai-test.yml` / `ui.yml`, real downloads and real inference)
+## 3. AI Studio on GitHub's virtual Macs (`ai-test.yml`, real downloads and real inference)
 
-Runners: `macos-15-intel` (Intel Core i7-8700B VM, 14 GB, "Apple Paravirtual" GPU) and `macos-15` (Apple M1 VM, 7 GB).
+Runners: `macos-15-intel` (Intel Core i7-8700B VM, 14 GB, "Apple Paravirtual" GPU) and `macos-15` (Apple M1 VM, 7 GB,
+no Neural Engine, paravirtual GPU). Model: SD 2.1 (float16) + PhotoFlow's float32 VAE. These VMs are suitable for
+build, download, pipeline and UI tests – **not** for the final GPU / Neural Engine acceptance (see §4).
 
-| Test | Intel VM | Apple Silicon VM |
+**Where Core ML actually computes (`MLComputePlan`):** on both VMs "UNet: GPU 0 %, Neural Engine 0 %, CPU 100 % of
+1841 ops". So the results below verify the complete pipeline on the **CPU** of Apple Silicon and Intel – they do not
+verify the GPU or the Neural Engine of a real Mac.
+
+### 3.1 Before the fix (Apple's float16 VAE)
+
+| Symptom | Intel VM | Apple Silicon VM |
 |---|---|---|
-| Model catalog, hardware detection (`ai-info`) | ✓ SDXL correctly refused on Intel | ✓ "Apple M1 (Virtual)", tier compact |
-| Download + SHA-256 verification of all files (SD 2.1 fp16: 22 files / 2.58 GB in 36–90 s) | ✓ | ✓ |
-| Pause after 6 s → resume (resume data) | ✓ continued at the paused position | ✓ |
-| Corrupted copy detected by checksum | ✓ | ✓ |
-| In-app download with progress, verification, install (LaMa, UI tour) | – | ✓ |
-| Real-ESRGAN 2× / 4× (600×400 → 2400×1600, tiled) | ✓ consistency 0.010 / 0.011 | – |
-| Denoise / restore detail | ✓ | – |
-| Vision subject mask | ✓ coverage 0.79 (portrait) | ✓ (UI tour) |
-| LaMa object removal | ✓ outside pixels unchanged (diff 0.00000), 42 s on CPU | ✓ (UI tour) |
-| AI metadata (IPTC Digital Source Type read back) | ✓ | ✓ |
-| Text-to-image, SD 2.1, network blocked (`sandbox-exec deny network*`) | ✓ first run: correct 512×512 image (`ai-results/x86_64/t2i.png`), ~47 s/step on the VM GPU | ✗ VM GPU returns an empty image (detected and reported) |
-| Inpainting | ✓ outside the mask unchanged (0.00000) | ✗ (VM GPU) |
-| Cancel | ✓ stops at the next step (0.00 s after the request) | ✓ |
-| Memory over 3 runs | ✓ peak 5.97 → 6.03 → 5.98 GB, no growth, released after unload | – |
-| Offline: nothing contacted the network during generation | ✓ (sandbox) | ✓ |
+| Text to image | first image correct, then `GPU Hang` in the VAE decoder | uniform grey/brown images |
+| Cause (measured with `ai-diag`, details in `AI_FEHLERANALYSE.md`) | VAE kernels of 45–56 s on the slow VM GPU | float16 VAE computed wrongly by Core ML on the CPU (decoder std 0.070 instead of 0.094, encoder 4.70 instead of 7.25) |
 
-**Backend diagnostics (`ai-diag`, Intel, macOS 15):** text encoder correct on CPU and GPU; UNet fails on the CPU and
-runs on the GPU; VAE decoder/encoder run on the CPU but return values that differ strongly from the GPU (wrong). Hence
-PhotoFlow runs diffusion on the GPU only.
+### 3.2 After the fix (float32 VAE), runs 43571996554 / 43571998685 / 43574989144
 
-**What could not be verified:** GitHub's virtual Macs cannot run Stable Diffusion reliably on their GPUs – the Intel
-VM's paravirtual GPU produced one correct image and then hung in the VAE (later run: runner lost), the Apple-Silicon
-VM's GPU produced empty images, and its CPU produced noise. PhotoFlow detects such outputs and reports an error instead
-of showing them. Generation, image-to-image, generative fill, outpainting and background replacement on a real Mac
-GPU (Apple Silicon or Intel) therefore still need to be confirmed on real hardware. SDXL could not be tested (needs
-Apple Silicon with ≥ 16 GB; the runners have 7 GB).
+| Test | Intel VM | Apple Silicon VM (CPU) |
+|---|---|---|
+| Catalog, hardware detection | ✓ tier Intel, SDXL / Neural Engine models refused | ✓ "Apple M1 (Virtual)" |
+| Download + SHA-256 of all files, pause → resume | ✓ SD 2.1: 22 files / 2.58 GB in 76 s | ✓ 47 s |
+| float32 VAE download + Core ML compile | ✓ 5 s | ✓ 6 s |
+| Sampling (`PipelineDiagnostics`) | ✓ latent std 1.001 → 0.883, all finite | ✓ latent std 1.000 → 0.922, all finite |
+| Text to image, **network blocked** | ✓ valid 512×512 image, std 0.202; 50 s/step, 709 s incl. load (12 steps) | ✓ valid, std 0.188; 13.4 s/step, 235 s incl. load (15 steps) |
+| Image to image | ✓ std 0.180, 34 s/step | ✓ std 0.187, 16 s/step |
+| Generative fill | ✓ outside the mask unchanged (diff 0.00000), filled area valid | ✓ outside unchanged (0.00000), filled area valid |
+| Expand image | ✓ new area valid, original unchanged | ✓ |
+| Cancel → next generation | ✓ stops at the next step, next image valid | ✓ |
+| Memory, 3 runs | ✓ peak 5.97 / 6.03 / 6.00 GB, no growth, 58 MB after unload | ✓ no growth (+5 MB between run 2 and 3)¹ |
+| GPU hang | **none** (VAE now on the CPU in float32) | – |
+| LaMa, Real-ESRGAN 2×/4×, denoise, Vision mask, AI metadata | ✓ | ✓ (LaMa, Vision via UI tour) |
+
+¹ On the Apple-Silicon VM the process footprint stayed at 20–34 MB; Core ML's model memory is not included in this
+measure there, so it only shows that the app itself does not grow.
+
+Images were also inspected visually (`ai-results` branch): the text-to-image cabin/lake image and the inpainted plant
+are clean and plausible. The first tiled outpainting was technically valid but visually poor (tiles invented
+unrelated scenes); it was reworked (mirrored prefill, strength 0.82, Vision description of the photo as prompt, soft
+tile seams) – see §3.3.
+
+### 3.3 Outpainting rework
+
+Run 43580467708 (Apple Silicon VM, CPU, SD 2.1 + float32 VAE, 15 steps), all 14 tests passed. Expanding the
+macaw photo by 192 px on both sides: original area unchanged (diff 0.00000), new area valid (std 0.156); visually the
+scene continues naturally (foliage, bokeh and further macaws in the same light) without hard seams. Remaining
+weakness: on very wide extensions slight repetitions of the blurred mirror pre-fill can be visible in out-of-focus
+areas. Other results of the same run: text to image std 0.188, image to image std 0.187 (with an empty prompt the
+model reinterprets the birds noticeably – a prompt is recommended), generative fill (plant pot between the birds)
+clean with untouched surroundings, cancel → next image valid, no memory growth.
+
+## 4. Real Apple Silicon hardware (hardware acceptance test)
+
+**Status: pending.** No real Mac was available to this build environment. Per the acceptance requirement, the GPU and
+Neural-Engine paths are therefore **not** declared as successfully tested.
+
+The test is reproducible on any Mac:
+
+1. Install PhotoFlow from the DMG and open it.
+2. *AI Studio ▸ Model Management ▸ Hardware test ▸ Full test* (downloads the recommended model, Real-ESRGAN 2× and
+   LaMa if missing). Alternatively in Terminal:
+   `/Applications/PhotoFlow.app/Contents/Resources/ai_hardware_test.sh full`
+3. Quit and reopen PhotoFlow, then *Hardware test ▸ Test after restart*.
+4. The report is in `~/Pictures/PhotoFlow KI-Hardwaretest/<date>/` (`report.md`, `report.json`, `index.html`, every
+   generated image).
+
+What the full test covers: Core ML op placement and VAE in use; 3 load/unload cycles; 20 consecutive generations over
+5 prompts with content check (PNG written, reopened, validated, Vision labels compared with the prompt), interim
+results after 10 and 20 incl. memory growth; reproducibility (same seed → same image); 4 variants; 16:9 / 9:16 and 2×
+high resolution; cancel at step 3 followed by a generation; model switch (if two models are installed); image to
+image, generative fill (area outside the mask must be unchanged), object removal, expand (original preserved) and
+background replacement; final memory; one generation after an app restart. Runtimes, s/step, memory and error rate
+are written to the report.
+
+| Mac | Model | Result | s/step | Memory | Errors |
+|---|---|---|---|---|---|
+| – | – | pending | – | – | – |
