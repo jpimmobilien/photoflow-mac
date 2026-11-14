@@ -7,6 +7,10 @@ on:
         description: 'Skip probe/Real-ESRGAN and only convert LaMa'
         type: boolean
         default: false
+      only_vae:
+        description: 'Only convert the float32 VAE'
+        type: boolean
+        default: false
       only_catalog:
         description: 'Only rebuild the pinned file catalog (no conversions, no release uploads)'
         type: boolean
@@ -37,8 +41,28 @@ jobs:
           cd /tmp/pub && git config user.name github-actions && git config user.email github-actions@users.noreply.github.com
           git add -A && git commit -q -m "catalog ${GITHUB_SHA::7}" && git push -q origin ai-probe
 
+  vae:
+    if: ${{ inputs.only_vae }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install converter
+        run: |
+          pip install --quiet torch==2.4.1 --index-url https://download.pytorch.org/whl/cpu
+          pip install --quiet coremltools==8.1 numpy==1.26.4 diffusers==0.30.3 transformers==4.44.2 huggingface_hub==0.24.6 accelerate==0.33.0
+      - name: Convert sd-vae-ft-mse to Core ML (float32)
+        run: python3 Scripts/ai/convert_vae.py 2>&1 | tail -20
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload ai-models-v1 sd-vae-fp32.mlpackage.zip vae-manifest.json
+
   models:
-    if: ${{ !inputs.only_lama && !inputs.only_catalog }}
+    if: ${{ !inputs.only_lama && !inputs.only_catalog && !inputs.only_vae }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -70,7 +94,7 @@ jobs:
   lama:
     runs-on: ubuntu-latest
     needs: models
-    if: ${{ always() && !inputs.only_catalog && (needs.models.result == 'success' || needs.models.result == 'skipped') }}
+    if: ${{ always() && !inputs.only_catalog && !inputs.only_vae && (needs.models.result == 'success' || needs.models.result == 'skipped') }}
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
