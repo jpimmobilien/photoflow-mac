@@ -1,0 +1,7 @@
+# Runtime dependencies of the PhotoFlow video engine (Apple Silicon only – MLX has no Intel build).
+# Pinned with hashes in requirements.lock once verified in CI.
+mlx
+numpy
+tokenizers
+ftfy
+Pillow
