@@ -189,3 +189,41 @@ are written to the report.
 | Mac | Model | Result | s/step | Memory | Errors |
 |---|---|---|---|---|---|
 | – | – | pending | – | – | – |
+
+## 5. Video-KI (Stand 16.11.2026)
+
+### 5.1 Engine-Pipeline auf der CPU (GitHub `ubuntu-latest`, 16 GB, `video-test.yml`, Lauf vom 16.11., Commit 4c84103)
+
+Echte Inferenz mit Wan 2.1 T2V 1.3B (offizielle Gewichte, Apache 2.0) über die PhotoFlow-Video-Engine
+(diffusers 0.42.1, PyTorch 2.11 CPU, float32), 480×288, 25 Bilder, 12 Schritte. Diese Messung beweist den Ablauf
+(Textencoder → Sampling → VAE → Prüfung → Datei), **nicht** Geschwindigkeit oder Verhalten auf einer Mac-GPU.
+
+| Test | Ergebnis | Details |
+|---|---|---|
+| Engine-Start | ✓ | 4,7 s |
+| Text→Video („roter Oldtimer an der Küste bei Sonnenuntergang“) | ✓ gültig | 2218 s auf der CPU (Text 552 s, ~155 s/Schritt); Bildinhalt plausibel und stabil (Auto fährt ins Bild), Bild-zu-Bild-Differenz 0,014, Helligkeitsflackern 0,001 |
+| Wiederholung mit gleichem Seed | ✓ | bitgleich (Differenz 0,0) |
+| Video→Video (Stärke 0,6, „gleiche Szene im Winter“) | ✓ technisch gültig, **inhaltlich ungenügend** | Bewegung und Komposition erhalten, aber die Winter-Änderung wurde nicht umgesetzt und es entstanden grüne/rote Farbflecken. Bei 12 Schritten bleiben nur ~7 Entrauschungsschritte; auf der Mac-GPU mit 30 Schritten erneut zu prüfen |
+| Abbrechen | ✓ | nach 2 Schritten |
+| Generierung nach Abbruch („Wellen am Strand“) | ✓ gültig | Inhalt passend, aber eher illustrativ als fotorealistisch und nahezu statisch (Bilddifferenz 0,002) |
+| Speicher | ✓ | Spitze 14,2–14,7 GB (float32 auf der CPU; auf der GPU in bfloat16 deutlich weniger erwartet), kein Anwachsen über vier Generierungen |
+
+### 5.2 macOS-VM (Build, Vision/AVFoundation-Funktionen, Laufzeit-Installation)
+
+`video-mac.yml` auf `macos-15`: siehe Abschnitt 5.4 (wird nach dem Lauf ergänzt). Die Video-Generierung selbst passt
+nicht auf GitHubs Apple-Silicon-VM (7 GB Speicher, keine nutzbare GPU).
+
+### 5.3 Echte Apple-Silicon-Hardware
+
+**Ausstehend.** Der Apple-Silicon-Mac steht erst ab Weihnachten zur Verfügung. Bis dahin gilt keine Video-KI-Funktion
+als auf Apple Silicon getestet. Reproduzierbarer Test:
+
+```
+/Applications/PhotoFlow.app/Contents/Resources/video_hardware_test.sh        # 5 Clips + V2V/I2V/Hintergrund/Optimieren
+/Applications/PhotoFlow.app/Contents/Resources/video_hardware_test.sh 10     # 10 Clips in Folge
+```
+
+Der Test lädt fehlende Teile (Laufzeit ~160 MB, Textencoder 11,4 GB, Wan 2.1 1.3B 6,2 GB; ab 32 GB zusätzlich Wan 2.2
+5B), erzeugt die Clips mit Inhaltsprüfung, misst Zeit pro Schritt und Speicherspitzen, prüft Abbrechen, Video→Video,
+Bild→Video, Hintergrundersatz, Optimierung und eine Generierung in einem neuen Prozess (Neustart). Bericht:
+`~/Pictures/PhotoFlow KI-Hardwaretest/<Datum> Video/report.md`.

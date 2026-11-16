@@ -45,6 +45,8 @@ cp "$ROOT/Packaging/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 cp "$ROOT/Resources/BrandMark.png" "$APP/Contents/Resources/BrandMark.png"
 cp "$ROOT/Scripts/ai_hardware_test.sh" "$APP/Contents/Resources/ai_hardware_test.sh"
 chmod +x "$APP/Contents/Resources/ai_hardware_test.sh"
+cp "$ROOT/Scripts/video_hardware_test.sh" "$APP/Contents/Resources/video_hardware_test.sh"
+chmod +x "$APP/Contents/Resources/video_hardware_test.sh"
 # Video engine (Python sources, run by the separately downloaded runtime) + its pinned lock file
 mkdir -p "$APP/Contents/Resources/VideoEngine/photoflow_video"
 cp "$ROOT"/Resources/VideoEngine/photoflow_video/*.py "$APP/Contents/Resources/VideoEngine/photoflow_video/"
