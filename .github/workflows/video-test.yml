@@ -32,6 +32,7 @@ jobs:
             -o Resources/VideoEngine/requirements-macos-arm64.lock
           grep -E "^[a-z]" Resources/VideoEngine/requirements-macos-arm64.lock | sed 's/ *\\$//' | tee pins.txt
       - name: Runtime download list (python-build-standalone + wheels, URL/size/SHA-256)
+        env: { GITHUB_TOKEN: '${{ github.token }}' }
         run: |
           pip install --quiet packaging
           python3 Scripts/video/build_runtime_catalog.py Resources/VideoEngine/requirements-macos-arm64.lock ${{ inputs.exclude_newer }} runtime.json

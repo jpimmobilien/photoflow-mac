@@ -15,9 +15,20 @@ lock, exclude_newer, out = sys.argv[1:4]
 UA = {"User-Agent": "photoflow-runtime-catalog"}
 
 
-def get(url):
-    with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=60) as r:
-        return r.read()
+def get(url, tries=5):
+    import os, time
+    h = dict(UA)
+    if "api.github.com" in url and os.environ.get("GITHUB_TOKEN"):
+        h["Authorization"] = "Bearer " + os.environ["GITHUB_TOKEN"]
+    for i in range(tries):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=h), timeout=90) as r:
+                return r.read()
+        except Exception as e:  # noqa – transient 5xx / timeouts
+            if i == tries - 1:
+                raise
+            print("retry", url, e)
+            time.sleep(5 * (i + 1))
 
 
 # Pins and their allowed hashes from the uv lock
@@ -57,7 +68,9 @@ for name, ver in sorted(pins.items()):
     print(f"{u['size']/1e6:8.1f} MB  {u['filename']}")
 
 # python-build-standalone: newest release published before EXCLUDE_NEWER with a CPython 3.12 install_only build
-rels = json.loads(get("https://api.github.com/repos/astral-sh/python-build-standalone/releases?per_page=40"))
+rels = []
+for page in (1, 2, 3, 4):
+    rels += json.loads(get(f"https://api.github.com/repos/astral-sh/python-build-standalone/releases?per_page=10&page={page}"))
 pick = None
 for rel in rels:
     if rel["draft"] or rel["prerelease"] or rel["published_at"][:10] >= exclude_newer:
