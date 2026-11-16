@@ -160,9 +160,12 @@ enum VideoQA {
             let f = Double(i) / Double(max(1, n - 1))
             let zoom = 1.0 + 0.12 * f
             let shake = CGPoint(x: sin(Double(i) * 1.7) * 6, y: cos(Double(i) * 2.3) * 5)   // hand-held shake
-            var img = src.transformed(by: CGAffineTransform(scaleX: zoom, y: zoom))
-            img = img.transformed(by: CGAffineTransform(translationX: -img.extent.width * 0.04 * f + shake.x, y: shake.y))
-            img = VideoIO.fill(img, to: size)
+            // fill first (oversized by 10 %), then pan/zoom/shake inside it – no empty borders in the test footage
+            let base = VideoIO.fill(src, to: CGSize(width: size.width * 1.1, height: size.height * 1.1))
+            let c = CGPoint(x: base.extent.midX, y: base.extent.midY)
+            var img = base.transformed(by: CGAffineTransform(translationX: c.x, y: c.y).scaledBy(x: zoom, y: zoom).translatedBy(x: -c.x, y: -c.y))
+            img = img.transformed(by: CGAffineTransform(translationX: -size.width * 0.04 * f + shake.x - size.width * 0.05, y: shake.y - size.height * 0.05))
+            img = img.clampedToExtent().cropped(to: CGRect(origin: .zero, size: size))
             try VideoIO.writePNG(ctx.createCGImage(img, from: CGRect(origin: .zero, size: size))!, to: dir.appendingPathComponent(String(format: "f_%05d.png", i)))
         }
         try await VideoIO.writeMovie(frames: dir, fps: 25, to: out, metadata: nil)
