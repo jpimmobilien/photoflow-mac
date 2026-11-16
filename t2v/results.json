@@ -1,0 +1,281 @@
+{
+ "suite": "t2v",
+ "tests": [
+  {
+   "name": "worker start",
+   "passed": true,
+   "id": 1,
+   "event": "ready",
+   "engine": "1.0.0",
+   "torch": "2.11.0+cpu",
+   "diffusers": "0.42.1",
+   "transformers": "5.22.1",
+   "device": "cpu",
+   "dtype": "float32",
+   "mps": false,
+   "seconds": 4.7
+  },
+  {
+   "name": "load model",
+   "passed": true,
+   "id": 2,
+   "event": "result",
+   "loaded": "wan-t2v",
+   "seconds": 1.5,
+   "device": "cpu",
+   "dtype": "float32",
+   "peak_rss_gb": 0.6
+  },
+  {
+   "name": "t2v",
+   "passed": true,
+   "event": "result",
+   "frames": 25,
+   "width": 480,
+   "height": 288,
+   "seconds": 2218.11,
+   "valid": true,
+   "metrics": {
+    "frames": 25,
+    "worst_std": 0.40909895300865173,
+    "worst_noise": 0.052501894533634186,
+    "worst_extreme": 0.19398871527777778,
+    "mean_frame_diff": 0.013695590799519172,
+    "max_frame_diff": 0.024862131103873253,
+    "brightness_flicker": 0.0011643612524494529,
+    "sampled": [
+     {
+      "std": 0.4163834750652313,
+      "noise": 0.052501894533634186,
+      "extreme": 0.1089916087962963,
+      "mean": 0.504240095615387
+     },
+     {
+      "std": 0.4191202223300934,
+      "noise": 0.046149879693984985,
+      "extreme": 0.1263744212962963,
+      "mean": 0.49715808033943176
+     },
+     {
+      "std": 0.4278086721897125,
+      "noise": 0.0416145883500576,
+      "extreme": 0.19398871527777778,
+      "mean": 0.48200955986976624
+     },
+     {
+      "std": 0.419883131980896,
+      "noise": 0.034977033734321594,
+      "extreme": 0.09067563657407407,
+      "mean": 0.49216002225875854
+     },
+     {
+      "std": 0.40909895300865173,
+      "noise": 0.03623858839273453,
+      "extreme": 0.04657841435185185,
+      "mean": 0.5100415349006653
+     }
+    ]
+   },
+   "reasons": [],
+   "attention": {
+    "calls": 1530,
+    "chunked_calls": 0,
+    "max_chunks": 1
+   },
+   "peak_rss_gb": 14.16
+  },
+  {
+   "name": "t2v_repeat",
+   "passed": true,
+   "event": "result",
+   "frames": 25,
+   "width": 480,
+   "height": 288,
+   "seconds": 2179.56,
+   "valid": true,
+   "metrics": {
+    "frames": 25,
+    "worst_std": 0.40909895300865173,
+    "worst_noise": 0.052501894533634186,
+    "worst_extreme": 0.19398871527777778,
+    "mean_frame_diff": 0.013695590799519172,
+    "max_frame_diff": 0.024862131103873253,
+    "brightness_flicker": 0.0011643612524494529,
+    "sampled": [
+     {
+      "std": 0.4163834750652313,
+      "noise": 0.052501894533634186,
+      "extreme": 0.1089916087962963,
+      "mean": 0.504240095615387
+     },
+     {
+      "std": 0.4191202223300934,
+      "noise": 0.046149879693984985,
+      "extreme": 0.1263744212962963,
+      "mean": 0.49715808033943176
+     },
+     {
+      "std": 0.4278086721897125,
+      "noise": 0.0416145883500576,
+      "extreme": 0.19398871527777778,
+      "mean": 0.48200955986976624
+     },
+     {
+      "std": 0.419883131980896,
+      "noise": 0.034977033734321594,
+      "extreme": 0.09067563657407407,
+      "mean": 0.49216002225875854
+     },
+     {
+      "std": 0.40909895300865173,
+      "noise": 0.03623858839273453,
+      "extreme": 0.04657841435185185,
+      "mean": 0.5100415349006653
+     }
+    ]
+   },
+   "reasons": [],
+   "attention": {
+    "calls": 3012,
+    "chunked_calls": 0,
+    "max_chunks": 1
+   },
+   "peak_rss_gb": 14.16
+  },
+  {
+   "name": "reproducible (same seed)",
+   "passed": true,
+   "mean_abs_diff": 0.0
+  },
+  {
+   "name": "v2v",
+   "passed": true,
+   "event": "result",
+   "frames": 25,
+   "width": 480,
+   "height": 288,
+   "seconds": 1636.46,
+   "valid": true,
+   "metrics": {
+    "frames": 25,
+    "worst_std": 0.4044983685016632,
+    "worst_noise": 0.06380128860473633,
+    "worst_extreme": 0.16555989583333333,
+    "mean_frame_diff": 0.024051620236908395,
+    "max_frame_diff": 0.04772113263607025,
+    "brightness_flicker": 0.0026848595589399338,
+    "sampled": [
+     {
+      "std": 0.4110744893550873,
+      "noise": 0.06380128860473633,
+      "extreme": 0.11384548611111112,
+      "mean": 0.5143796801567078
+     },
+     {
+      "std": 0.41178032755851746,
+      "noise": 0.050235576927661896,
+      "extreme": 0.12273582175925926,
+      "mean": 0.506500244140625
+     },
+     {
+      "std": 0.4243320822715759,
+      "noise": 0.04651863873004913,
+      "extreme": 0.16555989583333333,
+      "mean": 0.48727935552597046
+     },
+     {
+      "std": 0.4155808985233307,
+      "noise": 0.03303828090429306,
+      "extreme": 0.09503038194444445,
+      "mean": 0.4902583360671997
+     },
+     {
+      "std": 0.4044983685016632,
+      "noise": 0.034867700189352036,
+      "extreme": 0.08167679398148148,
+      "mean": 0.5255143642425537
+     }
+    ]
+   },
+   "reasons": [],
+   "attention": {
+    "calls": 3984,
+    "chunked_calls": 0,
+    "max_chunks": 1
+   },
+   "peak_rss_gb": 14.7
+  },
+  {
+   "name": "cancel",
+   "passed": true,
+   "steps_before_cancel": 2
+  },
+  {
+   "name": "after_cancel",
+   "passed": true,
+   "event": "result",
+   "frames": 25,
+   "width": 480,
+   "height": 288,
+   "seconds": 2197.64,
+   "valid": true,
+   "metrics": {
+    "frames": 25,
+    "worst_std": 0.15254801511764526,
+    "worst_noise": 0.31376639008522034,
+    "worst_extreme": 0.01105324074074074,
+    "mean_frame_diff": 0.0021547598492664597,
+    "max_frame_diff": 0.00545934122055769,
+    "brightness_flicker": 0.00022325543977785856,
+    "sampled": [
+     {
+      "std": 0.15987549722194672,
+      "noise": 0.31376639008522034,
+      "extreme": 0.01105324074074074,
+      "mean": 0.8311901092529297
+     },
+     {
+      "std": 0.1534324437379837,
+      "noise": 0.2938753366470337,
+      "extreme": 0.009469039351851852,
+      "mean": 0.8290183544158936
+     },
+     {
+      "std": 0.15254801511764526,
+      "noise": 0.2899826765060425,
+      "extreme": 0.009541377314814815,
+      "mean": 0.8290725350379944
+     },
+     {
+      "std": 0.15329423546791077,
+      "noise": 0.29016438126564026,
+      "extreme": 0.009150752314814815,
+      "mean": 0.8291382789611816
+     },
+     {
+      "std": 0.15263088047504425,
+      "noise": 0.2875199615955353,
+      "extreme": 0.009924768518518519,
+      "mean": 0.8302986025810242
+     }
+    ]
+   },
+   "reasons": [],
+   "attention": {
+    "calls": 5922,
+    "chunked_calls": 0,
+    "max_chunks": 1
+   },
+   "peak_rss_gb": 14.72
+  },
+  {
+   "name": "unload",
+   "passed": true,
+   "id": 8,
+   "event": "result",
+   "unloaded": true,
+   "peak_rss_gb": 14.72
+  }
+ ],
+ "passed": true
+}
