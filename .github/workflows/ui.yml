@@ -1,9 +1,7 @@
 name: UI review screenshots
 
 on:
-  push:
-    branches: [main]
-    paths: ['Sources/**', 'Resources/**', 'Packaging/**', 'Scripts/**', '.github/workflows/ui.yml']
+  # manual only: macOS arm64 capacity is short and a push used to cancel the running review (concurrency group)
   workflow_dispatch:
     inputs:
       runner:
