@@ -87,7 +87,8 @@ final class ModelStore: ObservableObject {
     @Published var defaultDiffusionModelID: String { didSet { UserDefaults.standard.set(defaultDiffusionModelID, forKey: "aiDefaultDiffusionModel") } }
     @Published var defaultUpscalerID: String { didSet { UserDefaults.standard.set(defaultUpscalerID, forKey: "aiDefaultUpscaler") } }
 
-    nonisolated static let trustedHostSuffixes = ["huggingface.co", "hf.co", "github.com", "githubusercontent.com"]
+    // files.pythonhosted.org: PyPI wheels of the video engine runtime (pinned SHA-256, installed offline)
+    nonisolated static let trustedHostSuffixes = ["huggingface.co", "hf.co", "github.com", "githubusercontent.com", "files.pythonhosted.org"]
 
     nonisolated static var rootURL: URL {
         if let override = ProcessInfo.processInfo.environment["PHOTOFLOW_MODELS_DIR"], !override.isEmpty {
@@ -212,6 +213,7 @@ final class ModelStore: ObservableObject {
     }
 
     func uninstall(_ id: String) {
+        VideoEngineClient.shared.stop()
         DiffusionEngine.shared.unloadIfUsing(modelID: id)
         Upscaler.shared.unload()
         LaMaRemover.shared.unload()
@@ -226,7 +228,7 @@ final class ModelStore: ObservableObject {
         switch m.kind {
         case .diffusion: defaultDiffusionModelID = m.id
         case .upscaler: defaultUpscalerID = m.id
-        case .inpainter, .vae: break
+        case .inpainter, .vae, .video, .videoTextEncoder, .runtime: break
         }
     }
 
@@ -278,6 +280,10 @@ final class ModelStore: ObservableObject {
                     // SD 1.x / 2.x: also fetch the float32 VAE (small) – it decodes correctly on every compute unit.
                     if m.family == .sd15 || m.family == .sd21, let vae = AIModelCatalog.model("sd-vae-fp32"), !store.isInstalled(vae.id) {
                         store.download(vae)
+                    }
+                    // Video models need the engine runtime and the shared text encoder.
+                    for dep in m.dependencies {
+                        if let d = AIModelCatalog.model(dep), !store.isInstalled(dep), !store.state(dep).isBusy { store.download(d) }
                     }
                 case .failure(let error):
                     if control.cancelRequested {
@@ -432,6 +438,9 @@ struct ModelInstaller {
                 try fm.createDirectory(at: dst.deletingLastPathComponent(), withIntermediateDirectories: true)
                 try fm.moveItem(at: src, to: dst)
             }
+            if model.kind == .runtime {
+                try VideoRuntime.setup(in: staging) { _ in report(.installing) }
+            }
         }
         let record = InstalledModelRecord(id: model.id, revision: model.revision, version: model.version, installedAt: Date(),
                                           bytes: Self.directorySize(staging))
@@ -470,6 +479,19 @@ struct ModelInstaller {
             if (try? u.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink) == true {
                 throw ModelStoreError.archiveInvalid(String(localized: "unexpected link inside the archive"))
             }
+        }
+    }
+
+    /// Allows relative links that stay inside `dir` (python-build-standalone uses e.g. bin/python3 → python3.12).
+    static func rejectSymlinksOutside(_ dir: URL) throws {
+        let root = dir.resolvingSymlinksInPath().standardizedFileURL.path + "/"
+        let e = FileManager.default.enumerator(at: dir, includingPropertiesForKeys: [.isSymbolicLinkKey])
+        while let u = e?.nextObject() as? URL {
+            guard (try? u.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink) == true else { continue }
+            let dest = (try? FileManager.default.destinationOfSymbolicLink(atPath: u.path)) ?? "/"
+            if dest.hasPrefix("/") { throw ModelStoreError.archiveInvalid(String(localized: "unexpected link inside the archive")) }
+            let target = u.deletingLastPathComponent().appendingPathComponent(dest).standardizedFileURL.path
+            if !target.hasPrefix(root) { throw ModelStoreError.archiveInvalid(String(localized: "unexpected link inside the archive")) }
         }
     }
 

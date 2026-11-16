@@ -12,6 +12,34 @@ enum AIModelKind: String, Codable, Sendable {
     case upscaler       // Real-ESRGAN
     case inpainter      // LaMa (object removal)
     case vae            // float32 autoencoder for SD 1.x / 2.x
+    case video          // Wan video diffusion (video engine)
+    case videoTextEncoder // UMT5-XXL, shared by all Wan models
+    case runtime        // the video engine runtime (Python + PyTorch)
+
+    /// Groups in Model Management.
+    var category: AIModelCategory {
+        switch self {
+        case .diffusion, .upscaler, .inpainter, .vae: return .photo
+        case .video, .videoTextEncoder: return .video
+        case .runtime: return .runtime
+        }
+    }
+}
+
+enum AIModelCategory: String, CaseIterable, Identifiable, Sendable {
+    case photo, video, analysis, segmentation, tracking, audio, runtime
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .photo: return String(localized: "Photo models")
+        case .video: return String(localized: "Video models")
+        case .analysis: return String(localized: "Image analysis")
+        case .segmentation: return String(localized: "Segmentation")
+        case .tracking: return String(localized: "Tracking")
+        case .audio: return String(localized: "Audio")
+        case .runtime: return String(localized: "Engines")
+        }
+    }
 }
 
 enum DiffusionFamily: String, Codable, Sendable {
@@ -22,6 +50,7 @@ enum DiffusionFamily: String, Codable, Sendable {
 
 enum AICapability: String, Codable, CaseIterable, Sendable {
     case textToImage, imageToImage, inpainting, outpainting, objectRemoval, upscaling, denoise
+    case textToVideo, imageToVideo, videoToVideo, videoInpainting, videoOutpainting, videoReference
 
     var title: String {
         switch self {
@@ -32,6 +61,12 @@ enum AICapability: String, Codable, CaseIterable, Sendable {
         case .objectRemoval: return String(localized: "Object removal")
         case .upscaling: return String(localized: "Upscaling")
         case .denoise: return String(localized: "Noise reduction")
+        case .textToVideo: return String(localized: "Text to video")
+        case .imageToVideo: return String(localized: "Image to video")
+        case .videoToVideo: return String(localized: "Video to video")
+        case .videoInpainting: return String(localized: "Video fill & object removal")
+        case .videoOutpainting: return String(localized: "Video expansion")
+        case .videoReference: return String(localized: "Reference character")
         }
     }
 }
@@ -41,12 +76,14 @@ enum AIComputeBackend: String, Codable, Sendable {
     case gpu            // "original" attention, Core ML on the GPU (Metal)
     case neuralEngine   // "split_einsum" attention, Core ML on the Apple Neural Engine
     case any            // small CNNs (Real-ESRGAN, LaMa): CPU, GPU or Neural Engine
+    case pytorchMPS     // video engine: PyTorch on Metal (MPS)
 
     var title: String {
         switch self {
         case .gpu: return String(localized: "Graphics processor (Metal)")
         case .neuralEngine: return String(localized: "Neural Engine")
         case .any: return String(localized: "CPU / GPU / Neural Engine")
+        case .pytorchMPS: return String(localized: "Graphics processor (PyTorch · Metal)")
         }
     }
 }
@@ -94,6 +131,13 @@ struct AIModelDescriptor: Identifiable, Hashable, Sendable {
     let requiresAppleSilicon: Bool
     let hardwareNote: String
     let detail: String
+    /// Other catalog entries that must be installed for this one to work (video models: runtime + text encoder).
+    var dependencies: [String] = []
+    /// Engine model kind for the video engine (wan-t2v, wan-ti2v, wan-vace).
+    var videoKind: String? = nil
+    /// Video models: native frames per second, maximum frames per clip, supported sizes (w×h).
+    var videoFPS: Int = 0
+    var videoMaxFrames: Int = 0
 
     var downloadSize: Int64 { files.reduce(0) { $0 + $1.size } }
     /// Approximate space on disk once installed (archives are extracted and compiled).
@@ -275,12 +319,80 @@ enum AIModelCatalog {
                 hardwareNote: String(localized: "Runs on every supported Mac. Installed automatically with Stable Diffusion 1.5 / 2.1."),
                 detail: String(localized: "Turns the generated latent image into pixels in full precision. Apple's float16 decoder computes wrong values on the CPU (measured) – this one is correct on CPU, GPU and Neural Engine, and on Intel it keeps the decoder off the GPU.")))
         }
+        // MARK: Video (video engine: PyTorch on Metal, Apple Silicon, macOS 14+)
+        let wanLicense = AILicense(
+            name: "Apache 2.0", url: URL(string: "https://huggingface.co/Wan-AI/Wan2.1-T2V-1.3B/blob/main/LICENSE.txt")!,
+            privateUse: true, commercialUse: true,
+            summary: String(localized: "Permissive licence: private and commercial use of the model and of generated videos is allowed."),
+            restrictions: String(localized: "Keep the licence and notices when redistributing the model. You are responsible for how generated content is used (no deception, no use of real people without consent)."))
+        let videoDeps = ["video-runtime", "wan-umt5"]
+        let measuredNote = String(localized: "Memory figures are estimated from the model size; the hardware test on your Mac measures the real values.")
+        if let e = data["video-runtime"] {
+            let mixed = AILicense(name: "BSD / PSF / Apache 2.0 / MIT", url: URL(string: "https://github.com/jpimmobilien/photoflow-mac/blob/main/THIRD_PARTY_LICENSES.md")!,
+                                  privateUse: true, commercialUse: true,
+                                  summary: String(localized: "Python (PSF), PyTorch (BSD), diffusers / transformers / accelerate (Apache 2.0) and their dependencies – all permissive."),
+                                  restrictions: String(localized: "Keep the licence notices when redistributing."))
+            list.append(AIModelDescriptor(
+                id: "video-runtime", name: String(localized: "Video engine"), developer: "Python · PyTorch · Hugging Face diffusers",
+                kind: .runtime, family: nil, backend: .pytorchMPS, license: mixed, capabilities: [], files: e.files, isArchive: false,
+                revision: e.revision, version: e.revision,
+                sourcePage: URL(string: "https://github.com/huggingface/diffusers")!,
+                resolution: 0, scale: 1, minMemoryGB: 16, recommendedMemoryGB: 24, minMacOS: v14,
+                requiresAppleSilicon: true,
+                hardwareNote: String(localized: "Apple Silicon, macOS 14 or later. Runs the video models on the graphics processor (Metal). Installed automatically with the first video model."),
+                detail: String(localized: "A private Python with PyTorch and diffusers, used only by PhotoFlow. All packages are pinned and verified by checksum and installed without contacting any package server.")))
+        }
+        let (rt, ft) = files("wan-umt5")
+        list.append(AIModelDescriptor(
+            id: "wan-umt5", name: String(localized: "Video text encoder (UMT5-XXL)"), developer: "Google (UMT5) · packaged by Wan-AI",
+            kind: .videoTextEncoder, family: nil, backend: .pytorchMPS, license: wanLicense, capabilities: [], files: ft, isArchive: false,
+            revision: rt, version: "umt5-xxl · bfloat16",
+            sourcePage: URL(string: "https://huggingface.co/Wan-AI/Wan2.2-TI2V-5B-Diffusers")!,
+            resolution: 0, scale: 1, minMemoryGB: 16, recommendedMemoryGB: 24, minMacOS: v14,
+            requiresAppleSilicon: true,
+            hardwareNote: String(localized: "Shared by all video models; loaded only while a prompt is encoded (about 11 GB) and released immediately afterwards."),
+            detail: String(localized: "Understands the prompt (many languages, English works best).")))
+        let (r5, f5) = files("wan21-t2v-1.3b")
+        list.append(AIModelDescriptor(
+            id: "wan21-t2v-1.3b", name: "Wan 2.1 · 1.3B", developer: "Wan-AI (Alibaba)",
+            kind: .video, family: nil, backend: .pytorchMPS, license: wanLicense, capabilities: [.textToVideo, .videoToVideo], files: f5, isArchive: false,
+            revision: r5, version: "2.1 T2V 1.3B · 480p · 16 fps",
+            sourcePage: URL(string: "https://huggingface.co/Wan-AI/Wan2.1-T2V-1.3B-Diffusers")!,
+            resolution: 832, scale: 1, minMemoryGB: 16, recommendedMemoryGB: 24, minMacOS: v14,
+            requiresAppleSilicon: true,
+            hardwareNote: String(localized: "Apple Silicon with 16 GB memory or more.") + " " + measuredNote,
+            detail: String(localized: "Compact video model: text to video and video to video at 480p, up to 5 seconds per clip."),
+            dependencies: videoDeps, videoKind: "wan-t2v", videoFPS: 16, videoMaxFrames: 81))
+        let (r6, f6) = files("wan22-ti2v-5b")
+        list.append(AIModelDescriptor(
+            id: "wan22-ti2v-5b", name: "Wan 2.2 · 5B", developer: "Wan-AI (Alibaba)",
+            kind: .video, family: nil, backend: .pytorchMPS, license: wanLicense, capabilities: [.textToVideo, .imageToVideo], files: f6, isArchive: false,
+            revision: r6, version: "2.2 TI2V 5B · 720p · 24 fps",
+            sourcePage: URL(string: "https://huggingface.co/Wan-AI/Wan2.2-TI2V-5B-Diffusers")!,
+            resolution: 1280, scale: 1, minMemoryGB: 32, recommendedMemoryGB: 64, minMacOS: v14,
+            requiresAppleSilicon: true,
+            hardwareNote: String(localized: "Apple Silicon with 32 GB memory or more; 720p clips need 64 GB.") + " " + measuredNote,
+            detail: String(localized: "Higher quality: text to video and animating a photo (image to video), up to 5 seconds at 24 fps."),
+            dependencies: videoDeps, videoKind: "wan-ti2v", videoFPS: 24, videoMaxFrames: 121))
+        let (r7, f7) = files("wan21-vace-1.3b")
+        list.append(AIModelDescriptor(
+            id: "wan21-vace-1.3b", name: "Wan 2.1 VACE · 1.3B", developer: "Wan-AI (Alibaba) · VACE (ali-vilab)",
+            kind: .video, family: nil, backend: .pytorchMPS, license: wanLicense, capabilities: [.videoInpainting, .videoOutpainting, .videoReference], files: f7, isArchive: false,
+            revision: r7, version: "2.1 VACE 1.3B · 480p · 16 fps",
+            sourcePage: URL(string: "https://huggingface.co/Wan-AI/Wan2.1-VACE-1.3B-diffusers")!,
+            resolution: 832, scale: 1, minMemoryGB: 16, recommendedMemoryGB: 24, minMacOS: v14,
+            requiresAppleSilicon: true,
+            hardwareNote: String(localized: "Apple Silicon with 16 GB memory or more.") + " " + measuredNote,
+            detail: String(localized: "Video editing model: fills or removes masked regions over time, expands the frame and follows reference images."),
+            dependencies: videoDeps, videoKind: "wan-vace", videoFPS: 16, videoMaxFrames: 81))
+
         return list.filter { !$0.files.isEmpty }
     }()
 
     static func model(_ id: String) -> AIModelDescriptor? { all.first { $0.id == id } }
     static var diffusionModels: [AIModelDescriptor] { all.filter { $0.kind == .diffusion } }
     static var upscalers: [AIModelDescriptor] { all.filter { $0.kind == .upscaler } }
+    static var videoModels: [AIModelDescriptor] { all.filter { $0.kind == .video } }
 }
 
 /// Decoded form of the embedded catalog JSON (`AIModelCatalogData.json`).
