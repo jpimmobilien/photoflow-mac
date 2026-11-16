@@ -40,8 +40,9 @@ echo "== Abnahmetest ($RUNS Clips)" | tee -a "$LOG"
 "$BIN" --qa video-acceptance --runs "$RUNS" --out "$OUT" 2>&1 | grep -vE "^\s+[0-9.]+ %" | tee -a "$LOG"
 RC=${PIPESTATUS[0]}
 
-echo "== Neustart-Test (neuer Prozess, eine Generierung)" | tee -a "$LOG"
-"$BIN" --qa video-t2v "$OUT/after_restart.mp4" 832 480 33 30 2>&1 | tail -5 | tee -a "$LOG"
+echo "== Neustart-Test: neuer Prozess, eine Generierung OHNE Netzwerk (sandbox-exec deny network)" | tee -a "$LOG"
+sandbox-exec -p '(version 1)(allow default)(deny network*)' "$BIN" --qa video-t2v "$OUT/after_restart_offline.mp4" 832 480 33 30 2>&1 | tail -5 | tee -a "$LOG"
+[[ ${PIPESTATUS[0]} == 0 ]] && echo "| Neustart + offline | ✓ | neuer Prozess, Netzwerk gesperrt |" >> "$OUT/report.md" || echo "| Neustart + offline | ✗ | siehe console.log |" >> "$OUT/report.md"
 
 echo
 echo "Fertig. Bericht: $OUT/report.md"
