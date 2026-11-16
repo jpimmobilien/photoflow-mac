@@ -13,7 +13,12 @@ HF = {
     "sd21-ane": ("apple/coreml-stable-diffusion-2-1-base-palettized", "split_einsum_v2/compiled/", []),
     "sd15-ane": ("apple/coreml-stable-diffusion-v1-5-palettized", "split_einsum_v2/compiled/", ["SafetyChecker.mlmodelc"]),
     "sd15-fp16": ("apple/coreml-stable-diffusion-v1-5", "original/compiled/", ["UnetChunk1.mlmodelc", "UnetChunk2.mlmodelc", "SafetyChecker.mlmodelc"]),
+    # Video (Wan, Apache 2.0, diffusers layout) – run by the PhotoFlow video engine (PyTorch/Metal)
+    "wan21-t2v-1.3b": ("Wan-AI/Wan2.1-T2V-1.3B-Diffusers", "", ["assets", "examples"]),
+    "wan21-vace-1.3b": ("Wan-AI/Wan2.1-VACE-1.3B-diffusers", "", ["assets", "examples"]),
+    "wan22-ti2v-5b": ("Wan-AI/Wan2.2-TI2V-5B-Diffusers", "", ["assets", "examples"]),
 }
+ONLY = [m for m in os.environ.get("CATALOG_ONLY", "").split(",") if m]
 AGENT = {"User-Agent": "model-catalog-builder"}
 
 
@@ -34,6 +39,7 @@ def sha_of_url(url):
 
 out = {}
 for mid, (repo, prefix, exclude) in HF.items():
+    if ONLY and mid not in ONLY: continue
     info = get_json(f"https://huggingface.co/api/models/{repo}?blobs=true")
     rev = info["sha"]
     files = []
@@ -53,5 +59,6 @@ for mid, (repo, prefix, exclude) in HF.items():
     out[mid] = {"repo": repo, "revision": rev, "license": (info.get("cardData") or {}).get("license"), "total": total, "files": files}
     print(f"{mid}: {len(files)} files, {total/1e9:.2f} GB, rev {rev[:10]}")
 
-os.makedirs("catalog", exist_ok=True)
-json.dump(out, open("catalog/files.json", "w"), indent=1)
+dest = os.environ.get("CATALOG_OUT", "catalog/files.json")
+os.makedirs(os.path.dirname(dest) or ".", exist_ok=True)
+json.dump(out, open(dest, "w"), indent=1)

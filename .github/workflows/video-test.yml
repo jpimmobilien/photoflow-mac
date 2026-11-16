@@ -1,0 +1,110 @@
+name: Video KI engine (real models)
+
+# Real inference with the PhotoFlow video engine, driven through its JSON-lines worker exactly like the app.
+# Linux runners compute on the CPU: this validates the numerical pipeline (text encoding, sampling, VAE,
+# frames, validation, cancel, memory release), NOT Apple GPU performance – see TEST_REPORT.md.
+on:
+  workflow_dispatch:
+    inputs:
+      suite: { description: 't2v | ti2v | vace | lock-only', default: 't2v' }
+      width: { default: '480' }
+      height: { default: '288' }
+      frames: { default: '25' }
+      steps: { default: '12' }
+      exclude_newer: { description: 'only package versions published before this date', default: '2026-10-31' }
+
+permissions:
+  contents: write
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Resolve hashed lock for macOS arm64 / Python 3.12
+        run: |
+          ~/.local/bin/uv pip compile Resources/VideoEngine/requirements.in \
+            --python-version 3.12 --python-platform aarch64-apple-darwin \
+            --exclude-newer ${{ inputs.exclude_newer }} --generate-hashes \
+            -o Resources/VideoEngine/requirements-macos-arm64.lock
+          grep -E "^[a-z]" Resources/VideoEngine/requirements-macos-arm64.lock | sed 's/ *\\$//' | tee pins.txt
+      - name: Catalog entries for the video models (revision, size, SHA-256)
+        env: { CATALOG_ONLY: 'wan21-t2v-1.3b,wan21-vace-1.3b,wan22-ti2v-5b', CATALOG_OUT: 'video-catalog/files.json' }
+        run: python3 Scripts/ai/build_catalog.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lock
+          path: |
+            Resources/VideoEngine/requirements-macos-arm64.lock
+            pins.txt
+            video-catalog/files.json
+      - name: Publish lock + catalog (branch video-results)
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          set -e
+          D=/tmp/pub; git clone -q "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" $D
+          cd $D
+          if git ls-remote --exit-code --heads origin video-results >/dev/null; then git checkout -q video-results
+          else git checkout -q --orphan video-results; git rm -rqf . >/dev/null 2>&1 || true; fi
+          mkdir -p lock && cp $GITHUB_WORKSPACE/Resources/VideoEngine/requirements-macos-arm64.lock $GITHUB_WORKSPACE/pins.txt $GITHUB_WORKSPACE/video-catalog/files.json lock/
+          git config user.name github-actions && git config user.email github-actions@users.noreply.github.com
+          git add -A && git commit -q -m "lock ${GITHUB_SHA::7}" && git push -q origin HEAD:video-results
+
+  test:
+    if: ${{ inputs.suite != 'lock-only' }}
+    needs: lock
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost
+          df -h / | tail -1; free -g | head -2; nproc
+      - uses: actions/download-artifact@v4
+        with: { name: lock }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: Install the same package versions as the Mac lock (CPU torch on Linux)
+        run: |
+          TV=$(grep -E "^torch==" pins.txt | cut -d= -f3)
+          pip install --quiet "torch==$TV" --index-url https://download.pytorch.org/whl/cpu
+          grep -vE "^torch==" pins.txt > pins-rest.txt
+          pip install --quiet -r pins-rest.txt huggingface_hub
+          pip list 2>/dev/null | grep -iE "^(torch|diffusers|transformers|accelerate|numpy) "
+          sudo apt-get install -y -qq ffmpeg >/dev/null || true
+      - name: Download model (pinned revision from the catalog)
+        run: |
+          python3 - <<'EOF'
+          import json, os
+          from huggingface_hub import snapshot_download
+          cat = json.load(open("video-catalog/files.json"))
+          mid = {"t2v": "wan21-t2v-1.3b", "ti2v": "wan22-ti2v-5b", "vace": "wan21-vace-1.3b"}["${{ inputs.suite }}"]
+          e = cat[mid]
+          files = [f["path"] for f in e["files"]]
+          p = snapshot_download(e["repo"], revision=e["revision"], allow_patterns=files, local_dir="/tmp/model")
+          print(mid, e["revision"], f'{e["total"]/1e9:.2f} GB', len(files), "files")
+          EOF
+          du -sh /tmp/model; df -h / | tail -1
+      - name: Test images
+        run: mkdir -p Tests/Fixtures && curl -sfL --max-time 30 -o Tests/Fixtures/video_source.jpg "https://r0k.us/graphics/kodak/kodak/kodim23.png" || true
+      - name: Engine test (${{ inputs.suite }})
+        run: |
+          mkdir -p /tmp/vout
+          /usr/bin/time -v python3 Scripts/video/ci_video_test.py --suite ${{ inputs.suite }} --model-dir /tmp/model \
+            --out /tmp/vout/${{ inputs.suite }} --width ${{ inputs.width }} --height ${{ inputs.height }} \
+            --frames ${{ inputs.frames }} --steps ${{ inputs.steps }} 2>&1 | tee /tmp/vout/log.txt
+      - name: Publish results (branch video-results)
+        if: always()
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          set -e
+          D=/tmp/pub; git clone -q --branch video-results "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" $D
+          S=${{ inputs.suite }}; rm -rf $D/$S; mkdir -p $D/$S
+          cp /tmp/vout/log.txt $D/$S/ 2>/dev/null || true
+          cd /tmp/vout/$S 2>/dev/null && cp -f *.json *.png *.mp4 $D/$S/ 2>/dev/null || true
+          cd $D && git config user.name github-actions && git config user.email github-actions@users.noreply.github.com
+          git add -A && git commit -q -m "video $S ${GITHUB_SHA::7}" && git push -q origin HEAD:video-results

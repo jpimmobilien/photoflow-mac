@@ -1,0 +1,11 @@
+# PhotoFlow video engine – top-level dependencies. The app installs the hashed lock file
+# (requirements-macos-arm64.lock) generated from this list by .github/workflows/video-test.yml.
+torch
+diffusers
+transformers
+accelerate
+safetensors
+sentencepiece
+ftfy
+numpy
+pillow
