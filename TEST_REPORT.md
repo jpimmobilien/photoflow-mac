@@ -238,3 +238,20 @@ Der Test lädt fehlende Teile (Laufzeit ~160 MB, Textencoder 11,4 GB, Wan 2.1 1.
 5B), erzeugt die Clips mit Inhaltsprüfung, misst Zeit pro Schritt und Speicherspitzen, prüft Abbrechen, Video→Video,
 Bild→Video, Hintergrundersatz, Optimierung und eine Generierung in einem neuen Prozess (Neustart). Bericht:
 `~/Pictures/PhotoFlow KI-Hardwaretest/<Datum> Video/report.md`.
+
+## 6. Foto-KI-Stapeloptimierung und intelligenter Zuschnitt (`--qa eval-photo-batch`, macOS-VM, 16.11.2026)
+
+51 echte Fotos (Kodak-Testbilder, Picsum: Landschaften, Porträts, Gruppen, Architektur, Produkte, Innenräume), Lauf
+43950363776 auf `macos-15-intel`, 205 s für Analyse + Zuschnitte aller Fotos.
+
+| Prüfung | Ergebnis |
+|---|---|
+| Individuelle Werte statt eines festen Satzes | ✓ 51 verschiedene Einstellungssätze bei 51 Fotos; Belichtung −1,50 … +1,17 EV (σ 0,43), Kontrast −16 … +30 (σ 9,7), Farbtemperatur −34 … +22 (σ 12,2) |
+| Gesichter bleiben im 16:9-Zuschnitt vollständig | ✓ 5 von 5 Fotos (vor der Korrektur 4 von 6, siehe unten) |
+| Zuschnitt folgt dem Motiv | ✓ Sichtprüfung des Kontaktbogens: 9:16 sitzt auf Person/Fahrrad/Paar, 1:1 und 16:9 behalten Horizont und Hauptmotiv |
+| Freier Zuschnitt (bestes Format je Foto) | konservativ: bei allen 51 Fotos wurde das Originalformat behalten. Ein anderes Format muss einen deutlichen Kompositionsgewinn bringen, weil jeder Zuschnitt Bildfläche kostet |
+
+**Gefundene und behobene Fehler:** (1) Wenn selbst der größte Zuschnitt eines Formats kleiner als 45 % der Bildfläche ist
+(9:16 aus Querformat, 16:9 aus Hochformat), wurde nicht gesucht, sondern immer mittig geschnitten – dabei wurde z. B. das
+Gesicht einer Statue abgeschnitten. (2) Nur das größte Gesicht wurde geschützt; bei Gruppenfotos konnten weitere
+Gesichter angeschnitten werden. Beides ist behoben (Commit „Smart crop: search all positions …“).
