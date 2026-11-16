@@ -210,8 +210,19 @@ Echte Inferenz mit Wan 2.1 T2V 1.3B (offizielle Gewichte, Apache 2.0) über die 
 
 ### 5.2 macOS-VM (Build, Vision/AVFoundation-Funktionen, Laufzeit-Installation)
 
-`video-mac.yml` auf `macos-15`: siehe Abschnitt 5.4 (wird nach dem Lauf ergänzt). Die Video-Generierung selbst passt
-nicht auf GitHubs Apple-Silicon-VM (7 GB Speicher, keine nutzbare GPU).
+`video-mac.yml`, Lauf 43944139988 auf `macos-15-intel` (die Apple-Silicon-VMs waren an diesem Abend nicht verfügbar).
+Testmaterial: 4-s-Clip (960×540, 25 fps) aus einem Porträtfoto mit simulierter Handkamera-Bewegung.
+
+| Test | Ergebnis | Details |
+|---|---|---|
+| Build der App | ✓ | nach Behebung von zwei Kompilierfehlern in der Video-KI (Commit „Fix build“) |
+| Hintergrund ersetzen durch Bild (Vision-Personenmaske) | ✓ | 100 Bilder, 260 s; Helligkeitsflackern 0,0006; 0 von 10 Stichprobenbildern ungültig; Motiv farblich unverändert |
+| Hintergrund weichzeichnen | ✓ | 254 s; Flackern 0,0027; 0/10 ungültig |
+| Video optimieren + stabilisieren | ✓ | 11 s; Wackeln vorher 5,57 px/Bild, nachher 0,44 px/Bild; 2 Schlüsselbilder, keine Szenenwechsel |
+
+Sichtprüfung: Die Personenmaske folgt dem Motiv sauber; feine Details wie der Blumenstrauß werden teilweise als
+Hintergrund behandelt (bekannte Grenze der Vision-Personensegmentierung). Die Video-Generierung selbst passt nicht auf
+GitHubs Apple-Silicon-VM (7 GB Speicher, keine nutzbare GPU).
 
 ### 5.3 Echte Apple-Silicon-Hardware
 

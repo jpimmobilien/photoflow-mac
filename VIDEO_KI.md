@@ -90,8 +90,8 @@ damit macOS den gesamten Speicher zurückbekommt.
 | Videos generieren (Text→Video) | verfügbar (Apple Silicon ≥ 16 GB, macOS 14) | Wan 2.1 1.3B / Wan 2.2 5B | CI: CPU‑Pipeline (siehe TEST_REPORT §5); **echte Mac‑GPU: ausstehend** |
 | Bilder animieren (Bild→Video) | verfügbar (≥ 32 GB) | Wan 2.2 5B | **ausstehend** |
 | Video→Video | verfügbar | Wan 2.1 1.3B, Stärke 20–90 % | CI: CPU‑Pipeline; Mac‑GPU ausstehend |
-| Hintergrund ersetzen | verfügbar (alle Macs) | Apple Vision, zeitlich geglättete Maske, Bild/Video/Unschärfe/Farbe | Build ✓; Ergebnis auf Hardware ausstehend |
-| Video optimieren + Stabilisieren | verfügbar (alle Macs) | Szenen‑/Schlüsselbildanalyse, Interpolation, Vision‑Registrierung | Build ✓; Ergebnis auf Hardware ausstehend |
+| Hintergrund ersetzen | verfügbar (alle Macs) | Apple Vision, zeitlich geglättete Maske, Bild/Video/Unschärfe/Farbe | macOS-VM ✓ (Flackern 0,0006, TEST_REPORT §5.2); Apple-Silicon-Hardware ausstehend |
+| Video optimieren + Stabilisieren | verfügbar (alle Macs) | Szenen‑/Schlüsselbildanalyse, Interpolation, Vision‑Registrierung | macOS-VM ✓ (Wackeln 5,57 → 0,44 px/Bild); Apple-Silicon-Hardware ausstehend |
 | Objekte/Personen aus Videos entfernen | **nicht verfügbar** | VACE im Katalog; Masken‑Tracking‑UI und Hardware‑Abnahme fehlen | – |
 | Personen austauschen / Charaktertransformation | **nicht verfügbar** | VACE‑Referenz + Pose wäre der Weg; zuverlässige Identitätskonsistenz ist mit 1,3B‑Modellen nicht gegeben | – |
 | Video‑Upscaling, Video‑Restaurierung | **nicht verfügbar** | bildweises Real‑ESRGAN flackert; kein geprüfter zeitlich konsistenter Upscaler | – |
