@@ -1,0 +1,19 @@
+name: video-probe
+on:
+  workflow_dispatch:
+    inputs:
+      runner: { description: 'runner', default: 'macos-15' }
+jobs:
+  probe:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: system
+        run: sw_vers; sysctl -n machdep.cpu.brand_string hw.memsize; system_profiler SPDisplaysDataType | head -30
+      - name: install
+        run: pip install mlx==0.29.3 numpy torch==2.8.0 2>&1 | tail -3 || pip install mlx numpy torch 2>&1 | tail -3
+      - name: probe
+        run: python Scripts/video/backend_probe.py | tee probe.json
