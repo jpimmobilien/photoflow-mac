@@ -23,7 +23,12 @@ tiffutil -cathidpicheck "$ROOT/Packaging/dmg-background.png" "$ROOT/Packaging/dm
 
 SIZE_MB=$(( $(du -sm "$STAGE" | cut -f1) + 40 ))
 hdiutil detach "/Volumes/$VOL" -quiet 2>/dev/null || true
-hdiutil create -srcfolder "$STAGE" -volname "$VOL" -fs HFS+ -format UDRW -size "${SIZE_MB}m" "$RW" -quiet
+# hdiutil occasionally fails on CI machines ("Resource busy"); retry a few times and show the reason
+for attempt in 1 2 3 4; do
+    if hdiutil create -srcfolder "$STAGE" -volname "$VOL" -fs HFS+ -format UDRW -size "${SIZE_MB}m" "$RW" -quiet 2> "$WORK/hdiutil.err"; then break; fi
+    echo "  hdiutil create failed (attempt $attempt): $(cat "$WORK/hdiutil.err")"
+    rm -f "$RW"; [ "$attempt" = 4 ] && exit 1; sleep $((attempt * 5))
+done
 
 echo "▸ Arranging the window"
 DEVICE="$(hdiutil attach -readwrite -noverify -noautoopen "$RW" | grep -E '^/dev/' | head -1 | awk '{print $1}')"
