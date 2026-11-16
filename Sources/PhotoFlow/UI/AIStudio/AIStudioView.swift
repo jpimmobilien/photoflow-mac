@@ -48,15 +48,10 @@ struct AIStudioRail: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: DS.Space.xs) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(DS.Palette.magic)
-                Text("AI Studio").font(DS.Font.title3).foregroundStyle(DS.Palette.textPrimary)
-            }
-            .padding(.horizontal, DS.Space.s)
-            .padding(.top, DS.Space.s)
-            .padding(.bottom, DS.Space.xs)
+            KIAreaSwitcher()
+                .padding(.horizontal, DS.Space.xxs)
+                .padding(.top, DS.Space.xs)
+                .padding(.bottom, DS.Space.xs)
             ForEach(AIStudioModel.Section.allCases) { s in
                 if s == .creations {
                     Rectangle().fill(DS.Palette.hairline).frame(height: 0.5).padding(.vertical, DS.Space.xs).padding(.horizontal, DS.Space.s)

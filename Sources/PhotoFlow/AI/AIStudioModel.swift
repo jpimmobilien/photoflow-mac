@@ -148,7 +148,7 @@ final class AIStudioModel: ObservableObject {
 
     private var token: AICancelToken?
 
-    var isBusy: Bool { job != nil || AIHardwareTestModel.shared.isRunning }
+    var isBusy: Bool { job != nil || AIHardwareTestModel.shared.isRunning || AIJobManager.shared.current != nil }
     var selectedResult: AIResult? { results.first { $0.id == selectedResultID } ?? results.first }
 
     var activeModel: AIModelDescriptor? {

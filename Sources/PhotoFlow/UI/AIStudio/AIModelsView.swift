@@ -18,12 +18,17 @@ struct AIModelsView: View {
                 hardwareCard
                 AIHardwareTestCard()
                 downloads
+                categoryTitle(.photo)
                 section(String(localized: "Image generation & editing"), AIModelCatalog.diffusionModels)
                 section(String(localized: "Upscaling & restoration"), AIModelCatalog.upscalers)
                 section(String(localized: "Object removal"), AIModelCatalog.all.filter { $0.kind == .inpainter })
                 section(String(localized: "Image decoding"), AIModelCatalog.all.filter { $0.kind == .vae })
+                categoryTitle(.video)
+                section(String(localized: "Video generation & editing"), AIModelCatalog.videoModels)
+                section(String(localized: "Shared video components"), AIModelCatalog.all.filter { $0.kind == .runtime || $0.kind == .videoTextEncoder })
+                categoryTitle(.analysis)
                 builtInCard
-                Text("Models are downloaded only from their official publishers (Hugging Face repositories of Apple and Stability AI) or from PhotoFlow's public GitHub release of Core ML conversions. Every file is pinned to an exact version and checked with SHA-256 before it is used. Models contain no executable code.")
+                Text("Models are downloaded only from their official publishers (Hugging Face repositories of Apple, Stability AI and Wan-AI) or from PhotoFlow's public GitHub release of Core ML conversions. Every file is pinned to an exact version and checked with SHA-256 before it is used. Models contain no executable code. The video engine's Python packages come from PyPI and python-build-standalone, are pinned and checksum-verified the same way, and are installed without a package manager contacting the network.")
                     .font(DS.Font.caption).foregroundStyle(DS.Palette.textTertiary).fixedSize(horizontal: false, vertical: true)
             }
             .padding(.bottom, DS.Space.xl)
@@ -113,6 +118,12 @@ struct AIModelsView: View {
         }
     }
 
+    private func categoryTitle(_ c: AIModelCategory) -> some View {
+        Text(c == .analysis ? String(localized: "Image analysis, segmentation & tracking") : c.title)
+            .font(DS.Font.title1).foregroundStyle(DS.Palette.textPrimary)
+            .padding(.top, DS.Space.s)
+    }
+
     private var builtInCard: some View {
         VStack(alignment: .leading, spacing: DS.Space.s) {
             GroupHeader(title: String(localized: "Built into macOS"), detail: nil)
@@ -124,6 +135,10 @@ struct AIModelsView: View {
                         PromptAssistant.languageModelAvailable ? String(localized: "Available on this Mac.")
                             : String(localized: "Not available on this Mac (needs macOS 26 with Apple Intelligence). Rule-based templates are used instead."),
                         PromptAssistant.languageModelAvailable)
+                builtIn("figure.walk.motion", String(localized: "Person segmentation & tracking in videos (Apple Vision)"),
+                        String(localized: "Available – used for video background replacement and to follow people and objects from frame to frame."), true)
+                builtIn("waveform", String(localized: "Audio"),
+                        String(localized: "Original sound is kept and can be normalised. No AI audio model is installed: no music or sound-effect model with a suitable licence and Mac support was found."), false)
                 builtIn("face.smiling", String(localized: "Portrait retouch"),
                         String(localized: "Not available: no face-restoration model with a suitable licence."), false)
             }
@@ -155,7 +170,7 @@ struct AIModelCard: View {
         switch model.kind {
         case .diffusion: return store.defaultDiffusionModelID == model.id
         case .upscaler: return store.defaultUpscalerID == model.id
-        case .inpainter, .vae: return false
+        case .inpainter, .vae, .video, .videoTextEncoder, .runtime: return false
         }
     }
 

@@ -135,6 +135,7 @@ struct ContentView: View {
             case .exportHistory: ExportHistoryView()
             case .trash: TrashView()
             case .aiStudio: AIStudioView()
+            case .videoAI: VideoAIView()
             default: LibraryView()
             }
         }
@@ -257,7 +258,7 @@ struct TabBar: View {
          Tab(id: "favorites", title: String(localized: "Favorites"), symbol: "heart", items: [.favorites]),
          Tab(id: "batch", title: String(localized: "Batch"), symbol: "wand.and.stars", items: [.batch]),
          Tab(id: "duplicates", title: String(localized: "Duplicates"), symbol: "square.on.square", items: [.duplicates]),
-         Tab(id: "ai", title: String(localized: "AI Studio"), symbol: "sparkles", items: [.aiStudio])]
+         Tab(id: "ai", title: String(localized: "AI"), symbol: "sparkles", items: [.aiStudio, .videoAI])]
     }
 
     static let moreItems: [(SidebarItem, String, String)] = [
@@ -279,7 +280,7 @@ struct TabBar: View {
         HStack(spacing: 2) {
             ForEach(Self.tabs) { t in
                 tabButton(title: t.title, symbol: t.symbol, active: isActive(t)) {
-                    withAnimation(DS.Motion.adaptive(DS.Motion.page)) { app.sidebar = t.items[0] }
+                    withAnimation(DS.Motion.adaptive(DS.Motion.page)) { app.sidebar = t.id == "ai" ? app.lastAIArea : t.items[0] }
                 }
             }
             tabButton(title: moreActive ? moreTitle : String(localized: "More"), symbol: moreActive ? moreSymbol : "ellipsis.circle", active: moreActive) {

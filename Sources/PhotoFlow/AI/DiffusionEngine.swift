@@ -123,6 +123,7 @@ final class DiffusionEngine: @unchecked Sendable {
 
     @available(macOS 13.1, *)
     private func loadPipeline(_ model: AIModelDescriptor) throws -> StableDiffusionPipelineProtocol {
+        VideoEngineClient.shared.stop()   // video models and image models never share the memory
         let hw = AIHardware.current
         let profile = AIPerformanceProfile.current
         var plan = hw.diffusionPlan(for: model)

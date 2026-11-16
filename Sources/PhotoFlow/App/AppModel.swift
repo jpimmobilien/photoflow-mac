@@ -7,7 +7,7 @@ enum SidebarItem: Hashable {
     case overview, allPhotos, recentImports, favorites, recentlyEdited
     case albums, album(Int64)
     case batch, duplicates, similar, exportHistory, trash
-    case aiStudio
+    case aiStudio, videoAI
 }
 
 enum LibrarySort: String, CaseIterable, Identifiable {
@@ -91,7 +91,14 @@ final class AppModel: ObservableObject {
     private var index: [Int64: Int] = [:]
 
     // Navigation & presentation
-    @Published var sidebar: SidebarItem = .overview { didSet { if oldValue != sidebar { editorPhotoID = nil; viewerPhotoID = nil; refreshVisible() } } }
+    @Published var sidebar: SidebarItem = .overview {
+        didSet {
+            if oldValue != sidebar { editorPhotoID = nil; viewerPhotoID = nil; refreshVisible() }
+            if sidebar == .aiStudio || sidebar == .videoAI { lastAIArea = sidebar }
+        }
+    }
+    /// The KI tab reopens the area (Foto-KI / Video-KI) that was used last.
+    var lastAIArea: SidebarItem = .aiStudio
     @Published var selection: Set<Int64> = []
     @Published var lastClicked: Int64?
     @Published var searchText = "" { didSet { refreshVisible() } }
@@ -261,7 +268,8 @@ final class AppModel: ObservableObject {
         case .similar: return String(localized: "Similar Photos")
         case .exportHistory: return String(localized: "Export History")
         case .trash: return String(localized: "Trash")
-        case .aiStudio: return String(localized: "AI Studio")
+        case .aiStudio: return String(localized: "Photo AI")
+        case .videoAI: return String(localized: "Video AI")
         }
     }
 
