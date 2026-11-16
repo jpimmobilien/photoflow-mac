@@ -190,7 +190,7 @@ final class VideoAIModel: ObservableObject {
     @Published private(set) var progress: Progress?
     @Published var errorMessage: String?
     @Published var notice: String?
-    @Published private(set) var lastResult: VideoCreation?
+    @Published var lastResult: VideoCreation?
     @Published var labelOnExport = true
 
     private var cancelled = false

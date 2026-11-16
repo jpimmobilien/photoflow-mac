@@ -207,8 +207,11 @@ enum VideoQA {
             }
             return true
         }
-        let d = zip(lumas.dropFirst(), lumas).map { $0 - $1 }
-        let flicker = zip(d.dropFirst(), d).map { max(0, -($0 * $1)).squareRoot() }.reduce(0, +) / Double(max(1, d.count - 1))
+        var d: [Double] = []
+        for k in 1..<max(1, lumas.count) { d.append(lumas[k] - lumas[k - 1]) }
+        var flickerSum = 0.0
+        for k in 1..<max(1, d.count) { flickerSum += max(0.0, -(d[k] * d[k - 1])).squareRoot() }
+        let flicker = flickerSum / Double(max(1, d.count - 1))
         let bad = verdicts.filter { !$0.valid }.count
         print(String(format: "  read back: %d frames, %.1f s, brightness flicker %.4f, invalid sampled frames %d/%d, audio %@",
                      lumas.count, ib.duration, flicker, bad, verdicts.count, ib.hasAudio ? "yes" : "no"))
