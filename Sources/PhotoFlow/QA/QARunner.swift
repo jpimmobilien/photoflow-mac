@@ -50,6 +50,7 @@ enum QARunner {
         case "eval-perspective": try evalPerspective(folder: arg(rest, 0))
         case "batch": try await batch(folder: arg(rest, 0), count: Int(arg(rest, 1)) ?? 100, concurrency: rest.count > 2 ? Int(rest[2]) : nil)
         case "enhance": try enhanceOne(input: arg(rest, 0), output: arg(rest, 1))
+        case "eval-photo-batch": try PhotoBatchQA.run(folder: arg(rest, 0), out: arg(rest, 1), count: Int(rest.count > 2 ? rest[2] : "60") ?? 60)
         default:
             if try await AIQA.run(cmd, rest) { return }
             if try await VideoQA.run(cmd, rest) { return }
