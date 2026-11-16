@@ -1,0 +1,50 @@
+▸ Toolchain
+swift-driver version: 1.127.15 Apple Swift version 6.2.4 (swiftlang-6.2.4.1.4 clang-1700.6.4.2)
+Target: x86_64-apple-macosx15.0
+  macOS SDK 26.2
+▸ Compiling for x86_64 (release)
+✗ compile errors (x86_64):
+    |                                `- error: cannot assign to property: 'lastResult' setter is inaccessible
+    |             `- error: the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions
+/Users/runner/work/photoflow-mac/photoflow-mac/Sources/PhotoFlow/QA/VideoQA.swift:211:13: error: the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions
+/Users/runner/work/photoflow-mac/photoflow-mac/Sources/PhotoFlow/UI/AIStudio/VideoAIView.swift:299:32: error: cannot assign to property: 'lastResult' setter is inaccessible
+3 | 
+
+/Users/runner/work/photoflow-mac/photoflow-mac/Sources/PhotoFlow/QA/AIQA.swift:334:13: warning: variable 'rng' was never mutated; consider changing to 'let' constant
+332 |         let parts = (try FileManager.default.contentsOfDirectory(atPath: dir.path)).filter { $0.hasSuffix(".mlmodelc") }.sorted()
+333 |         let unitSets: [(String, MLComputeUnits)] = [("cpuAndGPU", .cpuAndGPU), ("cpuOnly", .cpuOnly), ("all", .all)]
+334 |         var rng = SystemRandomNumberGenerator()
+    |             `- warning: variable 'rng' was never mutated; consider changing to 'let' constant
+335 |         _ = rng
+336 |         for p in parts {
+
+/Users/runner/work/photoflow-mac/photoflow-mac/Sources/PhotoFlow/QA/VideoQA.swift:211:13: error: the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions
+209 |         }
+210 |         let d = zip(lumas.dropFirst(), lumas).map { $0 - $1 }
+211 |         let flicker = zip(d.dropFirst(), d).map { max(0, -($0 * $1)).squareRoot() }.reduce(0, +) / Double(max(1, d.count - 1))
+    |             `- error: the compiler is unable to type-check this expression in reasonable time; try breaking up the expression into distinct sub-expressions
+212 |         let bad = verdicts.filter { !$0.valid }.count
+213 |         print(String(format: "  read back: %d frames, %.1f s, brightness flicker %.4f, invalid sampled frames %d/%d, audio %@",
+
+/Users/runner/work/photoflow-mac/photoflow-mac/Sources/PhotoFlow/UI/AIStudio/VideoAIView.swift:299:32: error: cannot assign to property: 'lastResult' setter is inaccessible
+297 |                 }.buttonStyle(GlassButtonStyle(kind: .secondary))
+298 |                 Spacer()
+299 |                 Button { video.lastResult = nil } label: { Label(String(localized: "New video"), systemImage: "plus") }
+    |                                `- error: cannot assign to property: 'lastResult' setter is inaccessible
+300 |                     .buttonStyle(GlassButtonStyle(kind: .plain))
+301 |             }
+
+/Users/runner/work/photoflow-mac/photoflow-mac/Sources/PhotoFlow/UI/Batch/BatchReview.swift:73:16: warning: main actor-isolated static property 'ctx' can not be referenced from a nonisolated context; this is an error in the Swift 6 language mode
+ 27 |     private var task: Task<Void, Never>?
+ 28 |     private var workflow = BatchWorkflow.predefined[0]
+ 29 |     private static let ctx = CIContext(options: [.cacheIntermediates: false])
+    |                        `- note: static property declared here
+ 30 | 
+ 31 |     var includedCount: Int { items.filter(\.include).count }
+    :
+ 71 |     nonisolated static func render(_ r: EditRecipe, _ img: CGImage) -> CGImage? {
+ 72 |         let out = RenderPipeline.apply(r, to: CIImage(cgImage: img))
+ 73 |         return ctx.createCGImage(out, from: out.extent)
+    |                `- warning: main actor-isolated static property 'ctx' can not be referenced from a nonisolated context; this is an error in the Swift 6 language mode
+ 74 |     }
+ 75 | 
