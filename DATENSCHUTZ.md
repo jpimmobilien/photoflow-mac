@@ -27,9 +27,10 @@ Jede Datei ist mit Größe und SHA-256-Prüfsumme festgelegt. Eine Datei mit abw
 Bei diesen Downloads sieht der jeweilige Server – wie bei jedem Download – deine IP-Adresse; es werden keine Fotos,
 Prompts oder sonstigen Inhalte übertragen.
 
-Danach funktionieren alle installierten Funktionen **offline**. Das ist getestet: Die Generierung läuft in den Tests
-mit gesperrtem Netzwerkzugang. Die Video-Engine startet zusätzlich mit `HF_HUB_OFFLINE=1`, `TRANSFORMERS_OFFLINE=1`
-und `DO_NOT_TRACK=1`.
+Danach funktionieren alle installierten Funktionen **offline**. Für die Foto-KI ist das getestet: Die Generierung
+läuft in den Tests mit gesperrtem Netzwerkzugang (`sandbox-exec`). Die Video-Engine startet mit `HF_HUB_OFFLINE=1`,
+`TRANSFORMERS_OFFLINE=1` und `DO_NOT_TRACK=1` und lädt nur aus lokalen Ordnern; ein Test mit gesperrtem Netzwerk
+ist Teil des Hardware-Tests und steht für Video noch aus.
 
 ## Was du löschen kannst
 
