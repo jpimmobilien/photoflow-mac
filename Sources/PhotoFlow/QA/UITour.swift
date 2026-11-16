@@ -397,6 +397,16 @@ enum UITour {
         studio.section = .creations
         await pause(2.5); shot("57-ai-creations")
         studio.section = .generate
+
+        // Video-KI workspace: every section once.
+        app.sidebar = .videoAI
+        let video = VideoAIModel.shared
+        for (i, s) in VideoAIModel.Section.allCases.enumerated() {
+            video.section = s
+            await pause(2); shot(String(format: "60-video-%02d-%@", i + 1, s.rawValue))
+        }
+        video.section = .generate
+        app.sidebar = .aiStudio
     }
 
     /// Reduced set for additional window sizes.
