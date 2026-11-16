@@ -27,8 +27,8 @@ final class VideoEngineClient: @unchecked Sendable {
             switch self {
             case .runtimeMissing:
                 return String(localized: "The video engine is not installed. Install it in Model Management (KI ▸ Models).")
-            case .launchFailed(let s): return String(localized: "The video engine could not be started: \(s)")
-            case .crashed(let s): return String(localized: "The video engine stopped unexpectedly. \(s)")
+            case .launchFailed(let detail): return String(localized: "The video engine could not be started: \(detail)")
+            case .crashed(let detail): return String(localized: "The video engine stopped unexpectedly. \(detail)")
             case .failed(let s): return s
             case .outOfMemory:
                 return String(localized: "Not enough memory for this video. Choose a shorter clip, a lower resolution or a smaller model, and close other apps.")

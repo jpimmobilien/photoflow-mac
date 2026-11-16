@@ -41,8 +41,8 @@ enum VideoIO {
         var errorDescription: String? {
             switch self {
             case .noFrames: return String(localized: "The video has no frames.")
-            case .writerFailed(let s): return String(localized: "The video file could not be written: \(s)")
-            case .readFailed(let s): return String(localized: "The video could not be read: \(s)")
+            case .writerFailed(let detail): return String(localized: "The video file could not be written: \(detail)")
+            case .readFailed(let detail): return String(localized: "The video could not be read: \(detail)")
             }
         }
     }

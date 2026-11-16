@@ -29,8 +29,8 @@ enum VideoRuntime {
         case missing(String), failed(String)
         var errorDescription: String? {
             switch self {
-            case .missing(let s): return String(localized: "Video engine files are incomplete: \(s)")
-            case .failed(let s): return String(localized: "Installing the video engine failed: \(s)")
+            case .missing(let detail): return String(localized: "Video engine files are incomplete: \(detail)")
+            case .failed(let detail): return String(localized: "Installing the video engine failed: \(detail)")
             }
         }
     }
