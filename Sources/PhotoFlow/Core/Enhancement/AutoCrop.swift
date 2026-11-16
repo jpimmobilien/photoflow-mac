@@ -7,18 +7,54 @@ enum AutoCrop {
     enum Mode: Codable, Hashable, Sendable {
         case none
         case trimBorders
+        /// Composition-aware crop to a fixed ratio (decided per photo by `SmartCrop`).
         case aspect(width: Double, height: Double)
+        /// Improve the composition but keep the photo's own aspect ratio; only crops when it clearly helps.
+        case smartOriginal
+        /// Picks the best ratio per photo (original, 3:2, 4:3, 16:9, 1:1, 4:5, 9:16).
+        case smartFree
 
         var displayName: String {
             switch self {
             case .none: return String(localized: "None")
             case .trimBorders: return String(localized: "Remove borders")
             case .aspect(let w, let h): return "\(Int(w)):\(Int(h))"
+            case .smartOriginal: return String(localized: "Optimise original format")
+            case .smartFree: return String(localized: "Free (best per photo)")
             }
         }
 
-        static let choices: [Mode] = [.none, .trimBorders, .aspect(width: 1, height: 1), .aspect(width: 4, height: 5),
-                                      .aspect(width: 3, height: 2), .aspect(width: 4, height: 3), .aspect(width: 16, height: 9)]
+        static let choices: [Mode] = [.none, .trimBorders, .smartOriginal, .smartFree, .aspect(width: 16, height: 9), .aspect(width: 4, height: 3),
+                                      .aspect(width: 3, height: 2), .aspect(width: 1, height: 1), .aspect(width: 4, height: 5),
+                                      .aspect(width: 9, height: 16)]
+    }
+
+    /// Smart crop for a mode using the photo's analysis image. Returns nil when the photo should stay uncropped.
+    static func smart(_ mode: Mode, analysisImage: CGImage) -> (NormalizedRect, String)? {
+        guard let content = SmartCrop.content(of: analysisImage) else { return nil }
+        switch mode {
+        case .aspect(let w, let h):
+            let r = SmartCrop.best(content, ratio: w / h)
+            return (r.rect, ([String(localized: "Cropped to \(Int(w)):\(Int(h))")] + r.reasons).joined(separator: " · "))
+        case .smartOriginal:
+            let r = SmartCrop.best(content, ratio: nil)
+            guard r.score - r.baseline > 0.06, r.rect.width * r.rect.height < 0.97 else { return nil }
+            return (r.rect, ([String(localized: "Composition improved")] + r.reasons).joined(separator: " · "))
+        case .smartFree:
+            let ratios: [(Double?, String)] = [(nil, String(localized: "original format")), (3.0 / 2, "3:2"), (4.0 / 3, "4:3"), (16.0 / 9, "16:9"),
+                                               (1, "1:1"), (4.0 / 5, "4:5"), (9.0 / 16, "9:16")]
+            var best: (SmartCrop.Result, String)?
+            for (ratio, name) in ratios {
+                var r = SmartCrop.best(content, ratio: ratio)
+                if ratio != nil { r.score -= 0.05 }    // a different format must earn its place
+                if best == nil || r.score > best!.0.score { best = (r, name) }
+            }
+            guard let (r, name) = best else { return nil }
+            if r.rect.width * r.rect.height > 0.97 { return nil }
+            return (r.rect, ([String(localized: "Best format: \(name)")] + r.reasons).joined(separator: " · "))
+        default:
+            return nil
+        }
     }
 
     /// Detects uniform dark or bright borders. Returns nil when there is nothing (sensible) to trim.

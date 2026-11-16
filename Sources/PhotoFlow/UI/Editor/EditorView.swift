@@ -507,6 +507,8 @@ struct CropChoice: View {
         switch mode {
         case .none: Image(systemName: "crop").font(.system(size: 15))
         case .trimBorders: Image(systemName: "rectangle.dashed").font(.system(size: 15))
+        case .smartOriginal: Image(systemName: "viewfinder").font(.system(size: 15))
+        case .smartFree: Image(systemName: "sparkles.rectangle.stack").font(.system(size: 15))
         case .aspect(let w, let h):
             let r = CGFloat(w / h)
             RoundedRectangle(cornerRadius: 3, style: .continuous)

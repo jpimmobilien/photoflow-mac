@@ -355,8 +355,28 @@ final class EditorModel: ObservableObject {
             let size = g.isIdentity ? base : g.inscribedRect(size: base).size
             // the subject region is only meaningful when the picture is not rotated by quarter turns
             let salient = recipe.quarterTurns % 4 == 0 ? a?.scene.salientRect : nil
+            // Composition-aware crop when the photo is not rotated or straightened (the analysis image matches it)
+            if g.isIdentity, recipe.quarterTurns % 4 == 0, let img = a?.analysisImage, let (rect, note) = AutoCrop.smart(mode, analysisImage: img) {
+                change(String(localized: "Crop")) { $0.crop = rect }
+                message = note
+                return
+            }
             change(String(localized: "Crop")) { $0.crop = AutoCrop.aspectCrop(imageSize: size, ratio: w / h, salient: salient) }
             message = nil
+        case .smartOriginal, .smartFree:
+            let a = await ensureAnalysis()
+            var noCrop = recipe
+            noCrop.crop = nil
+            guard GeometryModel(recipe: noCrop).isIdentity, recipe.quarterTurns % 4 == 0, let img = a?.analysisImage else {
+                message = String(localized: "Smart crop works on photos without rotation or straightening – choose a fixed ratio instead.")
+                return
+            }
+            if let (rect, note) = AutoCrop.smart(mode, analysisImage: img) {
+                change(String(localized: "Crop")) { $0.crop = rect }
+                message = note
+            } else {
+                message = String(localized: "Composition kept – no crop needed")
+            }
         }
     }
 

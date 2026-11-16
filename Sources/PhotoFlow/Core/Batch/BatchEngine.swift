@@ -194,9 +194,21 @@ enum BatchPlanner {
                     notes.append(String(localized: "Removed borders"))
                 }
             case .aspect(let w, let h):
-                let size = CGSize(width: a.analysisImage.width, height: a.analysisImage.height)
-                recipe.crop = AutoCrop.aspectCrop(imageSize: size, ratio: w / h, salient: a.scene.salientRect)
-                notes.append(String(localized: "Cropped to \(Int(w)):\(Int(h))"))
+                if let (rect, note) = AutoCrop.smart(workflow.autoCrop, analysisImage: a.analysisImage) {
+                    recipe.crop = rect
+                    notes.append(note)
+                } else {
+                    let size = CGSize(width: a.analysisImage.width, height: a.analysisImage.height)
+                    recipe.crop = AutoCrop.aspectCrop(imageSize: size, ratio: w / h, salient: a.scene.salientRect)
+                    notes.append(String(localized: "Cropped to \(Int(w)):\(Int(h))"))
+                }
+            case .smartOriginal, .smartFree:
+                if let (rect, note) = AutoCrop.smart(workflow.autoCrop, analysisImage: a.analysisImage) {
+                    recipe.crop = rect
+                    notes.append(note)
+                } else {
+                    notes.append(String(localized: "Composition kept – no crop needed"))
+                }
             }
         }
         return (recipe, notes)

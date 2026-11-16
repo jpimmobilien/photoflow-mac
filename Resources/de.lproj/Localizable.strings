@@ -1160,3 +1160,26 @@
 "· Seed %@" = "· Seed %@";
 "“%@” runs entirely on this Mac. Total download: %@. Afterwards it works offline." = "„%@“ läuft vollständig auf diesem Mac. Download insgesamt: %@. Danach funktioniert alles offline.";
 "• " = "• ";
+
+/* Batch review & smart crop */
+"%lld / %lld" = "%lld / %lld";
+"%lld of %lld photos selected" = "%lld von %lld Fotos ausgewählt";
+"Applied to %lld photos – originals unchanged" = "Auf %lld Fotos angewendet – Originale unverändert";
+"Apply to selected photos" = "Auf ausgewählte Fotos anwenden";
+"Best format: %@" = "Bestes Format: %@";
+"Composition improved" = "Bildkomposition verbessert";
+"Composition kept – no crop needed" = "Bildkomposition passt – kein Zuschnitt nötig";
+"Each photo was analysed individually. Hover a photo to see the original; change crop or strength per photo, or leave photos out." = "Jedes Foto wurde einzeln analysiert. Zeige mit der Maus auf ein Foto, um das Original zu sehen; ändere Zuschnitt oder Stärke pro Foto oder lass Fotos weg.";
+"Free (best per photo)" = "Frei (bestes Format je Foto)";
+"Optimise original format" = "Originalformat optimieren";
+"PhotoFlow analyses every photo and shows its suggestion; you check and adjust before anything is applied." = "PhotoFlow analysiert jedes Foto und zeigt seinen Vorschlag; du prüfst und passt an, bevor etwas angewendet wird.";
+"Review suggestions" = "Vorschläge prüfen";
+"Review suggestions first (controlled)" = "Erst Vorschläge prüfen (kontrolliert)";
+"Smart crop works on photos without rotation or straightening – choose a fixed ratio instead." = "Der intelligente Zuschnitt funktioniert bei Fotos ohne Drehung oder Begradigung – wähle stattdessen ein festes Seitenverhältnis.";
+"Suggestion" = "Vorschlag";
+"face on a third" = "Gesicht auf einem Drittelpunkt";
+"no subject cut at the edge" = "kein Motiv am Rand angeschnitten";
+"original format" = "Originalformat";
+"space in the direction of view" = "Raum in Blickrichtung";
+"subject centred" = "Motiv mittig";
+"subject on a third" = "Motiv auf einem Drittelpunkt";

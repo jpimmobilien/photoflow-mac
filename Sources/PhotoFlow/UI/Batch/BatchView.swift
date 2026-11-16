@@ -8,6 +8,8 @@ struct BatchView: View {
     @ObservedObject var model: BatchModel
     @State private var resultsMode: CompareMode = .edited
     @State private var launching = false
+    @StateObject private var review = BatchReviewModel()
+    @State private var showReview = false
 
     var body: some View {
         ScrollView {
@@ -36,6 +38,7 @@ struct BatchView: View {
         .onChange(of: model.source) { _ in model.previewPhotoID = nil; model.refreshPreview(app); model.refreshCards(app) }
         .onChange(of: model.previewPhotoID) { _ in model.refreshPreview(app) }
         .onChange(of: app.photos.count) { _ in model.refreshPreview(app); model.refreshCards(app) }
+        .sheet(isPresented: $showReview) { BatchReviewSheet(review: review).environmentObject(app) }
     }
 
     // MARK: - Setup
@@ -202,6 +205,15 @@ struct BatchView: View {
 
             startButton
                 .padding(.top, DS.Space.xs)
+            Button {
+                review.prepare(app, workflow: model.workflow, photos: model.photosForSource(app).filter { !$0.isMissing })
+                showReview = true
+            } label: {
+                Label(String(localized: "Review suggestions first (controlled)"), systemImage: "checklist").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(GlassButtonStyle(kind: .secondary))
+            .disabled(model.isRunning || model.photosForSource(app).isEmpty)
+            .help(String(localized: "PhotoFlow analyses every photo and shows its suggestion; you check and adjust before anything is applied."))
             if !model.workflow.saveToLibrary && !model.workflow.exportEnabled {
                 Label(String(localized: "Choose at least one output: save in library or export."), systemImage: "exclamationmark.triangle")
                     .font(DS.Font.caption).foregroundStyle(DS.Palette.warning)
