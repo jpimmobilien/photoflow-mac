@@ -22,6 +22,14 @@
 - **Verification on real hardware is outstanding.** GitHub's virtual Macs have no Core ML-usable GPU and no Neural Engine. On them the complete pipeline was verified on the Apple-Silicon CPU and on the Intel VM (with the float32 VAE: all tests passed, no GPU hang). Whether GPU and Neural-Engine execution produce valid images on a real Mac is **not yet confirmed**; the hardware acceptance test (Model Management ▸ Hardware test) measures exactly this and writes a report. Until a report exists, these paths count as untested – see `TEST_REPORT.md` §4.
 - **SDXL** could not be run in CI at all (the runners have 7 GB of memory).
 
+## Video-KI
+- **Nur Apple Silicon.** Die Video-Engine (PyTorch auf Metal) gibt es nicht für Intel-Macs. Hintergrund ersetzen und Video optimieren/stabilisieren laufen auf allen Macs.
+- **Großer Speicherbedarf:** Der Textencoder der Wan-Modelle hat 11,4 GB; Text→Video braucht mindestens 16 GB, Bild→Video (Wan 2.2 5B) mindestens 32 GB. Auf 8-GB-Macs ist keine Video-Generierung möglich.
+- **Kurze Clips:** Wan 2.1 1.3B erzeugt 480p mit 16 Bildern/s, bis 5 s; Wan 2.2 5B bis 720p, 24 Bilder/s, bis 5 s. Längere Videos nur über mehrere Clips.
+- **Nicht verfügbar:** Objekte/Personen aus Videos entfernen, Personen austauschen, Video-Upscaling/-Restaurierung, Video erweitern, Zeitleisten-Editor, KI-Audio. Begründung je Funktion in `VIDEO_KI.md` §4.
+- **Video→Video** behält Bewegung und Bildaufbau, setzt starke Änderungen (z. B. Sommer → Winter) im CPU-Test mit wenigen Schritten aber nicht zuverlässig um; auf echter Hardware mit mehr Schritten noch zu prüfen.
+- **Ungetestet auf Apple Silicon:** Alle Video-Generierungsfunktionen wurden nur auf der CPU (Linux-CI) mit echten Modellen geprüft. Der Hardware-Test (`video_hardware_test.sh`) steht aus.
+
 ## Image processing
 - Auto Enhance is rule-based and conservative by design; strongly stylised photos (e.g. deliberate high-key or low-key looks not recognised as such) may be nudged toward neutral. Use *Subtle* or adjust afterwards.
 - White balance cannot know the "true" scene colour; images without neutral surfaces (e.g. a green forest, a red wall) are corrected with reduced confidence.
