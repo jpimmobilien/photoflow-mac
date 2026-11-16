@@ -75,7 +75,9 @@ enum SmartCrop {
         let baseline = score(c, full).0
         var bestRect = full
         var best = score(c, full)
-        let minScale = ratio == nil ? 0.72 : max(0.55, (minArea / (w0 * h0)).squareRoot())
+        // Never above 1: when even the largest crop of this ratio is smaller than `minArea` (portrait → 16:9, landscape → 9:16)
+        // the largest size must still be searched across all positions instead of falling back to the centre.
+        let minScale = ratio == nil ? 0.72 : min(1.0, max(0.55, (minArea / (w0 * h0)).squareRoot()))
         var s = 1.0
         while s >= minScale - 1e-9 {
             let w = w0 * s, h = h0 * s
@@ -119,6 +121,16 @@ enum SmartCrop {
         // Subject position: saliency centroid or the main face (eyes ~ upper part of the face box)
         var px = inside > 0 ? cx / inside : 0.5, py = inside > 0 ? cy / inside : 0.5
         var faceInside = false
+        // Every other face that is not tiny compared with the main face must stay whole as well (group photos).
+        if let mainArea = c.faces.map({ $0.rect.width * $0.rect.height }).max(), c.faces.count > 1 {
+            for face in c.faces {
+                let f = face.rect
+                let rel = f.width * f.height / max(mainArea, 1e-6)
+                guard rel < 0.999, rel > 0.2 else { continue }
+                let cut = f.minX < r.x || f.maxX > r.x + r.width || f.minY < r.y || f.maxY > r.y + r.height
+                if cut { score -= 0.6 + 0.6 * rel }
+            }
+        }
         if let face = c.faces.max(by: { $0.rect.width * $0.rect.height < $1.rect.width * $1.rect.height }) {
             let f = face.rect
             let cut = f.minX < r.x || f.maxX > r.x + r.width || f.minY < r.y || f.maxY > r.y + r.height

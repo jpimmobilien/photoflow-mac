@@ -41,13 +41,19 @@ enum PhotoBatchQA {
                     freeFormats[name, default: 0] += 1
                 }
                 if !content.faces.isEmpty, case .aspect(let w, _) = mode, w == 16 {
-                    facePhotos += 1
-                    // faces: normalized, origin top-left – same convention as the crop rect
-                    let inside = content.faces.allSatisfy { f in
-                        f.rect.minX >= rect.x - 0.01 && f.rect.maxX <= rect.x + rect.width + 0.01 &&
-                        f.rect.minY >= rect.y - 0.01 && f.rect.maxY <= rect.y + rect.height + 0.01
+                    // faces: normalized, origin top-left – same convention as the crop rect. Only faces that are not
+                    // tiny next to the main face count (same rule as SmartCrop), and only if they fit into the crop at all.
+                    let mainArea = content.faces.map { $0.rect.width * $0.rect.height }.max() ?? 0
+                    let significant = content.faces.map(\.rect).filter { $0.width * $0.height > 0.2 * mainArea }
+                    let union = significant.dropFirst().reduce(significant[0]) { $0.union($1) }
+                    if union.width <= rect.width && union.height <= rect.height {
+                        facePhotos += 1
+                        let inside = significant.allSatisfy { f in
+                            f.minX >= rect.x - 0.01 && f.maxX <= rect.x + rect.width + 0.01 &&
+                            f.minY >= rect.y - 0.01 && f.maxY <= rect.y + rect.height + 0.01
+                        }
+                        if inside { faceKept += 1 } else { print("  face cut: \(url.lastPathComponent)") }
                     }
-                    if inside { faceKept += 1 }
                 }
             }
             if tiles.count < 24, let tile = drawTile(thumb, rects) { tiles.append(tile) }
