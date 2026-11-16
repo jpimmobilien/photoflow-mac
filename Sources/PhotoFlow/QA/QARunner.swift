@@ -52,6 +52,7 @@ enum QARunner {
         case "enhance": try enhanceOne(input: arg(rest, 0), output: arg(rest, 1))
         default:
             if try await AIQA.run(cmd, rest) { return }
+            if try await VideoQA.run(cmd, rest) { return }
             throw QAError(description: "unknown command \(cmd)")
         }
     }

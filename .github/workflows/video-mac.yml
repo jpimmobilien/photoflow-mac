@@ -1,0 +1,73 @@
+name: Video KI on macOS (build, tools, runtime install)
+
+# What a GitHub macOS VM can verify: the app builds, background replacement / optimisation / stabilisation work on
+# real footage (Vision + Core Image + AVFoundation), and the video engine runtime installs from the pinned
+# catalog and starts. Generation itself needs more memory and a real Apple GPU (hardware test).
+on:
+  workflow_dispatch:
+    inputs:
+      runner: { default: 'macos-15' }
+      runtime: { description: 'also install the video engine runtime and start it', type: boolean, default: true }
+
+permissions:
+  contents: write
+
+jobs:
+  mac:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 120
+    env:
+      PHOTOFLOW_MODELS_DIR: /Users/runner/ai-models
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: |
+          XC=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          [ -z "$XC" ] && XC=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1)
+          sudo xcode-select -s "$XC/Contents/Developer"; swift --version
+      - name: Build
+        run: |
+          chmod +x Scripts/*.sh
+          set +e; ARCHS="$(uname -m)" NO_DMG=1 ./Scripts/build_app.sh > build.log 2>&1; rc=$?
+          grep -E "error:|warning: var|BUILD|▸" build.log | tail -80; exit $rc
+      - name: Test footage
+        run: |
+          mkdir -p /tmp/v/in /tmp/v/out
+          curl -sfL --max-time 30 -o /tmp/v/in/portrait.jpg "https://picsum.photos/id/64/1600/1200" || true
+          curl -sfL --max-time 30 -o /tmp/v/in/bg.png "https://r0k.us/graphics/kodak/kodak/kodim03.png" || true
+          P=build/PhotoFlow.app/Contents/MacOS/PhotoFlow
+          $P --qa video-clip /tmp/v/in/portrait.jpg /tmp/v/out/clip.mp4 4
+      - name: Background replacement (Vision person segmentation)
+        run: |
+          P=build/PhotoFlow.app/Contents/MacOS/PhotoFlow
+          $P --qa video-background /tmp/v/out/clip.mp4 /tmp/v/out/background_image.mp4 /tmp/v/in/bg.png
+          $P --qa video-background /tmp/v/out/clip.mp4 /tmp/v/out/background_blur.mp4 blur
+      - name: Optimise + stabilise
+        run: |
+          P=build/PhotoFlow.app/Contents/MacOS/PhotoFlow
+          $P --qa video-optimize /tmp/v/out/clip.mp4 /tmp/v/out/optimized.mp4 stabilize
+      - name: Video engine runtime (download from catalog, offline install, start)
+        if: ${{ inputs.runtime }}
+        run: |
+          P=build/PhotoFlow.app/Contents/MacOS/PhotoFlow
+          $P --qa video-install video-runtime 2>&1 | grep -vE "^\s+[0-9.]+ %" | tail -40
+          $P --qa video-engine
+      - name: Contact sheets
+        if: always()
+        run: |
+          P=$PWD/build/PhotoFlow.app/Contents/MacOS/PhotoFlow
+          cd /tmp/v/out
+          for f in *.mp4; do $P --qa video-sheet "$f" "${f%.mp4}_sheet.png" || true; done
+          ls -la
+      - name: Publish (branch video-results, folder mac)
+        if: always()
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          set -e
+          D=/tmp/pub; git clone -q --branch video-results "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" $D
+          rm -rf $D/mac; mkdir -p $D/mac
+          cp /tmp/v/out/*.png $D/mac/ 2>/dev/null || true
+          cp /tmp/v/out/*.mp4 $D/mac/ 2>/dev/null || true
+          cp build.log $D/mac/ 2>/dev/null || true
+          cd $D && git config user.name github-actions && git config user.email github-actions@users.noreply.github.com
+          git add -A && git commit -q -m "video mac ${GITHUB_SHA::7}" && git push -q origin HEAD:video-results
