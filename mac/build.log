@@ -17,7 +17,7 @@ Target: x86_64-apple-macosx15.0
  75 | 
 [5/7] Write Objects.LinkFileList
 [6/7] Linking PhotoFlow
-Build complete! (305.47s)
+Build complete! (365.50s)
 ▸ Assembling PhotoFlow.app
 ▸ Architectures: x86_64
 ▸ Signing
