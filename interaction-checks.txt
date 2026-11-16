@@ -1,0 +1,7 @@
+UITOUR: screen 1920x1080 window 1440x900
+UITOUR: screen 1920x1080 window 1440x900
+UITOUR: screen 1920x1080 window 1440x900
+UITOUR: screen 1920x1080 window 1440x900
+UITOUR: screen 1920x1080 window 1280x800
+UITOUR: screen 1920x1080 window 1920x1080
+UITOUR: screen 1920x1080 window 1920x1080

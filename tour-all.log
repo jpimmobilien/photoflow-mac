@@ -1,0 +1,24 @@
++[MTLLoader sliceIDForDevice:legacyDriverVersion:airntDriverVersion:]:685: failed assertion `Target device architecture is nil'
+UITOUR: screen 1920x1080 window 1440x900
+UITOUR: light-01-overview-empty.png 1440x900
++[MTLLoader sliceIDForDevice:legacyDriverVersion:airntDriverVersion:]:685: failed assertion `Target device architecture is nil'
+UITOUR: screen 1920x1080 window 1440x900
+UITOUR: dark-01-overview-empty.png 1440x900
++[MTLLoader sliceIDForDevice:legacyDriverVersion:airntDriverVersion:]:685: failed assertion `Target device architecture is nil'
+UITOUR: screen 1920x1080 window 1440x900
+UITOUR: light-de-01-overview-empty.png 1440x900
++[MTLLoader sliceIDForDevice:legacyDriverVersion:airntDriverVersion:]:685: failed assertion `Target device architecture is nil'
+UITOUR: screen 1920x1080 window 1440x900
+UITOUR: dark-de-01-overview-empty.png 1440x900
++[MTLLoader sliceIDForDevice:legacyDriverVersion:airntDriverVersion:]:685: failed assertion `Target device architecture is nil'
+UITOUR: screen 1920x1080 window 1280x800
+UITOUR: light-1280x800-01-overview-empty.png 1280x800
+UITOUR: light-1280x800-10-overview.png 1280x800
++[MTLLoader sliceIDForDevice:legacyDriverVersion:airntDriverVersion:]:685: failed assertion `Target device architecture is nil'
+UITOUR: screen 1920x1080 window 1920x1080
+UITOUR: light-1920x1080-01-overview-empty.png 1920x1080
+UITOUR: light-1920x1080-10-overview.png 1920x1080
++[MTLLoader sliceIDForDevice:legacyDriverVersion:airntDriverVersion:]:685: failed assertion `Target device architecture is nil'
+UITOUR: screen 1920x1080 window 1920x1080
+UITOUR: dark-de-1920x1080-01-overview-empty.png 1920x1080
+UITOUR: dark-de-1920x1080-10-overview.png 1920x1080

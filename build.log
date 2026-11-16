@@ -1,0 +1,26 @@
+▸ Toolchain
+swift-driver version: 1.127.15 Apple Swift version 6.2.4 (swiftlang-6.2.4.1.4 clang-1700.6.4.2)
+Target: x86_64-apple-macosx15.0
+  macOS SDK 26.2
+▸ Compiling for x86_64 (release)
+ 28 |     private var workflow = BatchWorkflow.predefined[0]
+ 29 |     private static let ctx = CIContext(options: [.cacheIntermediates: false])
+    |                        `- note: static property declared here
+ 30 | 
+ 31 |     var includedCount: Int { items.filter(\.include).count }
+    :
+ 71 |     nonisolated static func render(_ r: EditRecipe, _ img: CGImage) -> CGImage? {
+ 72 |         let out = RenderPipeline.apply(r, to: CIImage(cgImage: img))
+ 73 |         return ctx.createCGImage(out, from: out.extent)
+    |                `- warning: main actor-isolated static property 'ctx' can not be referenced from a nonisolated context; this is an error in the Swift 6 language mode
+ 74 |     }
+ 75 | 
+[5/7] Write Objects.LinkFileList
+[6/7] Linking PhotoFlow
+Build complete! (310.68s)
+▸ Assembling PhotoFlow.app
+▸ Architectures: x86_64
+▸ Signing
+/Users/runner/work/photoflow-mac/photoflow-mac/build/PhotoFlow.app: valid on disk
+/Users/runner/work/photoflow-mac/photoflow-mac/build/PhotoFlow.app: satisfies its Designated Requirement
+✓ Done: /Users/runner/work/photoflow-mac/photoflow-mac/build/PhotoFlow.app

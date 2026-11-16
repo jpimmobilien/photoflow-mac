@@ -1,0 +1,4 @@
++[MTLLoader sliceIDForDevice:legacyDriverVersion:airntDriverVersion:]:685: failed assertion `Target device architecture is nil'
+UITOUR: screen 1920x1080 window 1920x1080
+UITOUR: dark-de-1920x1080-01-overview-empty.png 1920x1080
+UITOUR: dark-de-1920x1080-10-overview.png 1920x1080

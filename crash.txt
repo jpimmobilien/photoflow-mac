@@ -1,0 +1,82 @@
+=== /Users/runner/Library/Logs/DiagnosticReports/PhotoFlow-2026-11-16-200252.ips
+libsystem_kernel.dylib __pthread_kill
+libsystem_pthread.dylib pthread_kill
+libsystem_c.dylib abort
+libsystem_c.dylib __assert_rtn
+Metal MTLReportFailure.cold.1
+Metal MTLReportFailure
+Metal +[MTLLoader sliceIDForDevice:legacyDriverVersion:airntDriverVersion:]
+Metal +[_MTLBinaryArchive deserializeBinaryArchiveHeader:fileData:device:]
+Metal -[_MTLBinaryArchive loadFromURL:error:]
+Metal -[_MTLBinaryArchive initWithOptions:device:url:error:]
+RenderBox RB::(anonymous namespace)::load_library_archive(NSBundle*, id<MTLDevice>)
+RenderBox RB::Device::render_pipeline_state(RB::FormattedRenderState, RB::shared_vector<RB::Function const*>::snapshot const&)
+RenderBox RB::RenderQueue::encode(RB::RenderQueue::EncoderState&)
+RenderBox RB::RenderFrame::encode(RB::RenderFrame::EncoderData&, RB::RenderQueue&)
+RenderBox RB::RenderFrame::flush_pass(RB::RenderPass&, bool)::$_0::__invoke(void*)
+libdispatch.dylib _dispatch_client_callout
+libdispatch.dylib _dispatch_lane_barrier_sync_invoke_and_complete
+RenderBox RB::RenderFrame::flush_pass(RB::RenderPass&, bool)
+RenderBox RB::RenderPass::~RenderPass()
+RenderBox RB::DisplayList::RootTexture::render(void*)
+RenderBox RB::DisplayList::render_many(RB::RenderParams const&, id<MTLTexture> () block_pointer, unsigned long, RB::DisplayList::Renderable const*)
+RenderBox RB::SharedSurfaceGroup::render_updates_device()
+libdispatch.dylib _dispatch_client_callout
+libdispatch.dylib _dispatch_lane_barrier_sync_invoke_and_complete
+QuartzCore CA::Transaction::run_commit_handlers(CATransactionPhase)
+QuartzCore CA::Context::commit_transaction(CA::Transaction*, double, double*)
+QuartzCore CA::Transaction::commit()
+AppKit __62+[CATransaction(NSCATransaction) NS_setFlushesWithDisplayLink]_block_invoke
+AppKit ___NSRunLoopObserverCreateWithHandler_block_invoke
+CoreFoundation __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__
+CoreFoundation __CFRunLoopDoObservers
+CoreFoundation __CFRunLoopRun
+CoreFoundation CFRunLoopRunSpecific
+HIToolbox RunCurrentEventLoopInMode
+HIToolbox ReceiveNextEventCommon
+HIToolbox _BlockUntilNextEventMatchingListInModeWithFilter
+AppKit _DPSNextEvent
+AppKit -[NSApplication(NSEventRouting) _nextEventMatchingEventMask:untilDate:inMode:dequeue:]
+AppKit -[NSApplication run]
+AppKit NSApplicationMain
+=== /Users/runner/Library/Logs/DiagnosticReports/PhotoFlow-2026-11-16-200239.ips
+libsystem_kernel.dylib __pthread_kill
+libsystem_pthread.dylib pthread_kill
+libsystem_c.dylib abort
+libsystem_c.dylib __assert_rtn
+Metal MTLReportFailure.cold.1
+Metal MTLReportFailure
+Metal +[MTLLoader sliceIDForDevice:legacyDriverVersion:airntDriverVersion:]
+Metal +[_MTLBinaryArchive deserializeBinaryArchiveHeader:fileData:device:]
+Metal -[_MTLBinaryArchive loadFromURL:error:]
+Metal -[_MTLBinaryArchive initWithOptions:device:url:error:]
+RenderBox RB::(anonymous namespace)::load_library_archive(NSBundle*, id<MTLDevice>)
+RenderBox RB::Device::render_pipeline_state(RB::FormattedRenderState, RB::shared_vector<RB::Function const*>::snapshot const&)
+RenderBox RB::RenderQueue::encode(RB::RenderQueue::EncoderState&)
+RenderBox RB::RenderFrame::encode(RB::RenderFrame::EncoderData&, RB::RenderQueue&)
+RenderBox RB::RenderFrame::flush_pass(RB::RenderPass&, bool)::$_0::__invoke(void*)
+libdispatch.dylib _dispatch_client_callout
+libdispatch.dylib _dispatch_lane_barrier_sync_invoke_and_complete
+RenderBox RB::RenderFrame::flush_pass(RB::RenderPass&, bool)
+RenderBox RB::RenderPass::~RenderPass()
+RenderBox RB::DisplayList::RootTexture::render(void*)
+RenderBox RB::DisplayList::render_many(RB::RenderParams const&, id<MTLTexture> () block_pointer, unsigned long, RB::DisplayList::Renderable const*)
+RenderBox RB::SharedSurfaceGroup::render_updates_device()
+libdispatch.dylib _dispatch_client_callout
+libdispatch.dylib _dispatch_lane_barrier_sync_invoke_and_complete
+QuartzCore CA::Transaction::run_commit_handlers(CATransactionPhase)
+QuartzCore CA::Context::commit_transaction(CA::Transaction*, double, double*)
+QuartzCore CA::Transaction::commit()
+AppKit __62+[CATransaction(NSCATransaction) NS_setFlushesWithDisplayLink]_block_invoke
+AppKit ___NSRunLoopObserverCreateWithHandler_block_invoke
+CoreFoundation __CFRUNLOOP_IS_CALLING_OUT_TO_AN_OBSERVER_CALLBACK_FUNCTION__
+CoreFoundation __CFRunLoopDoObservers
+CoreFoundation __CFRunLoopRun
+CoreFoundation CFRunLoopRunSpecific
+HIToolbox RunCurrentEventLoopInMode
+HIToolbox ReceiveNextEventCommon
+HIToolbox _BlockUntilNextEventMatchingListInModeWithFilter
+AppKit _DPSNextEvent
+AppKit -[NSApplication(NSEventRouting) _nextEventMatchingEventMask:untilDate:inMode:dequeue:]
+AppKit -[NSApplication run]
+AppKit NSApplicationMain
