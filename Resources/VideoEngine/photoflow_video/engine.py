@@ -73,6 +73,7 @@ class VideoEngine:
         self.model_id = None
         self.kind = None
         self.path = None
+        self.te_path = None
         self.transformer = None
         self.vae = None
         self.scheduler_config = None
@@ -80,7 +81,9 @@ class VideoEngine:
         self.cancel_requested = False
 
     # ---------------------------------------------------------------- loading
-    def load(self, model_id, path, kind):
+    def load(self, model_id, path, kind, text_encoder_path=None):
+        # The UMT5 text encoder + tokenizer live in a shared folder (one copy for all Wan models)
+        self.te_path = text_encoder_path or path
         if self.model_id == model_id and self.transformer is not None:
             return {"loaded": model_id, "cached": True}
         self.unload()
@@ -109,16 +112,16 @@ class VideoEngine:
 
     # ---------------------------------------------------------------- prompts
     def encode(self, prompt, negative):
-        key = (self.path, prompt, negative)
+        key = (self.te_path, prompt, negative)
         if key in self.embed_cache:
             return self.embed_cache[key]
         from transformers import AutoTokenizer, UMT5EncoderModel
         from diffusers import WanPipeline
         t0 = time.time()
         self.emit({"event": "status", "stage": "text", "message": "encoding prompt"})
-        tok = AutoTokenizer.from_pretrained(self.path, subfolder="tokenizer")
+        tok = AutoTokenizer.from_pretrained(self.te_path, subfolder="tokenizer")
         # text encoder in bf16 everywhere: 11 GB instead of 22 GB; it runs once per prompt
-        te = UMT5EncoderModel.from_pretrained(self.path, subfolder="text_encoder", torch_dtype=torch.bfloat16)
+        te = UMT5EncoderModel.from_pretrained(self.te_path, subfolder="text_encoder", torch_dtype=torch.bfloat16)
         te = te.to(self.device)
         helper = WanPipeline(tokenizer=tok, text_encoder=te, vae=None, transformer=None, scheduler=None)
         with torch.no_grad():

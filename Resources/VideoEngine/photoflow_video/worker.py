@@ -85,7 +85,7 @@ def main():
                       "device": eng.device.type, "dtype": str(eng.dtype).replace("torch.", ""),
                       "mps": bool(torch.backends.mps.is_available())}, rid)
             elif cmd == "load":
-                emit({"event": "result", **eng.load(req["model_id"], req["path"], req["kind"])}, rid)
+                emit({"event": "result", **eng.load(req["model_id"], req["path"], req["kind"], req.get("text_encoder_path"))}, rid)
             elif cmd in ("t2v", "i2v", "v2v", "vace"):
                 fn = {"t2v": eng.text_to_video, "i2v": eng.image_to_video,
                       "v2v": eng.video_to_video, "vace": eng.vace}[cmd]

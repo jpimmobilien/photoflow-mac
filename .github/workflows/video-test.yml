@@ -31,8 +31,12 @@ jobs:
             --exclude-newer ${{ inputs.exclude_newer }} --generate-hashes \
             -o Resources/VideoEngine/requirements-macos-arm64.lock
           grep -E "^[a-z]" Resources/VideoEngine/requirements-macos-arm64.lock | sed 's/ *\\$//' | tee pins.txt
+      - name: Runtime download list (python-build-standalone + wheels, URL/size/SHA-256)
+        run: |
+          pip install --quiet packaging
+          python3 Scripts/video/build_runtime_catalog.py Resources/VideoEngine/requirements-macos-arm64.lock ${{ inputs.exclude_newer }} runtime.json
       - name: Catalog entries for the video models (revision, size, SHA-256)
-        env: { CATALOG_ONLY: 'wan21-t2v-1.3b,wan21-vace-1.3b,wan22-ti2v-5b', CATALOG_OUT: 'video-catalog/files.json' }
+        env: { CATALOG_ONLY: 'wan-umt5,wan21-t2v-1.3b,wan21-vace-1.3b,wan22-ti2v-5b', CATALOG_OUT: 'video-catalog/files.json' }
         run: python3 Scripts/ai/build_catalog.py
       - uses: actions/upload-artifact@v4
         with:
@@ -40,6 +44,7 @@ jobs:
           path: |
             Resources/VideoEngine/requirements-macos-arm64.lock
             pins.txt
+            runtime.json
             video-catalog/files.json
       - name: Publish lock + catalog (branch video-results)
         env: { GH_TOKEN: '${{ github.token }}' }
@@ -49,7 +54,7 @@ jobs:
           cd $D
           if git ls-remote --exit-code --heads origin video-results >/dev/null; then git checkout -q video-results
           else git checkout -q --orphan video-results; git rm -rqf . >/dev/null 2>&1 || true; fi
-          mkdir -p lock && cp $GITHUB_WORKSPACE/Resources/VideoEngine/requirements-macos-arm64.lock $GITHUB_WORKSPACE/pins.txt $GITHUB_WORKSPACE/video-catalog/files.json lock/
+          mkdir -p lock && cp $GITHUB_WORKSPACE/Resources/VideoEngine/requirements-macos-arm64.lock $GITHUB_WORKSPACE/pins.txt $GITHUB_WORKSPACE/runtime.json $GITHUB_WORKSPACE/video-catalog/files.json lock/
           git config user.name github-actions && git config user.email github-actions@users.noreply.github.com
           git add -A && git commit -q -m "lock ${GITHUB_SHA::7}" && git push -q origin HEAD:video-results
 
@@ -83,10 +88,11 @@ jobs:
           from huggingface_hub import snapshot_download
           cat = json.load(open("video-catalog/files.json"))
           mid = {"t2v": "wan21-t2v-1.3b", "ti2v": "wan22-ti2v-5b", "vace": "wan21-vace-1.3b"}["${{ inputs.suite }}"]
-          e = cat[mid]
-          files = [f["path"] for f in e["files"]]
-          p = snapshot_download(e["repo"], revision=e["revision"], allow_patterns=files, local_dir="/tmp/model")
-          print(mid, e["revision"], f'{e["total"]/1e9:.2f} GB', len(files), "files")
+          for m in (mid, "wan-umt5"):   # model + the shared text encoder, into one folder
+              e = cat[m]
+              files = [f["path"] for f in e["files"]]
+              snapshot_download(e["repo"], revision=e["revision"], allow_patterns=files, local_dir="/tmp/model")
+              print(m, e["revision"], f'{e["total"]/1e9:.2f} GB', len(files), "files")
           EOF
           du -sh /tmp/model; df -h / | tail -1
       - name: Test images

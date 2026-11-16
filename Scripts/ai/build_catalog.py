@@ -14,9 +14,12 @@ HF = {
     "sd15-ane": ("apple/coreml-stable-diffusion-v1-5-palettized", "split_einsum_v2/compiled/", ["SafetyChecker.mlmodelc"]),
     "sd15-fp16": ("apple/coreml-stable-diffusion-v1-5", "original/compiled/", ["UnetChunk1.mlmodelc", "UnetChunk2.mlmodelc", "SafetyChecker.mlmodelc"]),
     # Video (Wan, Apache 2.0, diffusers layout) – run by the PhotoFlow video engine (PyTorch/Metal)
-    "wan21-t2v-1.3b": ("Wan-AI/Wan2.1-T2V-1.3B-Diffusers", "", ["assets", "examples"]),
-    "wan21-vace-1.3b": ("Wan-AI/Wan2.1-VACE-1.3B-diffusers", "", ["assets", "examples"]),
-    "wan22-ti2v-5b": ("Wan-AI/Wan2.2-TI2V-5B-Diffusers", "", ["assets", "examples"]),
+    # The UMT5-XXL text encoder (bf16) + tokenizer are identical (same SHA-256) in the VACE and TI2V repos;
+    # PhotoFlow downloads them once and shares them between all Wan models.
+    "wan-umt5": ("Wan-AI/Wan2.2-TI2V-5B-Diffusers", "", [], ["text_encoder/", "tokenizer/"]),
+    "wan21-t2v-1.3b": ("Wan-AI/Wan2.1-T2V-1.3B-Diffusers", "", ["assets", "examples", "text_encoder", "tokenizer"]),
+    "wan21-vace-1.3b": ("Wan-AI/Wan2.1-VACE-1.3B-diffusers", "", ["assets", "examples", "text_encoder", "tokenizer"]),
+    "wan22-ti2v-5b": ("Wan-AI/Wan2.2-TI2V-5B-Diffusers", "", ["assets", "examples", "text_encoder", "tokenizer"]),
 }
 ONLY = [m for m in os.environ.get("CATALOG_ONLY", "").split(",") if m]
 AGENT = {"User-Agent": "model-catalog-builder"}
@@ -38,7 +41,8 @@ def sha_of_url(url):
 
 
 out = {}
-for mid, (repo, prefix, exclude) in HF.items():
+for mid, (repo, prefix, exclude, *inc) in HF.items():
+    include = inc[0] if inc else None
     if ONLY and mid not in ONLY: continue
     info = get_json(f"https://huggingface.co/api/models/{repo}?blobs=true")
     rev = info["sha"]
@@ -48,6 +52,7 @@ for mid, (repo, prefix, exclude) in HF.items():
         if not f.startswith(prefix): continue
         rel = f[len(prefix):]
         if any(rel.startswith(e + "/") or rel == e for e in exclude): continue
+        if include and not any(rel.startswith(p) for p in include): continue
         url = f"https://huggingface.co/{repo}/resolve/{rev}/{f}"
         lfs = s.get("lfs") or {}
         if lfs.get("sha256"):
