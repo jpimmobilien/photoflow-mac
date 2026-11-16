@@ -1,3 +1,0 @@
-87db56a51758fefb748a359b90a5283bb8ba4837
-Blaizzy/mlx-video 87db56a51758fefb748a359b90a5283bb8ba4837 (MIT), files: models/wan_2/*.py (subset), models/ltx_2/video_vae/tiling.py, BaseModelConfig from models/ltx_2/config.py. Import paths rewritten to pfvideo.*
-Modified by PhotoFlow: wan/utils.py load_wan_model accepts sharded weights (_load_sharded).
